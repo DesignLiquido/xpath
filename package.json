@@ -1,0 +1,32 @@
+{
+  "name": "@designliquido/xpath",
+  "version": "0.0.0",
+  "description": "An XPath implementation in TypeScript",
+  "main": "index.js",
+  "module": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DesignLiquido/xpath.git"
+  },
+  "keywords": [
+    "xslt",
+    "xpath",
+    "xml"
+  ],
+  "author": "Leonel Sanches da Silva",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DesignLiquido/xpath/issues"
+  },
+  "homepage": "https://github.com/DesignLiquido/xpath#readme",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {}
+}
