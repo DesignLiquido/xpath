@@ -8,7 +8,11 @@
     "doc": "docs",
     "test": "tests"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "build": "tsc"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DesignLiquido/xpath.git"

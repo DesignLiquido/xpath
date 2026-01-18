@@ -1,96 +1,78 @@
 import { XPathToken } from "./token";
 
 const RESERVED_WORDS = {
-    // Location paths
-    ancestor: {
-        type: "LOCATION",
-        value: "ancestor",
-    },
-    "ancestor-or-self": {
-        type: "LOCATION",
-        value: "ancestor-or-self",
-    },
-    attribute: {
-        type: "LOCATION",
-        value: "attribute",
-    },
-    child: {
-        type: "LOCATION",
-        value: "child",
-    },
-    descendant: {
-        type: "LOCATION",
-        value: "descendant",
-    },
-    "descendant-or-self": {
-        type: "LOCATION",
-        value: "descendant-or-self",
-    },
-    following: {
-        type: "LOCATION",
-        value: "following",
-    },
-    "following-sibling": {
-        type: "LOCATION",
-        value: "following-sibling",
-    },
-    parent: {
-        type: "LOCATION",
-        value: "parent",
-    },
-    preceding: {
-        type: "LOCATION",
-        value: "preceding",
-    },
-    "preceding-sibling": {
-        type: "LOCATION",
-        value: "preceding-sibling",
-    },
-    // Functions
-    document: {
-        type: "FUNCTION",
-        value: "document",
-    },
-    boolean: {
-        type: "FUNCTION",
-        value: "boolean",
-    },
-    floor: {
-        type: "FUNCTION",
-        value: "floor",
-    },
-    mod: {
-        type: "FUNCTION",
-        value: "mod",
-    },
-    string: {
-        type: "FUNCTION",
-        value: "string",
-    },
-    number: {
-        type: "FUNCTION",
-        value: "number",
-    },
-    ceiling: {
-        type: "FUNCTION",
-        value: "ceiling",
-    },
-    concat: {
-        type: "FUNCTION",
-        value: "concat",
-    },
-    count: {
-        type: "FUNCTION",
-        value: "count",
-    },
-    sum: {
-        type: "FUNCTION",
-        value: "sum",
-    },
-    round: {
-        type: "FUNCTION",
-        value: "round",
-    }
+    // Location axes (XPath 1.0 complete list)
+    "ancestor": { type: "LOCATION", value: "ancestor" },
+    "ancestor-or-self": { type: "LOCATION", value: "ancestor-or-self" },
+    "attribute": { type: "LOCATION", value: "attribute" },
+    "child": { type: "LOCATION", value: "child" },
+    "descendant": { type: "LOCATION", value: "descendant" },
+    "descendant-or-self": { type: "LOCATION", value: "descendant-or-self" },
+    "following": { type: "LOCATION", value: "following" },
+    "following-sibling": { type: "LOCATION", value: "following-sibling" },
+    "namespace": { type: "LOCATION", value: "namespace" },
+    "parent": { type: "LOCATION", value: "parent" },
+    "preceding": { type: "LOCATION", value: "preceding" },
+    "preceding-sibling": { type: "LOCATION", value: "preceding-sibling" },
+    "self": { type: "LOCATION", value: "self" },
+
+    // Node type tests
+    "node": { type: "NODE_TYPE", value: "node" },
+    "text": { type: "NODE_TYPE", value: "text" },
+    "comment": { type: "NODE_TYPE", value: "comment" },
+    "processing-instruction": { type: "NODE_TYPE", value: "processing-instruction" },
+
+    // Operators
+    "and": { type: "OPERATOR", value: "and" },
+    "or": { type: "OPERATOR", value: "or" },
+    "div": { type: "OPERATOR", value: "div" },
+    "mod": { type: "OPERATOR", value: "mod" },
+
+    // Node set functions
+    "last": { type: "FUNCTION", value: "last" },
+    "position": { type: "FUNCTION", value: "position" },
+    "count": { type: "FUNCTION", value: "count" },
+    "id": { type: "FUNCTION", value: "id" },
+    "local-name": { type: "FUNCTION", value: "local-name" },
+    "namespace-uri": { type: "FUNCTION", value: "namespace-uri" },
+    "name": { type: "FUNCTION", value: "name" },
+
+    // String functions
+    "string": { type: "FUNCTION", value: "string" },
+    "concat": { type: "FUNCTION", value: "concat" },
+    "starts-with": { type: "FUNCTION", value: "starts-with" },
+    "contains": { type: "FUNCTION", value: "contains" },
+    "substring-before": { type: "FUNCTION", value: "substring-before" },
+    "substring-after": { type: "FUNCTION", value: "substring-after" },
+    "substring": { type: "FUNCTION", value: "substring" },
+    "string-length": { type: "FUNCTION", value: "string-length" },
+    "normalize-space": { type: "FUNCTION", value: "normalize-space" },
+    "translate": { type: "FUNCTION", value: "translate" },
+
+    // Boolean functions
+    "boolean": { type: "FUNCTION", value: "boolean" },
+    "not": { type: "FUNCTION", value: "not" },
+    "true": { type: "FUNCTION", value: "true" },
+    "false": { type: "FUNCTION", value: "false" },
+    "lang": { type: "FUNCTION", value: "lang" },
+
+    // Number functions
+    "number": { type: "FUNCTION", value: "number" },
+    "sum": { type: "FUNCTION", value: "sum" },
+    "floor": { type: "FUNCTION", value: "floor" },
+    "ceiling": { type: "FUNCTION", value: "ceiling" },
+    "round": { type: "FUNCTION", value: "round" },
+
+    // XSLT-specific functions (commonly used)
+    "document": { type: "FUNCTION", value: "document" },
+    "key": { type: "FUNCTION", value: "key" },
+    "format-number": { type: "FUNCTION", value: "format-number" },
+    "current": { type: "FUNCTION", value: "current" },
+    "unparsed-entity-uri": { type: "FUNCTION", value: "unparsed-entity-uri" },
+    "generate-id": { type: "FUNCTION", value: "generate-id" },
+    "system-property": { type: "FUNCTION", value: "system-property" },
+    "element-available": { type: "FUNCTION", value: "element-available" },
+    "function-available": { type: "FUNCTION", value: "function-available" },
 };
 
 export class XPathLexer {
@@ -98,26 +80,76 @@ export class XPathLexer {
     current: number;
     tokens: XPathToken[];
 
+    isAlpha(char: string): boolean {
+        return /^[a-zA-Z_]$/.test(char);
+    }
+
     isAlphaNumeric(char: string): boolean {
-        return /^[a-zA-Z0-9]$/.test(char);
+        return /^[a-zA-Z0-9_]$/.test(char);
     }
 
     isNumber(char: string): boolean {
         return /^[0-9]$/.test(char);
     }
 
+    isWhitespace(char: string): boolean {
+        return /^[\s\t\n\r]$/.test(char);
+    }
+
+    peek(): string | undefined {
+        return this.expression[this.current];
+    }
+
+    peekNext(): string | undefined {
+        return this.expression[this.current + 1];
+    }
+
     next(): string {
         return this.expression[this.current++];
+    }
+
+    match(expected: string): boolean {
+        if (this.current >= this.expression.length) return false;
+        if (this.expression[this.current] !== expected) return false;
+        this.current++;
+        return true;
     }
 
     parseIdentifier(firstCharacter: string): XPathToken {
         let characters = firstCharacter;
 
-        while (
-            this.current < this.expression.length &&
-            this.isAlphaNumeric(this.expression[this.current])
-        ) {
-            characters += this.next();
+        // Parse alphanumeric characters, allowing hyphens for reserved words like "ancestor-or-self"
+        while (this.current < this.expression.length) {
+            const char = this.expression[this.current];
+
+            if (this.isAlphaNumeric(char)) {
+                characters += this.next();
+            } else if (char === "-") {
+                // Look ahead to check if this could be a hyphenated reserved word
+                const potentialWord = characters + "-";
+                let tempIndex = this.current + 1;
+                let restOfWord = "";
+
+                while (tempIndex < this.expression.length && this.isAlphaNumeric(this.expression[tempIndex])) {
+                    restOfWord += this.expression[tempIndex];
+                    tempIndex++;
+                }
+
+                const fullWord = potentialWord + restOfWord;
+                if (RESERVED_WORDS[fullWord.toLowerCase()]) {
+                    // It's a hyphenated reserved word, consume the rest
+                    this.current++; // consume the hyphen
+                    characters += "-";
+                    while (this.current < this.expression.length && this.isAlphaNumeric(this.expression[this.current])) {
+                        characters += this.next();
+                    }
+                } else {
+                    // Not a reserved word, stop here (hyphen is a minus operator)
+                    break;
+                }
+            } else {
+                break;
+            }
         }
 
         const likelyReservedWord = RESERVED_WORDS[characters.toLowerCase()];
@@ -129,8 +161,22 @@ export class XPathLexer {
             return new XPathToken("IDENTIFIER", characters);
         }
 
-        // If no valid identifier was found, return an error token
         throw new Error(`Invalid identifier: ${characters}`);
+    }
+
+    parseString(quoteChar: string): XPathToken {
+        let value = "";
+
+        while (this.current < this.expression.length && this.expression[this.current] !== quoteChar) {
+            value += this.next();
+        }
+
+        if (this.current >= this.expression.length) {
+            throw new Error(`Unterminated string literal`);
+        }
+
+        this.next(); // consume closing quote
+        return new XPathToken("STRING", value);
     }
 
     parseNumber(firstCharacter: string): XPathToken {
@@ -163,11 +209,21 @@ export class XPathLexer {
         throw new Error(`Invalid number: ${characters}`);
     }
 
-    scanToken(): XPathToken {
+    scanToken(): XPathToken | null {
         const char = this.next();
+
+        // Skip whitespace
+        if (this.isWhitespace(char)) {
+            return null;
+        }
+
         switch (char) {
             case "@":
                 return new XPathToken("AT", char);
+            case "$":
+                return new XPathToken("DOLLAR", char);
+            case "|":
+                return new XPathToken("PIPE", char);
             case "{":
                 return new XPathToken("OPEN_CURLY_BRACKET", char);
             case "}":
@@ -188,18 +244,68 @@ export class XPathLexer {
                 return new XPathToken("ASTERISK", char);
             case ",":
                 return new XPathToken("COMMA", char);
+
+            // Tokens that may be single or double character
+            case ".":
+                if (this.match(".")) {
+                    return new XPathToken("DOT_DOT", "..");
+                }
+                // Check if it's a number starting with decimal point
+                if (this.peek() && this.isNumber(this.peek()!)) {
+                    return this.parseNumber(char);
+                }
+                return new XPathToken("DOT", char);
+
             case "/":
+                if (this.match("/")) {
+                    return new XPathToken("DOUBLE_SLASH", "//");
+                }
                 return new XPathToken("SLASH", char);
-            case "'":
-                return new XPathToken("QUOTE", char);
+
+            case ":":
+                if (this.match(":")) {
+                    return new XPathToken("COLON_COLON", "::");
+                }
+                return new XPathToken("COLON", char);
+
             case "=":
                 return new XPathToken("EQUALS", char);
+
+            case "!":
+                if (this.match("=")) {
+                    return new XPathToken("NOT_EQUALS", "!=");
+                }
+                throw new Error(`Unexpected character: ${char}`);
+
+            case "<":
+                if (this.match("=")) {
+                    return new XPathToken("LESS_THAN_OR_EQUAL", "<=");
+                }
+                return new XPathToken("LESS_THAN", char);
+
+            case ">":
+                if (this.match("=")) {
+                    return new XPathToken("GREATER_THAN_OR_EQUAL", ">=");
+                }
+                return new XPathToken("GREATER_THAN", char);
+
+            // String literals
+            case "'":
+                return this.parseString("'");
+
+            case '"':
+                return this.parseString('"');
+
             default:
                 if (this.isNumber(char)) {
                     return this.parseNumber(char);
                 }
 
-                return this.parseIdentifier(char);
+                if (this.isAlpha(char)) {
+                    return this.parseIdentifier(char);
+                }
+
+                throw new Error(`Unexpected character: ${char}`);
         }
     }
 
@@ -210,7 +316,9 @@ export class XPathLexer {
 
         while (this.current < this.expression.length) {
             const token = this.scanToken();
-            this.tokens.push(token);
+            if (token !== null) {
+                this.tokens.push(token);
+            }
         }
 
         return this.tokens;
