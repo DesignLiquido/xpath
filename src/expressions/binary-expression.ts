@@ -1,3 +1,4 @@
+import { XPathContext } from '../context';
 import { XPathExpression } from './expression';
 
 export class XPathBinaryExpression extends XPathExpression {
@@ -12,7 +13,7 @@ export class XPathBinaryExpression extends XPathExpression {
         this.operator = operator;
     }
 
-    evaluate(context: any): any {
+    evaluate(context: XPathContext): boolean {
         const leftValue = this.left.evaluate(context);
         const rightValue = this.right.evaluate(context);
 

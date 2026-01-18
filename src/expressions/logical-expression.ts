@@ -1,3 +1,4 @@
+import { XPathContext, XPathResult } from '../context';
 import { XPathExpression } from './expression';
 
 export class XPathLogicalExpression extends XPathExpression {
@@ -12,7 +13,7 @@ export class XPathLogicalExpression extends XPathExpression {
         this.operator = operator;
     }
 
-    private toBoolean(value: any): boolean {
+    private toBoolean(value: XPathResult): boolean {
         if (typeof value === 'boolean') {
             return value;
         }
@@ -28,7 +29,7 @@ export class XPathLogicalExpression extends XPathExpression {
         return !!value;
     }
 
-    evaluate(context: any): boolean {
+    evaluate(context: XPathContext): boolean {
         const leftValue = this.toBoolean(this.left.evaluate(context));
 
         // Short-circuit evaluation

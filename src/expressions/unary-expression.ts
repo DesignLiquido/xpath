@@ -1,3 +1,4 @@
+import { XPathContext } from '../context';
 import { XPathExpression } from './expression';
 
 export class XPathUnaryExpression extends XPathExpression {
@@ -10,7 +11,7 @@ export class XPathUnaryExpression extends XPathExpression {
         this.operand = operand;
     }
 
-    evaluate(context: any): number {
+    evaluate(context: XPathContext): number {
         const value = this.operand.evaluate(context);
 
         switch (this.operator) {

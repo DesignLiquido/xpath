@@ -1,3 +1,4 @@
+import { XPathContext } from '../context';
 import { XPathExpression } from './expression';
 
 export type ArithmeticOperator = '+' | '-' | '*' | 'div' | 'mod';
@@ -14,7 +15,7 @@ export class XPathArithmeticExpression extends XPathExpression {
         this.operator = operator;
     }
 
-    evaluate(context: any): number {
+    evaluate(context: XPathContext): number {
         const leftValue = Number(this.left.evaluate(context));
         const rightValue = Number(this.right.evaluate(context));
 

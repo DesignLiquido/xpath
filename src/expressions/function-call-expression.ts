@@ -1,3 +1,4 @@
+import { XPathContext, XPathNode, XPathResult } from '../context';
 import { XPathExpression } from './expression';
 
 export class XPathFunctionCall extends XPathExpression {
@@ -10,16 +11,16 @@ export class XPathFunctionCall extends XPathExpression {
         this.args = args;
     }
 
-    evaluate(context: any): any {
+    evaluate(context: XPathContext): XPathResult {
         const evaluatedArgs = this.args.map(arg => arg.evaluate(context));
 
         // Built-in XPath 1.0 functions
         switch (this.name) {
             // Node set functions
             case 'last':
-                return context?.size ?? 0;
+                return context.size ?? 0;
             case 'position':
-                return context?.position ?? 0;
+                return context.position ?? 0;
             case 'count':
                 return Array.isArray(evaluatedArgs[0]) ? evaluatedArgs[0].length : 0;
             case 'local-name':
@@ -77,14 +78,14 @@ export class XPathFunctionCall extends XPathExpression {
 
             default:
                 // Check for custom functions in context
-                if (context?.functions && typeof context.functions[this.name] === 'function') {
+                if (context.functions && typeof context.functions[this.name] === 'function') {
                     return context.functions[this.name](...evaluatedArgs);
                 }
                 throw new Error(`Unknown function: ${this.name}`);
         }
     }
 
-    private toBoolean(value: any): boolean {
+    private toBoolean(value: XPathResult): boolean {
         if (typeof value === 'boolean') return value;
         if (typeof value === 'number') return value !== 0 && !isNaN(value);
         if (typeof value === 'string') return value.length > 0;
@@ -92,16 +93,16 @@ export class XPathFunctionCall extends XPathExpression {
         return !!value;
     }
 
-    private toNumber(args: any[], context: any): number {
+    private toNumber(args: XPathResult[], context: XPathContext): number {
         if (args.length === 0) {
             return Number(this.stringValue([], context));
         }
         return Number(args[0]);
     }
 
-    private stringValue(args: any[], context: any): string {
+    private stringValue(args: XPathResult[], context: XPathContext): string {
         if (args.length === 0) {
-            return context?.node?.textContent ?? '';
+            return context.node?.textContent ?? '';
         }
         const value = args[0];
         if (Array.isArray(value) && value.length > 0) {
@@ -110,33 +111,33 @@ export class XPathFunctionCall extends XPathExpression {
         return String(value);
     }
 
-    private stringLength(args: any[], context: any): number {
+    private stringLength(args: XPathResult[], context: XPathContext): number {
         if (args.length === 0) {
             return this.stringValue([], context).length;
         }
         return String(args[0]).length;
     }
 
-    private normalizeSpace(args: any[], context: any): string {
+    private normalizeSpace(args: XPathResult[], context: XPathContext): string {
         const str = args.length === 0 ? this.stringValue([], context) : String(args[0]);
         return str.trim().replace(/\s+/g, ' ');
     }
 
-    private substringBefore(args: any[]): string {
+    private substringBefore(args: XPathResult[]): string {
         const str = String(args[0]);
         const search = String(args[1]);
         const index = str.indexOf(search);
         return index === -1 ? '' : str.substring(0, index);
     }
 
-    private substringAfter(args: any[]): string {
+    private substringAfter(args: XPathResult[]): string {
         const str = String(args[0]);
         const search = String(args[1]);
         const index = str.indexOf(search);
         return index === -1 ? '' : str.substring(index + search.length);
     }
 
-    private substring(args: any[]): string {
+    private substring(args: XPathResult[]): string {
         const str = String(args[0]);
         // XPath uses 1-based indexing and rounds
         const start = Math.round(Number(args[1])) - 1;
@@ -149,7 +150,7 @@ export class XPathFunctionCall extends XPathExpression {
         return str.substring(adjustedStart, adjustedStart + adjustedLength);
     }
 
-    private translate(args: any[]): string {
+    private translate(args: XPathResult[]): string {
         const str = String(args[0]);
         const from = String(args[1]);
         const to = String(args[2]);
@@ -166,46 +167,47 @@ export class XPathFunctionCall extends XPathExpression {
         return result;
     }
 
-    private localName(args: any[], context: any): string {
-        const node = args.length > 0 && Array.isArray(args[0]) && args[0].length > 0
-            ? args[0][0]
-            : context?.node;
+    private localName(args: XPathResult[], context: XPathContext): string {
+        const node = this.getNodeArg(args, context);
         return node?.localName ?? '';
     }
 
-    private namespaceUri(args: any[], context: any): string {
-        const node = args.length > 0 && Array.isArray(args[0]) && args[0].length > 0
-            ? args[0][0]
-            : context?.node;
+    private namespaceUri(args: XPathResult[], context: XPathContext): string {
+        const node = this.getNodeArg(args, context);
         return node?.namespaceURI ?? '';
     }
 
-    private nodeName(args: any[], context: any): string {
-        const node = args.length > 0 && Array.isArray(args[0]) && args[0].length > 0
-            ? args[0][0]
-            : context?.node;
+    private nodeName(args: XPathResult[], context: XPathContext): string {
+        const node = this.getNodeArg(args, context);
         return node?.nodeName ?? '';
     }
 
-    private sum(args: any[]): number {
+    private getNodeArg(args: XPathResult[], context: XPathContext): XPathNode | undefined {
+        if (args.length > 0 && Array.isArray(args[0]) && args[0].length > 0) {
+            return args[0][0];
+        }
+        return context.node;
+    }
+
+    private sum(args: XPathResult[]): number {
         const nodeSet = args[0];
         if (!Array.isArray(nodeSet)) return 0;
-        return nodeSet.reduce((acc, node) => {
+        return nodeSet.reduce((acc: number, node: XPathNode) => {
             const value = Number(node?.textContent ?? node);
             return acc + (isNaN(value) ? 0 : value);
         }, 0);
     }
 
-    private lang(args: any[], context: any): boolean {
+    private lang(args: XPathResult[], context: XPathContext): boolean {
         const targetLang = String(args[0]).toLowerCase();
-        let node = context?.node;
+        let node = context.node;
         while (node) {
             const lang = node.getAttribute?.('xml:lang') || node.getAttribute?.('lang');
             if (lang) {
                 const nodeLang = lang.toLowerCase();
                 return nodeLang === targetLang || nodeLang.startsWith(targetLang + '-');
             }
-            node = node.parentNode;
+            node = node.parentNode as XPathNode | undefined;
         }
         return false;
     }

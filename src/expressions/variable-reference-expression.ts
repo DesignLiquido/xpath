@@ -1,3 +1,4 @@
+import { XPathContext, XPathResult } from '../context';
 import { XPathExpression } from './expression';
 
 export class XPathVariableReference extends XPathExpression {
@@ -8,8 +9,8 @@ export class XPathVariableReference extends XPathExpression {
         this.name = name;
     }
 
-    evaluate(context: any): any {
-        if (!context || !context.variables) {
+    evaluate(context: XPathContext): XPathResult {
+        if (!context.variables) {
             throw new Error(`Variable $${this.name} is not defined`);
         }
 
