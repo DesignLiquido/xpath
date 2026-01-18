@@ -57,6 +57,12 @@ export interface XPathContext {
     size?: number;
 
     /**
+     * The full node list for the current context.
+     * Used by the 'self-and-siblings' axis (XSLT-specific).
+     */
+    nodeList?: XPathNode[];
+
+    /**
      * Variable bindings available during evaluation.
      * Variables are referenced in XPath as $variableName.
      */

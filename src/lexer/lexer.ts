@@ -80,12 +80,24 @@ export class XPathLexer {
     current: number;
     tokens: XPathToken[];
 
+    /**
+     * Check if character is a valid start of an identifier.
+     * Supports Unicode letters according to XML NCName specification.
+     */
     isAlpha(char: string): boolean {
-        return /^[a-zA-Z_]$/.test(char);
+        // Allow ASCII letters, underscore, and Unicode letters
+        // Using Unicode property escapes for broader Unicode support
+        return /^[a-zA-Z_\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]$/.test(char);
     }
 
+    /**
+     * Check if character is valid in an identifier (after the first character).
+     * Supports Unicode letters and digits according to XML NCName specification.
+     * Note: Hyphen is handled separately in parseIdentifier for reserved words.
+     */
     isAlphaNumeric(char: string): boolean {
-        return /^[a-zA-Z0-9_]$/.test(char);
+        // Allow ASCII alphanumerics, underscore, and Unicode letters/digits/combining chars
+        return /^[a-zA-Z0-9_\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0300-\u036F\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]$/.test(char);
     }
 
     isNumber(char: string): boolean {
@@ -118,33 +130,28 @@ export class XPathLexer {
     parseIdentifier(firstCharacter: string): XPathToken {
         let characters = firstCharacter;
 
-        // Parse alphanumeric characters, allowing hyphens for reserved words like "ancestor-or-self"
+        // Parse alphanumeric characters, allowing hyphens for element names
+        // XML NCName allows hyphens (but not at the start)
         while (this.current < this.expression.length) {
             const char = this.expression[this.current];
 
             if (this.isAlphaNumeric(char)) {
                 characters += this.next();
             } else if (char === "-") {
-                // Look ahead to check if this could be a hyphenated reserved word
-                const potentialWord = characters + "-";
-                let tempIndex = this.current + 1;
-                let restOfWord = "";
+                // Look ahead to check if this is a hyphenated identifier or subtraction
+                const nextChar = this.expression[this.current + 1];
 
-                while (tempIndex < this.expression.length && this.isAlphaNumeric(this.expression[tempIndex])) {
-                    restOfWord += this.expression[tempIndex];
-                    tempIndex++;
-                }
-
-                const fullWord = potentialWord + restOfWord;
-                if (RESERVED_WORDS[fullWord.toLowerCase()]) {
-                    // It's a hyphenated reserved word, consume the rest
+                // If hyphen is immediately followed by an alphanumeric character,
+                // it's likely part of the identifier (e.g., "my-element", "ancestor-or-self")
+                if (nextChar && this.isAlphaNumeric(nextChar)) {
                     this.current++; // consume the hyphen
                     characters += "-";
+                    // Continue parsing the rest of the identifier
                     while (this.current < this.expression.length && this.isAlphaNumeric(this.expression[this.current])) {
                         characters += this.next();
                     }
                 } else {
-                    // Not a reserved word, stop here (hyphen is a minus operator)
+                    // Hyphen followed by space or operator - it's subtraction
                     break;
                 }
             } else {

@@ -13,7 +13,8 @@ export type AxisType =
     | 'parent'
     | 'preceding'
     | 'preceding-sibling'
-    | 'self';
+    | 'self'
+    | 'self-and-siblings'; // Custom axis for XSLT template matching
 
 export interface NodeTest {
     type: 'name' | 'node-type' | 'wildcard' | 'processing-instruction';
@@ -38,7 +39,7 @@ export class XPathStep extends XPathExpression {
         if (!node) return [];
 
         // Get candidate nodes based on axis
-        let candidates = this.getNodesByAxis(node);
+        let candidates = this.getNodesByAxis(node, context);
 
         // Filter by node test
         candidates = candidates.filter(n => this.matchesNodeTest(n));
@@ -49,10 +50,11 @@ export class XPathStep extends XPathExpression {
         return candidates;
     }
 
-    private getNodesByAxis(node: any): any[] {
+    private getNodesByAxis(node: any, context?: any): any[] {
         switch (this.axis) {
             case 'child':
-                return Array.from(node.childNodes || []);
+                // Filter out attribute nodes (nodeType 2) from childNodes
+                return this.getChildNodes(node);
 
             case 'parent':
                 return node.parentNode ? [node.parentNode] : [];
@@ -61,7 +63,12 @@ export class XPathStep extends XPathExpression {
                 return [node];
 
             case 'attribute':
-                return node.attributes ? Array.from(node.attributes) : [];
+                // Attributes can be in a separate 'attributes' property or mixed in childNodes
+                if (node.attributes) {
+                    return Array.from(node.attributes);
+                }
+                // Fallback: filter childNodes for attribute nodes
+                return Array.from(node.childNodes || []).filter((n: any) => n.nodeType === 2);
 
             case 'descendant':
                 return this.getDescendants(node, false);
@@ -91,9 +98,28 @@ export class XPathStep extends XPathExpression {
                 // Namespace axis is rarely used and implementation-specific
                 return [];
 
+            case 'self-and-siblings':
+                // Custom axis for XSLT template matching
+                // Returns all nodes in the context's nodeList (excluding attributes)
+                if (context?.nodeList) {
+                    return context.nodeList.filter((n: any) => n.nodeType !== 2);
+                }
+                // Fallback: just return self
+                return [node];
+
             default:
                 return [];
         }
+    }
+
+    /**
+     * Get child nodes excluding attribute nodes.
+     * XNode stores attributes in childNodes, but XPath child axis doesn't include them.
+     */
+    private getChildNodes(node: any): any[] {
+        const children = Array.from(node.childNodes || []);
+        // Filter out attribute nodes (nodeType 2)
+        return children.filter((n: any) => n.nodeType !== 2);
     }
 
     private getDescendants(node: any, includeSelf: boolean): any[] {
@@ -101,7 +127,8 @@ export class XPathStep extends XPathExpression {
         if (includeSelf) result.push(node);
 
         const walk = (n: any) => {
-            for (const child of Array.from(n.childNodes || [])) {
+            // Use getChildNodes to exclude attribute nodes
+            for (const child of this.getChildNodes(n)) {
                 result.push(child);
                 walk(child);
             }

@@ -48,11 +48,9 @@ export class XPathLocationPath extends XPathExpression {
             root = root.parentNode;
         }
 
-        // If it's a document node, return the document element
-        if (root.documentElement) {
-            return root.documentElement;
-        }
-
+        // Return the document node itself (not the document element)
+        // In XPath, "/" represents the document node, and "/test" selects
+        // children of the document node named "test"
         return root;
     }
 

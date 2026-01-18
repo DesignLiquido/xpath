@@ -269,7 +269,8 @@ export class XPathParser {
         if (token.type === 'ASTERISK') return true;
 
         // Name test (identifier that's not a function call)
-        if (token.type === 'IDENTIFIER') {
+        // OPERATOR tokens (div, mod, and, or) can also be element names
+        if (token.type === 'IDENTIFIER' || token.type === 'OPERATOR') {
             const next = this.peekNext();
             // It's a step if not followed by '(' (which would make it a function call)
             return !next || next.type !== 'OPEN_PAREN';
@@ -383,9 +384,11 @@ export class XPathParser {
             // Fall through to name test if not followed by '('
         }
 
-        // Name test - can be IDENTIFIER, LOCATION (axis names), FUNCTION (function names), or NODE_TYPE
-        // All of these can be used as element names
-        if (this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') || this.check('NODE_TYPE')) {
+        // Name test - can be IDENTIFIER, LOCATION (axis names), FUNCTION (function names), NODE_TYPE,
+        // or OPERATOR (div, mod, and, or can be element names too)
+        // All of these can be used as element names in XPath
+        if (this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') ||
+            this.check('NODE_TYPE') || this.check('OPERATOR')) {
             const name = this.advance().lexeme;
 
             // Check for namespace prefix
@@ -395,7 +398,8 @@ export class XPathParser {
                     return { type: 'wildcard', name: `${name}:*` };
                 }
                 // Local name can also be any of these token types
-                if (this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') || this.check('NODE_TYPE')) {
+                if (this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') ||
+                    this.check('NODE_TYPE') || this.check('OPERATOR')) {
                     const localName = this.advance().lexeme;
                     return { type: 'name', name: `${name}:${localName}` };
                 }
