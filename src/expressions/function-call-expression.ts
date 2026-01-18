@@ -1,4 +1,5 @@
-import { XPathContext, XPathNode, XPathResult } from '../context';
+import { XPathContext, XPathResult } from '../context';
+import { XPathNode } from '../node';
 import { XPathExpression } from './expression';
 
 export class XPathFunctionCall extends XPathExpression {
