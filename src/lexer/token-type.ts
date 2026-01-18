@@ -1,5 +1,6 @@
 export type TokenType = 
     "IDENTIFIER" |
+    "NUMBER" |
     "FUNCTION" |
     "RESERVED_WORD" |
     "AT" |
@@ -9,4 +10,10 @@ export type TokenType =
     "CLOSE_SQUARE_BRACKET" |
     "OPEN_PAREN" |
     "CLOSE_PAREN" | 
+    "PLUS" |
+    "MINUS" |
+    "ASTERISK" |
+    "COMMA" |
+    "QUOTE" |
+    "EQUALS" |
     "SLASH";
