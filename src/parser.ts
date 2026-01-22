@@ -270,7 +270,8 @@ export class XPathParser {
 
         // Name test (identifier that's not a function call)
         // OPERATOR tokens (div, mod, and, or) can also be element names
-        if (token.type === 'IDENTIFIER' || token.type === 'OPERATOR') {
+        // FUNCTION tokens (id, count, etc.) can also be element/attribute names
+        if (token.type === 'IDENTIFIER' || token.type === 'OPERATOR' || token.type === 'FUNCTION') {
             const next = this.peekNext();
             // It's a step if not followed by '(' (which would make it a function call)
             return !next || next.type !== 'OPEN_PAREN';

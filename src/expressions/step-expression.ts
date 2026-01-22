@@ -41,8 +41,8 @@ export class XPathStep extends XPathExpression {
         // Get candidate nodes based on axis
         let candidates = this.getNodesByAxis(node, context);
 
-        // Filter by node test
-        candidates = candidates.filter(n => this.matchesNodeTest(n));
+        // Filter by node test (pass context for namespace resolution)
+        candidates = candidates.filter(n => this.matchesNodeTest(n, context));
 
         // Apply predicates
         candidates = this.applyPredicates(candidates, context);
@@ -223,19 +223,51 @@ export class XPathStep extends XPathExpression {
         return result;
     }
 
-    private matchesNodeTest(node: any): boolean {
+    private matchesNodeTest(node: any, context?: any): boolean {
         const nodeType = node.nodeType;
 
         switch (this.nodeTest.type) {
             case 'wildcard':
-                // * matches any element (nodeType 1) or attribute (nodeType 2)
+                // Check if it's a namespaced wildcard like "ns:*"
+                if (this.nodeTest.name && this.nodeTest.name.endsWith(':*')) {
+                    const prefix = this.nodeTest.name.slice(0, -2);
+                    const nsUri = context?.namespaces?.[prefix];
+                    if (!nsUri) return false;  // Unknown prefix - no match
+
+                    const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
+                    return (nodeType === 1 || nodeType === 2) && nodeNsUri === nsUri;
+                }
+                // Regular wildcard - matches any element (nodeType 1) or attribute (nodeType 2)
                 return nodeType === 1 || nodeType === 2;
 
             case 'name':
                 // Match element or attribute by name
                 if (nodeType !== 1 && nodeType !== 2) return false;
+
+                const testName = this.nodeTest.name!;
+                const colonIndex = testName.indexOf(':');
+
+                if (colonIndex > 0) {
+                    // Prefixed name like "xhtml:root" or "atom:title"
+                    const prefix = testName.substring(0, colonIndex);
+                    const localName = testName.substring(colonIndex + 1);
+                    const nsUri = context?.namespaces?.[prefix];
+
+                    if (!nsUri) {
+                        // Unknown prefix - no match
+                        return false;
+                    }
+
+                    // Match both local name AND namespace URI
+                    const nodeLocalName = node.localName || node.nodeName;
+                    const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
+
+                    return nodeLocalName === localName && nodeNsUri === nsUri;
+                }
+
+                // Unprefixed name - match by local name only
                 const nodeName = node.localName || node.nodeName;
-                return nodeName === this.nodeTest.name;
+                return nodeName === testName;
 
             case 'node-type':
                 switch (this.nodeTest.nodeType) {

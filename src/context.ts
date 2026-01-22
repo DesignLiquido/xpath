@@ -30,6 +30,11 @@ export type XPathVariables = Record<string, any>;
 export type XPathFunctions = Record<string, XPathFunction>;
 
 /**
+ * Type for namespace bindings (prefix -> namespace URI).
+ */
+export type XPathNamespaces = Record<string, string>;
+
+/**
  * The evaluation context for XPath expressions.
  *
  * This context is passed to all expression evaluate() methods and contains:
@@ -73,6 +78,13 @@ export interface XPathContext {
      * These extend the built-in XPath 1.0 function library.
      */
     functions?: XPathFunctions;
+
+    /**
+     * Namespace bindings for resolving prefixes in XPath expressions.
+     * Maps namespace prefixes to namespace URIs.
+     * Example: { "atom": "http://www.w3.org/2005/Atom" }
+     */
+    namespaces?: XPathNamespaces;
 }
 
 /**
