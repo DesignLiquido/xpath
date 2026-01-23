@@ -1,10 +1,12 @@
 import { XPathContext, XPathResult } from '../context';
 import { XPathNode } from '../node';
 import { XPathExpression } from './expression';
+import { JsonToXmlConverter, JsonToXmlOptions } from './json-to-xml-converter';
 
 export class XPathFunctionCall extends XPathExpression {
     name: string;
     args: XPathExpression[];
+    private jsonConverter: JsonToXmlConverter = new JsonToXmlConverter();
 
     constructor(name: string, args: XPathExpression[]) {
         super();
@@ -76,6 +78,10 @@ export class XPathFunctionCall extends XPathExpression {
                 return Math.ceil(Number(evaluatedArgs[0]));
             case 'round':
                 return Math.round(Number(evaluatedArgs[0]));
+
+            // JSON functions (XPath 3.1)
+            case 'json-to-xml':
+                return this.jsonToXml(evaluatedArgs);
 
             default:
                 // Check for custom functions in context
@@ -211,5 +217,50 @@ export class XPathFunctionCall extends XPathExpression {
             node = node.parentNode as XPathNode | undefined;
         }
         return false;
+    }
+
+    private jsonToXml(args: XPathResult[]): XPathResult {
+        // Get JSON text (first argument)
+        const jsonText = args.length > 0 ? String(args[0]) : null;
+
+        // Get options (second argument) if provided
+        let options: JsonToXmlOptions | undefined;
+        if (args.length > 1 && typeof args[1] === 'object' && args[1] !== null) {
+            options = this.mapToOptions(args[1] as Record<string, any>);
+        }
+
+        const documentNode = this.jsonConverter.convert(jsonText, options);
+        
+        // Return as node set (array) with single document node, or empty array if null
+        return documentNode ? [documentNode] : [];
+    }
+
+    private mapToOptions(optionsMap: Record<string, any>): JsonToXmlOptions {
+        const options: JsonToXmlOptions = {};
+
+        if (optionsMap['liberal'] !== undefined) {
+            options.liberal = Boolean(optionsMap['liberal']);
+        }
+
+        if (optionsMap['duplicates'] !== undefined) {
+            const dup = String(optionsMap['duplicates']).toLowerCase();
+            if (dup === 'reject' || dup === 'use-first' || dup === 'retain') {
+                options.duplicates = dup as 'reject' | 'use-first' | 'retain';
+            }
+        }
+
+        if (optionsMap['validate'] !== undefined) {
+            options.validate = Boolean(optionsMap['validate']);
+        }
+
+        if (optionsMap['escape'] !== undefined) {
+            options.escape = Boolean(optionsMap['escape']);
+        }
+
+        if (optionsMap['fallback'] !== undefined && typeof optionsMap['fallback'] === 'function') {
+            options.fallback = optionsMap['fallback'];
+        }
+
+        return options;
     }
 }

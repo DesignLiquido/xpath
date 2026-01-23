@@ -19,3 +19,6 @@ export * from './union-expression';
 
 // Function call
 export * from './function-call-expression';
+
+// JSON/XML conversion
+export * from './json-to-xml-converter';
