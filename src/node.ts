@@ -6,7 +6,7 @@ export interface XPathNode {
     nodeType: number;
     nodeName: string;
     localName?: string;
-    namespaceURI?: string | null;
+    namespaceUri?: string | null;
     textContent?: string | null;
     parentNode?: XPathNode | null;
     childNodes?: ArrayLike<XPathNode>;

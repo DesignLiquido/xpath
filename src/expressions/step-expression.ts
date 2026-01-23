@@ -248,7 +248,7 @@ export class XPathStep extends XPathExpression {
                 const colonIndex = testName.indexOf(':');
 
                 if (colonIndex > 0) {
-                    // Prefixed name like "xhtml:root" or "atom:title"
+                    // Prefixed name like "xhtml:root" or "atom:title" or "ns:attr"
                     const prefix = testName.substring(0, colonIndex);
                     const localName = testName.substring(colonIndex + 1);
                     const nsUri = context?.namespaces?.[prefix];
@@ -259,15 +259,18 @@ export class XPathStep extends XPathExpression {
                     }
 
                     // Match both local name AND namespace URI
-                    const nodeLocalName = node.localName || node.nodeName;
+                    // For attributes and elements, we compare their localName with the test's local name
+                    const nodeLocalName = node.localName || (node.nodeName && this.extractLocalName(node.nodeName));
                     const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
 
                     return nodeLocalName === localName && nodeNsUri === nsUri;
                 }
 
                 // Unprefixed name - match by local name only
-                const nodeName = node.localName || node.nodeName;
-                return nodeName === testName;
+                // For attributes without a namespace prefix, the nodeName is the full qualified name
+                // We need to check both the localName property and the actual nodeName
+                const nodeLocalName = node.localName || this.extractLocalName(node.nodeName);
+                return nodeLocalName === testName;
 
             case 'node-type':
                 switch (this.nodeTest.nodeType) {
@@ -334,5 +337,17 @@ export class XPathStep extends XPathExpression {
         if (typeof value === 'string') return value.length > 0;
         if (Array.isArray(value)) return value.length > 0;
         return !!value;
+    }
+
+    /**
+     * Extract the local name from a qualified name (e.g., "ns:name" -> "name", "name" -> "name")
+     */
+    private extractLocalName(qname: string): string {
+        if (!qname) return '';
+        const colonIndex = qname.indexOf(':');
+        if (colonIndex > 0) {
+            return qname.substring(colonIndex + 1);
+        }
+        return qname;
     }
 }

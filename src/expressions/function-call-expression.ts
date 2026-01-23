@@ -175,7 +175,7 @@ export class XPathFunctionCall extends XPathExpression {
 
     private namespaceUri(args: XPathResult[], context: XPathContext): string {
         const node = this.getNodeArg(args, context);
-        return node?.namespaceURI ?? '';
+        return node?.namespaceUri ?? '';
     }
 
     private nodeName(args: XPathResult[], context: XPathContext): string {
