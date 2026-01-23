@@ -85,6 +85,12 @@ export interface XPathContext {
      * Example: { "atom": "http://www.w3.org/2005/Atom" }
      */
     namespaces?: XPathNamespaces;
+
+    /**
+     * XSLT version ('1.0', '2.0', '3.0') for version-specific behavior.
+     * Used by functions like json-to-xml() which are only available in XSLT 3.0+
+     */
+    xsltVersion?: string;
 }
 
 /**

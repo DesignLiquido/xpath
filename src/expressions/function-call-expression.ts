@@ -81,7 +81,7 @@ export class XPathFunctionCall extends XPathExpression {
 
             // JSON functions (XPath 3.1)
             case 'json-to-xml':
-                return this.jsonToXml(evaluatedArgs);
+                return this.jsonToXml(evaluatedArgs, context);
 
             default:
                 // Check for custom functions in context
@@ -219,7 +219,15 @@ export class XPathFunctionCall extends XPathExpression {
         return false;
     }
 
-    private jsonToXml(args: XPathResult[]): XPathResult {
+    private jsonToXml(args: XPathResult[], context: XPathContext): XPathResult {
+        // Check XSLT version - json-to-xml is only supported in XSLT 3.0+
+        if (context.xsltVersion === '1.0') {
+            throw new Error('json-to-xml() is not supported in XSLT 1.0. Use version="3.0" in your stylesheet.');
+        }
+        if (context.xsltVersion === '2.0') {
+            throw new Error('json-to-xml() is not supported in XSLT 2.0. Use version="3.0" in your stylesheet.');
+        }
+
         // Get JSON text (first argument)
         const jsonText = args.length > 0 ? String(args[0]) : null;
 
