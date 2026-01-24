@@ -1,4 +1,4 @@
-import { XPathConditionalExpression, XPathExpression, XPathForExpression } from "../expressions";
+import { XPathConditionalExpression, XPathExpression, XPathForExpression, XPathQuantifiedExpression } from "../expressions";
 import { XPathBaseParserOptions } from "../xslt-extensions";
 import { XPathBaseParser } from "./base-parser";
 
@@ -11,6 +11,10 @@ export class XPath20Parser extends XPathBaseParser {
     protected parseExpr(): XPathExpression {
         if (this.checkReservedWord('for')) {
             return this.parseForExpr();
+        }
+
+        if (this.checkReservedWord('some') || this.checkReservedWord('every')) {
+            return this.parseQuantifiedExpr();
         }
 
         return super.parseExpr();
@@ -45,6 +49,20 @@ export class XPath20Parser extends XPathBaseParser {
         return new XPathConditionalExpression(testExpr, thenExpr, elseExpr);
     }
 
+    private parseQuantifiedExpr(): XPathExpression {
+        const quantifier = this.consumeReservedWordOneOf(['some', 'every'], "Expected 'some' or 'every' at start of quantified expression") as 'some' | 'every';
+
+        const bindings: { variable: string; expression: XPathExpression }[] = [];
+        do {
+            bindings.push(this.parseForBinding());
+        } while (this.match('COMMA'));
+
+        this.consumeReservedWord('satisfies', "Expected 'satisfies' after quantified expression bindings");
+        const satisfiesExpr = this.parseExpr();
+
+        return new XPathQuantifiedExpression(quantifier, bindings, satisfiesExpr);
+    }
+
     private parseForExpr(): XPathExpression {
         this.consumeReservedWord('for', "Expected 'for' at start of for expression");
 
@@ -75,6 +93,16 @@ export class XPath20Parser extends XPathBaseParser {
         if (this.checkReservedWord(word)) {
             this.advance();
             return;
+        }
+        throw new Error(`${message}. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
+    }
+
+    private consumeReservedWordOneOf(words: string[], message: string): string {
+        for (const word of words) {
+            if (this.checkReservedWord(word)) {
+                this.advance();
+                return word;
+            }
         }
         throw new Error(`${message}. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
     }

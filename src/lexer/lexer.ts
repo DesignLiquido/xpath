@@ -38,6 +38,11 @@ const RESERVED_WORDS = {
     "in": { type: "RESERVED_WORD", value: "in" },
     "return": { type: "RESERVED_WORD", value: "return" },
 
+    // Quantified expressions (XPath 2.0)
+    "some": { type: "RESERVED_WORD", value: "some" },
+    "every": { type: "RESERVED_WORD", value: "every" },
+    "satisfies": { type: "RESERVED_WORD", value: "satisfies" },
+
     // Node set functions
     "last": { type: "FUNCTION", value: "last" },
     "position": { type: "FUNCTION", value: "position" },
