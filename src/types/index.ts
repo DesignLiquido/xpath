@@ -1,11 +1,61 @@
 /**
- * XPath 2.0 Atomic Types Implementation
+ * XPath 2.0 Atomic Types & SequenceType System Implementation
  * Provides the complete set of built-in atomic types as defined in W3C XML Schema Part 2
+ * and the SequenceType system for sequence matching and cardinality checking
  */
 
 // Re-export base types and interfaces
 export { AtomicType, XS_NAMESPACE, xsType } from './base';
 export { AtomicTypeImpl } from './base';
+
+// Re-export SequenceType system
+export {
+  SequenceType,
+  OccurrenceIndicator,
+  ItemType,
+  KindTest,
+  ITEM_TYPE,
+  createEmptySequenceType,
+  createItemSequenceType,
+  createAtomicSequenceType
+} from './sequence-type';
+
+// Re-export KindTest implementations
+export {
+  NodeKindTest,
+  ElementTest,
+  AttributeTest,
+  DocumentNodeTest,
+  TextTest,
+  CommentTest,
+  ProcessingInstructionTest,
+  SchemaElementTest,
+  SchemaAttributeTest,
+  KIND_TESTS,
+  createElement,
+  createAttribute,
+  createDocumentNode,
+  createProcessingInstruction,
+  createSchemaElement,
+  createSchemaAttribute
+} from './kind-tests';
+
+// Re-export SequenceType matching functions
+export {
+  matchesSequenceType,
+  matchesItemType,
+  matches,
+  findMismatch,
+  countMatches,
+  atomicTypeSatisfies,
+  describeSequenceType,
+  isSingleItem,
+  isValidSequence,
+  toSequence,
+  itemTypesEquivalent,
+  sequenceTypesEquivalent,
+  MatchResult
+} from './sequence-type-matcher';
 
 // Re-export all type implementations
 export { AnyAtomicTypeImpl, UntypedAtomicImpl, StringTypeImpl, BooleanTypeImpl } from './simple-types';
