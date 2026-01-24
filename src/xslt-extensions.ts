@@ -99,7 +99,7 @@ export interface XSLTExtensions {
 /**
  * Parser options that include XSLT extensions support.
  */
-export interface XPathParserOptions {
+export interface XPathBaseParserOptions {
     /**
      * XPath specification version to use.
      * Default: '1.0'

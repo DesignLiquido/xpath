@@ -11,7 +11,7 @@ The XSLT function implementations will live in a separate `xslt-processor` packa
 The XPath library now supports registering XSLT extension functions via:
 
 1. **Type Definitions**: `XSLTExtensions`, `XSLTExtensionFunction`, `XSLTFunctionMetadata` interfaces
-2. **Parser Integration**: `XPathParser` accepts `options.extensions` parameter
+2. **Parser Integration**: `XPathBaseParser` accepts `options.extensions` parameter
 3. **Lexer Support**: `XPathLexer.registerFunctions()` for dynamic function registration
 4. **Context Integration**: Extension functions receive `XPathContext` as first parameter
 
@@ -19,7 +19,7 @@ The XPath library now supports registering XSLT extension functions via:
 
 ```typescript
 import { 
-  XPathParser, 
+  XPathBaseParser, 
   XPathLexer,
   XSLTExtensions, 
   XSLTFunctionMetadata,
@@ -63,7 +63,7 @@ const extensions: XSLTExtensions = {
 };
 
 // Create parser with extensions
-const parser = new XPathParser({ extensions });
+const parser = new XPathBaseParser({ extensions });
 
 // Create lexer and register extension functions
 const lexer = new XPathLexer();
@@ -269,7 +269,7 @@ export type XSLTExtensionFunction = (
   ...args: any[]
 ) => any;
 
-export interface XPathParserOptions {
+export interface XPathBaseParserOptions {
   extensions?: XSLTExtensions;
   cache?: boolean;
 }

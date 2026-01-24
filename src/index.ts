@@ -1,7 +1,7 @@
 export * from './context';
 export * from './lexer';
 export * from './node';
-export * from './parser';
+export * from './parser/base-parser';
 export * from './xslt-extensions';
 export * from './xpath-version';
 // Re-export types but exclude XPathNode (from ./node) and toSequence (from ./xpath-version)

@@ -1,10 +1,10 @@
 import { XPathLexer } from '../src/lexer';
-import { XPathParser } from '../src/parser';
+import { XPathBaseParser } from '../src/parser';
 import { XPathContext, NodeType } from '../src/context';
 
 describe('json-to-xml Function', () => {
     const lexer = new XPathLexer();
-    const parser = new XPathParser();
+    const parser = new XPathBaseParser();
 
     function parse(expression: string) {
         const tokens = lexer.scan(expression);

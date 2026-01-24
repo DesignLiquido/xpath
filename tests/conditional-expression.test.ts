@@ -6,7 +6,7 @@ import { XPathContext } from '../src/context';
 import { XPathExpression } from '../src/expressions/expression';
 import { XPathConditionalExpression } from '../src/expressions/conditional-expression';
 import { XPathLexer } from '../src/lexer';
-import { XPathParser } from '../src/parser';
+import { XPathBaseParser } from '../src/parser';
 
 class LiteralExpression extends XPathExpression {
 	constructor(private value: any) { super(); }
@@ -89,7 +89,7 @@ describe('XPath 2.0 Conditional Expression (Phase 3.1)', () => {
 
 	describe('Parser integration', () => {
 		const lexer = new XPathLexer();
-		const parser = new XPathParser({ strict: false, version: '1.0' });
+		const parser = new XPathBaseParser({ strict: false, version: '1.0' });
 
 		function parseEval(expression: string) {
 			const tokens = lexer.scan(expression);

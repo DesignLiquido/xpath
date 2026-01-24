@@ -26,10 +26,10 @@ This repository is intended to solve a particular problem in our packages, but i
 ## Quick Start
 
 ```typescript
-import { XPathParser, XPathLexer, createContext } from '@designliquido/xpath';
+import { XPathBaseParser, XPathLexer, createContext } from '@designliquido/xpath';
 
 // Create parser and lexer
-const parser = new XPathParser();
+const parser = new XPathBaseParser();
 const lexer = new XPathLexer();
 
 // Parse an XPath expression
@@ -57,18 +57,18 @@ Here's how to create a custom selector class:
 
 ```typescript
 import { XPathLexer } from './lexer';
-import { XPathParser } from './parser';
+import { XPathBaseParser } from './parser';
 import { createContext } from './context';
 import { XPathNode } from './node';
 
 export class CustomXPathSelector {
     private lexer: XPathLexer;
-    private parser: XPathParser;
+    private parser: XPathBaseParser;
     private nodeCache: WeakMap<YourNodeType, XPathNode> = new WeakMap();
 
     constructor() {
         this.lexer = new XPathLexer();
-        this.parser = new XPathParser();
+        this.parser = new XPathBaseParser();
     }
 
     public select(expression: string, contextNode: YourNodeType): YourNodeType[] {
@@ -243,7 +243,7 @@ This approach keeps the XPath library pure while enabling XSLT functionality thr
 ### Key Features
 
 1. **Type Definitions**: `XSLTExtensions`, `XSLTExtensionFunction`, `XSLTFunctionMetadata` interfaces
-2. **Parser Integration**: `XPathParser` accepts `options.extensions` parameter
+2. **Parser Integration**: `XPathBaseParser` accepts `options.extensions` parameter
 3. **Lexer Support**: `XPathLexer.registerFunctions()` for dynamic function registration
 4. **Context Integration**: Extension functions receive `XPathContext` as first parameter
 
@@ -253,7 +253,7 @@ Here's how to use XSLT extensions (typically done by the `xslt-processor` packag
 
 ```typescript
 import { 
-  XPathParser, 
+  XPathBaseParser, 
   XPathLexer,
   XSLTExtensions, 
   XSLTFunctionMetadata,
@@ -296,7 +296,7 @@ const extensions: XSLTExtensions = {
 };
 
 // Create parser with extensions
-const parser = new XPathParser({ extensions });
+const parser = new XPathBaseParser({ extensions });
 
 // Create lexer and register extension functions
 const lexer = new XPathLexer();

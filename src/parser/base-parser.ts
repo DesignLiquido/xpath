@@ -1,5 +1,5 @@
-import { XPathToken } from './lexer/token';
-import { TokenType } from './lexer/token-type';
+import { XPathToken } from '../lexer/token';
+import { TokenType } from '../lexer/token-type';
 import {
     XPathExpression,
     XPathStringLiteral,
@@ -20,8 +20,8 @@ import {
     XPathFilterExpression,
     XPathUnionExpression,
     FilteredPathExpression,
-} from './expressions';
-import { XSLTExtensions, XPathParserOptions, validateExtensions } from './xslt-extensions';
+} from '../expressions';
+import { XSLTExtensions, XPathBaseParserOptions, validateExtensions } from '../xslt-extensions';
 
 /**
  * Recursive descent parser for XPath 1.0 expressions.
@@ -43,18 +43,18 @@ import { XSLTExtensions, XPathParserOptions, validateExtensions } from './xslt-e
  *   Step           ::= AxisSpecifier NodeTest Predicate* | AbbreviatedStep
  *   Predicate      ::= '[' Expr ']'
  */
-export class XPathParser {
+export class XPathBaseParser {
     private tokens: XPathToken[] = [];
     private current: number = 0;
     private extensions?: XSLTExtensions;
-    private options: XPathParserOptions;
+    private options: XPathBaseParserOptions;
 
     /**
      * Create a new XPath parser.
      * 
      * @param options Optional parser configuration including XSLT extensions
      */
-    constructor(options?: XPathParserOptions) {
+    constructor(options?: XPathBaseParserOptions) {
         this.options = options || {};
         
         // Set default version
@@ -88,7 +88,7 @@ export class XPathParser {
     /**
      * Get the parser options.
      */
-    getOptions(): Readonly<XPathParserOptions> {
+    getOptions(): Readonly<XPathBaseParserOptions> {
         return this.options;
     }
 

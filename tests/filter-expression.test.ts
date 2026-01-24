@@ -1,11 +1,11 @@
 import { XPathLexer } from '../src/lexer';
-import { XPathParser } from '../src/parser';
+import { XPathBaseParser } from '../src/parser/base-parser';
 import { XPathContext } from '../src/context';
 import { XPathFilterExpression } from '../src/expressions';
 
 describe('Filter Expression Evaluation', () => {
     const lexer = new XPathLexer();
-    const parser = new XPathParser();
+    const parser = new XPathBaseParser();
 
     function parse(expression: string) {
         const tokens = lexer.scan(expression);
