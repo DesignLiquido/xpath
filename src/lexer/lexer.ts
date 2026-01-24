@@ -28,6 +28,11 @@ const RESERVED_WORDS = {
     "div": { type: "OPERATOR", value: "div" },
     "mod": { type: "OPERATOR", value: "mod" },
 
+    // Conditional expression keywords (XPath 2.0)
+    "if": { type: "RESERVED_WORD", value: "if" },
+    "then": { type: "RESERVED_WORD", value: "then" },
+    "else": { type: "RESERVED_WORD", value: "else" },
+
     // Node set functions
     "last": { type: "FUNCTION", value: "last" },
     "position": { type: "FUNCTION", value: "position" },

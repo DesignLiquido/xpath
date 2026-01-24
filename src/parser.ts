@@ -10,6 +10,7 @@ import {
     ArithmeticOperator,
     XPathBinaryExpression,
     XPathLogicalExpression,
+    XPathConditionalExpression,
     XPathFunctionCall,
     XPathStep,
     AxisType,
@@ -492,6 +493,11 @@ export class XPathParser {
     }
 
     private parsePrimaryExpr(): XPathExpression {
+        // XPath 2.0: Conditional expression
+        if (this.check('RESERVED_WORD') && this.peek().lexeme === 'if') {
+            return this.parseIfExpr();
+        }
+
         // Variable reference: $name
         if (this.match('DOLLAR')) {
             const name = this.consume('IDENTIFIER', 'Expected variable name after $').lexeme;
@@ -526,6 +532,29 @@ export class XPathParser {
         }
 
         throw new Error(`Unexpected token in primary expression: ${this.peek()?.lexeme ?? 'EOF'}`);
+    }
+
+    // XPath 2.0 IfExpr: if '(' Expr ')' then Expr else Expr
+    private parseIfExpr(): XPathExpression {
+        // consume 'if'
+        this.advance();
+        this.consume('OPEN_PAREN', "Expected '(' after 'if'");
+        const testExpr = this.parseExpr();
+        this.consume('CLOSE_PAREN', "Expected ')' after if test expression");
+
+        if (!(this.check('RESERVED_WORD') && this.peek().lexeme === 'then')) {
+            throw new Error("Expected 'then' in conditional expression");
+        }
+        this.advance(); // consume 'then'
+        const thenExpr = this.parseExpr();
+
+        if (!(this.check('RESERVED_WORD') && this.peek().lexeme === 'else')) {
+            throw new Error("Expected 'else' in conditional expression");
+        }
+        this.advance(); // consume 'else'
+        const elseExpr = this.parseExpr();
+
+        return new XPathConditionalExpression(testExpr, thenExpr, elseExpr);
     }
 
     private parseFunctionCall(): XPathExpression {
