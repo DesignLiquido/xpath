@@ -93,6 +93,7 @@ const XPATH20_RESERVED_WORDS: ReservedWordMap = {
     "cast": { type: "RESERVED_WORD", value: "cast" },
     "as": { type: "RESERVED_WORD", value: "as" },
     "castable": { type: "RESERVED_WORD", value: "castable" },
+    "treat": { type: "RESERVED_WORD", value: "treat" },
 };
 
 function buildReservedWords(version: XPathVersion): ReservedWordMap {

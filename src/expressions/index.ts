@@ -19,6 +19,7 @@ export * from './for-expression';
 export * from './quantified-expression';
 export * from './instance-of-expression';
 export * from './castable-expression';
+export * from './treat-expression';
 
 // Sequence expressions
 export * from './union-expression';
