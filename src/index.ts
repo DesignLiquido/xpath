@@ -4,4 +4,4 @@ export * from './node';
 export * from './parser';
 export * from './xslt-extensions';
 export * from './xpath-version';
-export * from './types/atomic-types';
+export * from './types';

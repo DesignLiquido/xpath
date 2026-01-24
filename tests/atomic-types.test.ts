@@ -9,7 +9,7 @@ import {
   castAs,
   isNumericType,
   xsType,
-} from '../src/types/atomic-types';
+} from '../src/types';
 
 describe('Atomic Types', () => {
   describe('Type Registry', () => {
@@ -296,17 +296,279 @@ describe('Atomic Types', () => {
 
   describe('Type Utilities', () => {
     it('should identify numeric types', () => {
-      expect(isNumericType('integer')).toBe(true);
-      expect(isNumericType('decimal')).toBe(true);
-      expect(isNumericType('float')).toBe(true);
-      expect(isNumericType('double')).toBe(true);
-      expect(isNumericType('string')).toBe(false);
-      expect(isNumericType('boolean')).toBe(false);
+      expect(isNumericType(getAtomicType('integer')!)).toBe(true);
+      expect(isNumericType(getAtomicType('decimal')!)).toBe(true);
+      expect(isNumericType(getAtomicType('float')!)).toBe(true);
+      expect(isNumericType(getAtomicType('double')!)).toBe(true);
+      expect(isNumericType(getAtomicType('string')!)).toBe(false);
+      expect(isNumericType(getAtomicType('boolean')!)).toBe(false);
     });
 
     it('should generate qualified type names', () => {
       expect(xsType('string')).toBe('{http://www.w3.org/2001/XMLSchema}string');
       expect(xsType('integer')).toBe('{http://www.w3.org/2001/XMLSchema}integer');
+    });
+  });
+
+  describe('xs:gYearMonth', () => {
+    it('should validate gYearMonth objects', () => {
+      const ym = { year: 2024, month: 1 };
+      expect(isInstanceOf(ym, 'gYearMonth')).toBe(true);
+    });
+
+    it('should parse gYearMonth strings', () => {
+      const ym = castAs('2024-01', 'gYearMonth');
+      expect(ym.year).toBe(2024);
+      expect(ym.month).toBe(1);
+    });
+
+    it('should parse negative years', () => {
+      const ym = castAs('-0001-12', 'gYearMonth');
+      expect(ym.year).toBe(-1);
+      expect(ym.month).toBe(12);
+    });
+
+    it('should throw error for invalid month', () => {
+      expect(() => castAs('2024-13', 'gYearMonth')).toThrow();
+      expect(() => castAs('2024-00', 'gYearMonth')).toThrow();
+    });
+
+    it('should throw error for invalid format', () => {
+      expect(() => castAs('2024', 'gYearMonth')).toThrow();
+      expect(() => castAs('2024/01', 'gYearMonth')).toThrow();
+    });
+  });
+
+  describe('xs:gYear', () => {
+    it('should parse gYear strings', () => {
+      const y = castAs('2024', 'gYear');
+      expect(y.year).toBe(2024);
+    });
+
+    it('should parse negative years', () => {
+      const y = castAs('-0001', 'gYear');
+      expect(y.year).toBe(-1);
+    });
+  });
+
+  describe('xs:gMonthDay', () => {
+    it('should parse gMonthDay strings', () => {
+      const md = castAs('--01-15', 'gMonthDay');
+      expect(md.month).toBe(1);
+      expect(md.day).toBe(15);
+    });
+
+    it('should throw error for invalid values', () => {
+      expect(() => castAs('--13-15', 'gMonthDay')).toThrow();
+      expect(() => castAs('--01-32', 'gMonthDay')).toThrow();
+    });
+  });
+
+  describe('xs:gDay', () => {
+    it('should parse gDay strings', () => {
+      const d = castAs('---15', 'gDay');
+      expect(d.day).toBe(15);
+    });
+
+    it('should throw error for invalid day', () => {
+      expect(() => castAs('---32', 'gDay')).toThrow();
+      expect(() => castAs('---00', 'gDay')).toThrow();
+    });
+  });
+
+  describe('xs:gMonth', () => {
+    it('should parse gMonth strings', () => {
+      const m = castAs('--01', 'gMonth');
+      expect(m.month).toBe(1);
+    });
+
+    it('should throw error for invalid month', () => {
+      expect(() => castAs('--13', 'gMonth')).toThrow();
+      expect(() => castAs('--00', 'gMonth')).toThrow();
+    });
+  });
+
+  describe('xs:hexBinary', () => {
+    it('should validate hex strings', () => {
+      expect(isInstanceOf('48656C6C6F', 'hexBinary')).toBe(true);
+      expect(isInstanceOf('0123456789ABCDEF', 'hexBinary')).toBe(true);
+    });
+
+    it('should validate Uint8Array', () => {
+      expect(isInstanceOf(new Uint8Array([1, 2, 3]), 'hexBinary')).toBe(true);
+    });
+
+    it('should cast hex string to uppercase', () => {
+      expect(castAs('48656c6c6f', 'hexBinary')).toBe('48656C6C6F');
+    });
+
+    it('should cast Uint8Array to hex', () => {
+      const bytes = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+      expect(castAs(bytes, 'hexBinary')).toBe('48656C6C6F');
+    });
+
+    it('should reject invalid hex strings', () => {
+      expect(() => castAs('ZZZZ', 'hexBinary')).toThrow();
+      expect(() => castAs('123', 'hexBinary')).toThrow(); // odd length
+    });
+  });
+
+  describe('xs:base64Binary', () => {
+    it('should validate base64 strings', () => {
+      expect(isInstanceOf('SGVsbG8=', 'base64Binary')).toBe(true);
+      expect(isInstanceOf('AQIDBA==', 'base64Binary')).toBe(true);
+    });
+
+    it('should cast Uint8Array to base64', () => {
+      const bytes = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+      expect(castAs(bytes, 'base64Binary')).toBe('SGVsbG8=');
+    });
+
+    it('should reject invalid base64 strings', () => {
+      expect(() => castAs('SGVsbG8', 'base64Binary')).toThrow(); // invalid length
+      expect(() => castAs('SGVs!G8=', 'base64Binary')).toThrow(); // invalid chars
+    });
+  });
+
+  describe('Integer-derived types', () => {
+    describe('xs:long', () => {
+      it('should accept values in range', () => {
+        expect(castAs(123456789, 'long')).toBe(123456789);
+        expect(castAs(-123456789, 'long')).toBe(-123456789);
+      });
+
+      it('should reject out-of-range values', () => {
+        expect(() => castAs(Number.MAX_SAFE_INTEGER + 1, 'long')).toThrow();
+      });
+    });
+
+    describe('xs:int', () => {
+      it('should accept values in range', () => {
+        expect(castAs(2147483647, 'int')).toBe(2147483647);
+        expect(castAs(-2147483648, 'int')).toBe(-2147483648);
+      });
+
+      it('should reject out-of-range values', () => {
+        expect(() => castAs(2147483648, 'int')).toThrow();
+        expect(() => castAs(-2147483649, 'int')).toThrow();
+      });
+    });
+
+    describe('xs:short', () => {
+      it('should accept values in range', () => {
+        expect(castAs(32767, 'short')).toBe(32767);
+        expect(castAs(-32768, 'short')).toBe(-32768);
+      });
+
+      it('should reject out-of-range values', () => {
+        expect(() => castAs(32768, 'short')).toThrow();
+        expect(() => castAs(-32769, 'short')).toThrow();
+      });
+    });
+
+    describe('xs:byte', () => {
+      it('should accept values in range', () => {
+        expect(castAs(127, 'byte')).toBe(127);
+        expect(castAs(-128, 'byte')).toBe(-128);
+      });
+
+      it('should reject out-of-range values', () => {
+        expect(() => castAs(128, 'byte')).toThrow();
+        expect(() => castAs(-129, 'byte')).toThrow();
+      });
+    });
+
+    describe('xs:nonPositiveInteger', () => {
+      it('should accept zero and negative values', () => {
+        expect(castAs(0, 'nonPositiveInteger')).toBe(0);
+        expect(castAs(-123, 'nonPositiveInteger')).toBe(-123);
+      });
+
+      it('should reject positive values', () => {
+        expect(() => castAs(1, 'nonPositiveInteger')).toThrow();
+      });
+    });
+
+    describe('xs:negativeInteger', () => {
+      it('should accept negative values', () => {
+        expect(castAs(-1, 'negativeInteger')).toBe(-1);
+        expect(castAs(-123, 'negativeInteger')).toBe(-123);
+      });
+
+      it('should reject zero and positive values', () => {
+        expect(() => castAs(0, 'negativeInteger')).toThrow();
+        expect(() => castAs(1, 'negativeInteger')).toThrow();
+      });
+    });
+
+    describe('xs:nonNegativeInteger', () => {
+      it('should accept zero and positive values', () => {
+        expect(castAs(0, 'nonNegativeInteger')).toBe(0);
+        expect(castAs(123, 'nonNegativeInteger')).toBe(123);
+      });
+
+      it('should reject negative values', () => {
+        expect(() => castAs(-1, 'nonNegativeInteger')).toThrow();
+      });
+    });
+
+    describe('xs:positiveInteger', () => {
+      it('should accept positive values', () => {
+        expect(castAs(1, 'positiveInteger')).toBe(1);
+        expect(castAs(123, 'positiveInteger')).toBe(123);
+      });
+
+      it('should reject zero and negative values', () => {
+        expect(() => castAs(0, 'positiveInteger')).toThrow();
+        expect(() => castAs(-1, 'positiveInteger')).toThrow();
+      });
+    });
+
+    describe('xs:unsignedLong', () => {
+      it('should accept non-negative values', () => {
+        expect(castAs(0, 'unsignedLong')).toBe(0);
+        expect(castAs(123456, 'unsignedLong')).toBe(123456);
+      });
+
+      it('should reject negative values', () => {
+        expect(() => castAs(-1, 'unsignedLong')).toThrow();
+      });
+    });
+
+    describe('xs:unsignedInt', () => {
+      it('should accept values in range', () => {
+        expect(castAs(0, 'unsignedInt')).toBe(0);
+        expect(castAs(4294967295, 'unsignedInt')).toBe(4294967295);
+      });
+
+      it('should reject out-of-range values', () => {
+        expect(() => castAs(-1, 'unsignedInt')).toThrow();
+        expect(() => castAs(4294967296, 'unsignedInt')).toThrow();
+      });
+    });
+
+    describe('xs:unsignedShort', () => {
+      it('should accept values in range', () => {
+        expect(castAs(0, 'unsignedShort')).toBe(0);
+        expect(castAs(65535, 'unsignedShort')).toBe(65535);
+      });
+
+      it('should reject out-of-range values', () => {
+        expect(() => castAs(-1, 'unsignedShort')).toThrow();
+        expect(() => castAs(65536, 'unsignedShort')).toThrow();
+      });
+    });
+
+    describe('xs:unsignedByte', () => {
+      it('should accept values in range', () => {
+        expect(castAs(0, 'unsignedByte')).toBe(0);
+        expect(castAs(255, 'unsignedByte')).toBe(255);
+      });
+
+      it('should reject out-of-range values', () => {
+        expect(() => castAs(-1, 'unsignedByte')).toThrow();
+        expect(() => castAs(256, 'unsignedByte')).toThrow();
+      });
     });
   });
 
@@ -319,6 +581,10 @@ describe('Atomic Types', () => {
       const untypedType = getAtomicType('untypedAtomic')!;
       expect(untypedType.baseType).toBeDefined();
       expect(untypedType.baseType!.name).toBe('anyAtomicType');
+      
+      const intType = getAtomicType('int')!;
+      expect(intType.baseType).toBeDefined();
+      expect(intType.baseType!.name).toBe('long');
     });
 
     it('should have correct primitive types', () => {
@@ -329,6 +595,10 @@ describe('Atomic Types', () => {
       const dateType = getAtomicType('date')!;
       expect(dateType.primitive).toBeDefined();
       expect(dateType.primitive!.name).toBe('dateTime');
+      
+      const byteType = getAtomicType('byte')!;
+      expect(byteType.primitive).toBeDefined();
+      expect(byteType.primitive!.name).toBe('decimal');
     });
   });
 });
