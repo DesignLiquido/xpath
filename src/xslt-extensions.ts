@@ -6,6 +6,7 @@
  */
 
 import { XPathContext } from './context';
+import { XPathStaticContext } from './static-context';
 import { XPathNode } from './node';
 
 /**
@@ -133,6 +134,12 @@ export interface XPathBaseParserOptions {
      * Default: false (raises XPST0010 when used).
      */
     enableNamespaceAxis?: boolean;
+
+    /**
+     * Static context configuration (in-scope types, functions, collations, variables).
+     * Defaults to an empty static context with XPath-defined namespaces.
+     */
+    staticContext?: XPathStaticContext;
 }
 
 /**

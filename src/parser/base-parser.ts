@@ -21,6 +21,7 @@ import {
     FilteredPathExpression,
     EmptySequenceExpression,
 } from '../expressions';
+import { createStaticContext, XPathStaticContext } from '../static-context';
 import { XSLTExtensions, XPathBaseParserOptions, validateExtensions } from '../xslt-extensions';
 import { XPathVersion } from '../xpath-version';
 
@@ -49,6 +50,7 @@ export abstract class XPathBaseParser {
     protected current: number = 0;
     protected extensions?: XSLTExtensions;
     protected options: XPathBaseParserOptions;
+    protected staticContext: XPathStaticContext;
     private namespaceAxisWarningEmitted = false;
 
     /**
@@ -63,7 +65,10 @@ export abstract class XPathBaseParser {
             cache: options?.cache,
             extensions: options?.extensions,
             enableNamespaceAxis: options?.enableNamespaceAxis ?? false,
+            staticContext: options?.staticContext ?? createStaticContext(),
         };
+
+        this.staticContext = this.options.staticContext!;
 
         if (this.options.extensions) {
             const errors = validateExtensions(this.options.extensions);
