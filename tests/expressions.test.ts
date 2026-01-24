@@ -11,7 +11,8 @@ import {
     XPathFunctionCall,
     XPathLocationPath,
 } from '../src/expressions';
-import { XPathContext } from '../src/context';
+import { XPathContext, NodeType } from '../src/context';
+import { XPathNode } from '../src/node';
 
 describe('Expression Evaluation', () => {
     const lexer = new XPathLexer();
@@ -301,6 +302,187 @@ describe('Expression Evaluation', () => {
         it('should evaluate concat with numbers', () => {
             const result = evaluate("concat('a', 1, 'b', 2)");
             expect(result).toBe('a1b2');
+        });
+
+        it('should evaluate concat with XPath expressions as arguments', () => {
+            // Create a simple DOM structure with proper parent-child relationships
+            const first: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'first',
+                localName: 'first',
+                textContent: 'Hello',
+                childNodes: [],
+                parentNode: undefined as any // will be set below
+            };
+
+            const second: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'second',
+                localName: 'second',
+                textContent: 'World',
+                childNodes: [],
+                parentNode: undefined as any // will be set below
+            };
+
+            const root: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'root',
+                localName: 'root',
+                childNodes: [first, second],
+                parentNode: null
+            };
+
+            // Set parent references
+            first.parentNode = root;
+            second.parentNode = root;
+
+            const result = evaluate("concat(first, ' ', second)", { node: root });
+            expect(result).toBe('Hello World');
+        });
+
+        it('should evaluate concat with element node-sets', () => {
+            // Create a simple DOM structure with multiple elements
+            const item1: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'item',
+                localName: 'item',
+                textContent: 'First',
+                childNodes: [],
+                parentNode: undefined as any
+            };
+
+            const item2: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'item',
+                localName: 'item',
+                textContent: 'Second',
+                childNodes: [],
+                parentNode: undefined as any
+            };
+
+            const root: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'root',
+                localName: 'root',
+                childNodes: [item1, item2],
+                parentNode: null
+            };
+
+            item1.parentNode = root;
+            item2.parentNode = root;
+
+            // When concat receives a node-set, it should use the string-value of the first node
+            const result = evaluate("concat(item, '!')", { node: root });
+            expect(result).toBe('First!');
+        });
+
+        it('should evaluate concat with attribute nodes', () => {
+            // Create element with attributes
+            const element: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'person',
+                localName: 'person',
+                attributes: [
+                    {
+                        nodeType: NodeType.ATTRIBUTE_NODE,
+                        nodeName: 'firstName',
+                        localName: 'firstName',
+                        textContent: 'John',
+                        childNodes: []
+                    } as XPathNode,
+                    {
+                        nodeType: NodeType.ATTRIBUTE_NODE,
+                        nodeName: 'lastName',
+                        localName: 'lastName',
+                        textContent: 'Doe',
+                        childNodes: []
+                    } as XPathNode
+                ]
+            };
+
+            const result = evaluate("concat(@firstName, ' ', @lastName)", { node: element });
+            expect(result).toBe('John Doe');
+        });
+
+        it('should evaluate concat with mixed argument types', () => {
+            const name: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'name',
+                localName: 'name',
+                textContent: 'Alice',
+                childNodes: [],
+                parentNode: undefined as any
+            };
+
+            const age: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'age',
+                localName: 'age',
+                textContent: '30',
+                childNodes: [],
+                parentNode: undefined as any
+            };
+
+            const root: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'root',
+                localName: 'root',
+                childNodes: [name, age],
+                parentNode: null
+            };
+
+            name.parentNode = root;
+            age.parentNode = root;
+
+            // Mix of literals and XPath expressions
+            const result = evaluate("concat('Name: ', name, ', Age: ', age)", { node: root });
+            expect(result).toBe('Name: Alice, Age: 30');
+        });
+
+        it('should evaluate concat with empty node-set', () => {
+            const root: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'root',
+                localName: 'root',
+                childNodes: []
+            };
+
+            // Non-existent path returns empty node-set, which should convert to empty string
+            const result = evaluate("concat('Start', missing, 'End')", { node: root });
+            expect(result).toBe('StartEnd');
+        });
+
+        it('should evaluate concat with nested elements', () => {
+            const child: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'child',
+                localName: 'child',
+                textContent: 'NestedValue',
+                childNodes: [],
+                parentNode: undefined as any
+            };
+
+            const parent: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'parent',
+                localName: 'parent',
+                childNodes: [child],
+                parentNode: undefined as any
+            };
+
+            const root: XPathNode = {
+                nodeType: NodeType.ELEMENT_NODE,
+                nodeName: 'root',
+                localName: 'root',
+                childNodes: [parent],
+                parentNode: null
+            };
+
+            child.parentNode = parent;
+            parent.parentNode = root;
+
+            const result = evaluate("concat('Prefix-', parent/child, '-Suffix')", { node: root });
+            expect(result).toBe('Prefix-NestedValue-Suffix');
         });
 
         it('should evaluate starts-with true', () => {

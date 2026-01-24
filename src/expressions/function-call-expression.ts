@@ -37,7 +37,7 @@ export class XPathFunctionCall extends XPathExpression {
             case 'string':
                 return this.stringValue(evaluatedArgs, context);
             case 'concat':
-                return evaluatedArgs.map(String).join('');
+                return evaluatedArgs.map(arg => this.convertToString(arg)).join('');
             case 'starts-with':
                 return String(evaluatedArgs[0]).startsWith(String(evaluatedArgs[1]));
             case 'contains':
@@ -115,6 +115,28 @@ export class XPathFunctionCall extends XPathExpression {
         if (Array.isArray(value) && value.length > 0) {
             return value[0]?.textContent ?? String(value[0]);
         }
+        return String(value);
+    }
+
+    /**
+     * Converts an XPath result to a string according to XPath 1.0 specification.
+     * - Node-set: Returns the string-value of the first node in document order
+     * - Number: Converts to string representation
+     * - Boolean: Converts to 'true' or 'false'
+     * - String: Returns as-is
+     */
+    private convertToString(value: XPathResult): string {
+        // If it's a node-set (array), get the string-value of the first node
+        if (Array.isArray(value)) {
+            if (value.length === 0) {
+                return '';
+            }
+            const firstNode = value[0];
+            // Return the text content of the first node
+            return firstNode?.textContent ?? String(firstNode);
+        }
+        
+        // For primitive values, use JavaScript's String conversion
         return String(value);
     }
 
