@@ -62,17 +62,6 @@ const RESERVED_WORDS = {
     "floor": { type: "FUNCTION", value: "floor" },
     "ceiling": { type: "FUNCTION", value: "ceiling" },
     "round": { type: "FUNCTION", value: "round" },
-
-    // XSLT-specific functions (commonly used)
-    "document": { type: "FUNCTION", value: "document" },
-    "key": { type: "FUNCTION", value: "key" },
-    "format-number": { type: "FUNCTION", value: "format-number" },
-    "current": { type: "FUNCTION", value: "current" },
-    "unparsed-entity-uri": { type: "FUNCTION", value: "unparsed-entity-uri" },
-    "generate-id": { type: "FUNCTION", value: "generate-id" },
-    "system-property": { type: "FUNCTION", value: "system-property" },
-    "element-available": { type: "FUNCTION", value: "element-available" },
-    "function-available": { type: "FUNCTION", value: "function-available" },
 };
 
 export class XPathLexer {
