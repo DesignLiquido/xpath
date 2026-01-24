@@ -127,6 +127,12 @@ export interface XPathBaseParserOptions {
      * Default: true
      */
     strict?: boolean;
+
+    /**
+     * Enable support for the deprecated namespace axis (namespace::).
+     * Default: false (raises XPST0010 when used).
+     */
+    enableNamespaceAxis?: boolean;
 }
 
 /**

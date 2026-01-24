@@ -49,6 +49,7 @@ export abstract class XPathBaseParser {
     protected current: number = 0;
     protected extensions?: XSLTExtensions;
     protected options: XPathBaseParserOptions;
+    private namespaceAxisWarningEmitted = false;
 
     /**
      * Create a new XPath parser.
@@ -61,6 +62,7 @@ export abstract class XPathBaseParser {
             version: options?.version,
             cache: options?.cache,
             extensions: options?.extensions,
+            enableNamespaceAxis: options?.enableNamespaceAxis ?? false,
         };
 
         if (this.options.extensions) {
@@ -421,6 +423,13 @@ export abstract class XPathBaseParser {
             // Otherwise, it's an element name that happens to match an axis name
         }
 
+        if (axis === 'namespace') {
+            if (!this.options.enableNamespaceAxis) {
+                throw new Error('XPST0010: namespace axis is not supported. Enable enableNamespaceAxis to allow it (deprecated).');
+            }
+            this.warnNamespaceAxis();
+        }
+
         // Parse node test
         const nodeTest = this.parseNodeTest();
 
@@ -648,6 +657,13 @@ export abstract class XPathBaseParser {
         }
 
         return false;
+    }
+
+    private warnNamespaceAxis(): void {
+        if (this.namespaceAxisWarningEmitted) return;
+        this.namespaceAxisWarningEmitted = true;
+        // eslint-disable-next-line no-console
+        console.warn('The namespace axis (namespace::) is deprecated and disabled by default. Set enableNamespaceAxis to use it.');
     }
 
     private isFunctionNameToken(type: TokenType | undefined): boolean {

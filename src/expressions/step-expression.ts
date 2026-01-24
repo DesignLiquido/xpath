@@ -99,8 +99,7 @@ export class XPathStep extends XPathExpression {
                 return this.getPreceding(node);
 
             case 'namespace':
-                // Namespace axis is rarely used and implementation-specific
-                return [];
+                return this.getNamespaceNodes(node);
 
             case 'self-and-siblings':
                 // Custom axis for XSLT template matching
@@ -227,6 +226,58 @@ export class XPathStep extends XPathExpression {
         return result;
     }
 
+    private getNamespaceNodes(node: any): any[] {
+        if (!node || node.nodeType !== 1) return [];
+
+        const namespaces: Record<string, string> = {};
+
+        let current: any = node;
+        while (current) {
+            type AttrLike = {
+                nodeName?: string;
+                localName?: string;
+                nodeValue?: string | null;
+                textContent?: string | null;
+            };
+
+            const attrs = Array.from(current.attributes || []) as AttrLike[];
+            for (const attr of attrs) {
+                const name = attr.nodeName || attr.localName || '';
+                const value = attr.nodeValue ?? attr.textContent ?? '';
+
+                if (name === 'xmlns') {
+                    if (!("" in namespaces)) {
+                        namespaces[''] = value;
+                    }
+                } else if (name.startsWith('xmlns:')) {
+                    const prefix = name.substring('xmlns:'.length);
+                    if (!(prefix in namespaces)) {
+                        namespaces[prefix] = value;
+                    }
+                }
+            }
+
+            current = current.parentNode;
+        }
+
+        if (!('xml' in namespaces)) {
+            namespaces['xml'] = 'http://www.w3.org/XML/1998/namespace';
+        }
+
+        return Object.entries(namespaces).map(([prefix, uri]) => ({
+            nodeType: 13,
+            nodeName: prefix,
+            localName: prefix,
+            prefix,
+            namespaceURI: uri,
+            namespaceUri: uri,
+            nodeValue: uri,
+            textContent: uri,
+            parentNode: node,
+            ownerDocument: node.ownerDocument,
+        }));
+    }
+
     private matchesNodeTest(node: any, context?: any, test: NodeTest = this.nodeTest): boolean {
         const nodeType = node.nodeType;
 
@@ -267,13 +318,13 @@ export class XPathStep extends XPathExpression {
                     if (!nsUri) return false;  // Unknown prefix - no match
 
                     const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
-                    return (nodeType === 1 || nodeType === 2) && nodeNsUri === nsUri;
+                    return (nodeType === 1 || nodeType === 2 || nodeType === 13) && nodeNsUri === nsUri;
                 }
-                // Regular wildcard - matches any element (nodeType 1) or attribute (nodeType 2)
-                return nodeType === 1 || nodeType === 2;
+                // Regular wildcard - matches any element (nodeType 1), attribute (nodeType 2), or namespace node (nodeType 13)
+                return nodeType === 1 || nodeType === 2 || nodeType === 13;
 
             case 'name':
-                return matchesQName(test.name!, [1, 2]);
+                return matchesQName(test.name!, [1, 2, 13]);
 
             case 'element':
                 if (nodeType !== 1) return false;

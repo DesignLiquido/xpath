@@ -12,6 +12,7 @@ export const NodeType = {
     COMMENT_NODE: 8,
     DOCUMENT_NODE: 9,
     DOCUMENT_FRAGMENT_NODE: 11,
+    NAMESPACE_NODE: 13,
 } as const;
 
 /**
