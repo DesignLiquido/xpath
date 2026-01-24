@@ -24,6 +24,12 @@ import {
 import { createStaticContext, XPathStaticContext } from '../static-context';
 import { XSLTExtensions, XPathBaseParserOptions, validateExtensions } from '../xslt-extensions';
 import { XPathVersion } from '../xpath-version';
+import {
+    grammarViolation,
+    unsupportedAxis,
+    unresolvedNameReference,
+    functionSignatureMismatch,
+} from '../errors';
 
 /**
  * Recursive descent parser shared by XPath 1.0+ implementations.
@@ -106,13 +112,13 @@ export abstract class XPathBaseParser {
         this.current = 0;
 
         if (tokens.length === 0) {
-            throw new Error('Empty expression');
+            throw grammarViolation('Empty expression');
         }
 
         const expr = this.parseExpr();
 
         if (!this.isAtEnd()) {
-            throw new Error(`Unexpected token: ${this.peek().lexeme}`);
+            throw grammarViolation(`Unexpected token: ${this.peek().lexeme}`);
         }
 
         return expr;
@@ -163,7 +169,7 @@ export abstract class XPathBaseParser {
 
     protected consume(type: TokenType, message: string): XPathToken {
         if (this.check(type)) return this.advance();
-        throw new Error(`${message}. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
+        throw grammarViolation(`${message}. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 
     // ==================== Expression Parsing ====================
@@ -430,7 +436,7 @@ export abstract class XPathBaseParser {
 
         if (axis === 'namespace') {
             if (!this.options.enableNamespaceAxis) {
-                throw new Error('XPST0010: namespace axis is not supported. Enable enableNamespaceAxis to allow it (deprecated).');
+                throw unsupportedAxis('namespace');
             }
             this.warnNamespaceAxis();
         }
@@ -527,7 +533,7 @@ export abstract class XPathBaseParser {
             return { type: 'name', name };
         }
 
-        throw new Error(`Expected node test, got: ${this.peek()?.lexeme ?? 'EOF'}`);
+        throw grammarViolation(`Expected node test, got: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 
     protected parsePredicates(): XPathExpression[] {
@@ -598,7 +604,7 @@ export abstract class XPathBaseParser {
             return this.parseFunctionCall();
         }
 
-        throw new Error(`Unexpected token in primary expression: ${this.peek()?.lexeme ?? 'EOF'}`);
+        throw grammarViolation(`Unexpected token in primary expression: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 
     protected parseFunctionCall(): XPathExpression {
@@ -607,7 +613,7 @@ export abstract class XPathBaseParser {
         if (this.match('COLON')) {
             const local = this.advance();
             if (!this.isNcNameToken(local.type)) {
-                throw new Error('Expected local name after function prefix');
+                throw grammarViolation('Expected local name after namespace prefix');
             }
             name = `${name}:${local.lexeme}`;
         }

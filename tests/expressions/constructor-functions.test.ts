@@ -19,17 +19,17 @@ describe('XPath 2.0 Constructor Functions (Phase 4.5)', () => {
 
     it('throws on invalid value for constructor', () => {
         const expr = new XPathFunctionCall('xs:int', [new LiteralExpression('abc')]);
-        expect(() => expr.evaluate(ctx)).toThrow('Constructor');
+        expect(() => expr.evaluate(ctx)).toThrow('FORG0001');
     });
 
     it('throws on empty sequence input', () => {
         const expr = new XPathFunctionCall('xs:int', [new LiteralExpression([])]);
-        expect(() => expr.evaluate(ctx)).toThrow('empty sequence');
+        expect(() => expr.evaluate(ctx)).toThrow('XPTY0004');
     });
 
     it('throws on multiple items', () => {
         const expr = new XPathFunctionCall('xs:int', [new LiteralExpression([1, 2])]);
-        expect(() => expr.evaluate(ctx)).toThrow('single item');
+        expect(() => expr.evaluate(ctx)).toThrow('XPTY0004');
     });
 
     it('parses constructor function via parser', () => {

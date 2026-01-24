@@ -3,6 +3,12 @@ import { XPathNode } from '../node';
 import { XPathExpression } from './expression';
 import { JsonToXmlConverter, JsonToXmlOptions } from './json-to-xml-converter';
 import { AtomicType, castAs, getAtomicType } from '../types';
+import {
+    functionSignatureMismatch,
+    unresolvedNameReference,
+    typeMismatch,
+    invalidCastArgument,
+} from '../errors';
 
 export class XPathFunctionCall extends XPathExpression {
     name: string;
@@ -22,22 +28,22 @@ export class XPathFunctionCall extends XPathExpression {
         const constructorType = this.getConstructorType();
         if (constructorType) {
             if (evaluatedArgs.length !== 1) {
-                throw new Error(`Constructor function ${this.name} expects exactly one argument`);
+                throw functionSignatureMismatch(this.name, '1', evaluatedArgs.length);
             }
 
             const raw = evaluatedArgs[0];
             if (Array.isArray(raw)) {
                 if (raw.length === 0) {
-                    throw new Error(`Constructor function ${this.name} does not allow empty sequence`);
+                    throw typeMismatch('single item', 'empty sequence', `constructor function ${this.name}`);
                 }
                 if (raw.length !== 1) {
-                    throw new Error(`Constructor function ${this.name} requires a single item`);
+                    throw typeMismatch('single item', `sequence of ${raw.length} items`, `constructor function ${this.name}`);
                 }
                 return this.castConstructorValue(constructorType, raw[0]);
             }
 
             if (raw === undefined || raw === null) {
-                throw new Error(`Constructor function ${this.name} does not allow empty sequence`);
+                throw typeMismatch('single item', 'empty sequence', `constructor function ${this.name}`);
             }
 
             return this.castConstructorValue(constructorType, raw);
@@ -116,7 +122,7 @@ export class XPathFunctionCall extends XPathExpression {
                     // This allows XSLT functions to access context.node, context.variables, etc.
                     return context.functions[this.name](context, ...evaluatedArgs);
                 }
-                throw new Error(`Unknown function: ${this.name}`);
+                throw unresolvedNameReference(this.name, 'function');
         }
     }
 
@@ -138,8 +144,7 @@ export class XPathFunctionCall extends XPathExpression {
         try {
             return constructorType.cast(value);
         } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            throw new Error(`Constructor function ${this.name} failed: ${message}`);
+            throw invalidCastArgument(value, this.name);
         }
     }
 

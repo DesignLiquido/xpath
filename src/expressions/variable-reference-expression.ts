@@ -1,5 +1,6 @@
 import { XPathContext, XPathResult } from '../context';
 import { XPathExpression } from './expression';
+import { unresolvedNameReference } from '../errors';
 
 export class XPathVariableReference extends XPathExpression {
     name: string;
@@ -11,11 +12,11 @@ export class XPathVariableReference extends XPathExpression {
 
     evaluate(context: XPathContext): XPathResult {
         if (!context.variables) {
-            throw new Error(`Variable $${this.name} is not defined`);
+            throw unresolvedNameReference(`$${this.name}`, 'variable');
         }
 
         if (!(this.name in context.variables)) {
-            throw new Error(`Variable $${this.name} is not defined`);
+            throw unresolvedNameReference(`$${this.name}`, 'variable');
         }
 
         return context.variables[this.name];

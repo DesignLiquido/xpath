@@ -728,7 +728,7 @@ describe('Expression Evaluation', () => {
         });
 
         it('should throw for unknown function', () => {
-            expect(() => evaluate('unknownFunc()')).toThrow('Unknown function: unknownFunc');
+            expect(() => evaluate('unknownFunc()')).toThrow('XPST0008');
         });
     });
 
@@ -746,7 +746,7 @@ describe('Expression Evaluation', () => {
         });
 
         it('should evaluate undefined variable', () => {
-            expect(() => evaluate('$undefinedVar')).toThrow('Variable $undefinedVar is not defined');
+            expect(() => evaluate('$undefinedVar')).toThrow('XPST0008');
         });
     });
 
