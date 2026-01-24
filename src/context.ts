@@ -141,6 +141,7 @@ export type XPathResult =
     | boolean          // Boolean
     | any[]            // Sequence (XPath 2.0+)
     | Map<any, any>    // Map (XPath 3.0+)
+    | null             // Empty sequence (XPath 2.0+)
     // eslint-disable-next-line @typescript-eslint/ban-types
     | Function;        // Function item (XPath 3.0+)
 
