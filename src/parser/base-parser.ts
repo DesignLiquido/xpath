@@ -301,10 +301,29 @@ export abstract class XPathBaseParser {
     protected isStepStart(): boolean {
         if (this.isAtEnd()) return false;
 
+        const token = this.peek();
+        const next = this.peekNext();
+
+        // Treat extended node test function-like syntax (element(), attribute(), etc.) as steps
+        const nodeTestNames = [
+            'element',
+            'attribute',
+            'schema-element',
+            'schema-attribute',
+            'document-node',
+            'node',
+            'text',
+            'comment',
+            'processing-instruction',
+        ];
+        if ((token.type === 'IDENTIFIER' || token.type === 'NODE_TYPE') && next?.type === 'OPEN_PAREN') {
+            if (nodeTestNames.includes(token.lexeme.toLowerCase())) {
+                return true;
+            }
+        }
+
         // Don't treat QName function calls as location steps
         if (this.isFunctionCallStart()) return false;
-
-        const token = this.peek();
 
         // Abbreviated steps
         if (token.type === 'DOT' || token.type === 'DOT_DOT') return true;
@@ -417,23 +436,54 @@ export abstract class XPathBaseParser {
             return { type: 'wildcard' };
         }
 
-        // Node type test: node(), text(), comment(), processing-instruction()
-        // Only if followed by '(' - otherwise it's a name test
-        if (this.check('NODE_TYPE')) {
+        // Check for element/attribute/document-node/schema-element/schema-attribute/processing-instruction followed by '('
+        if (this.check('NODE_TYPE') || this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') || this.check('OPERATOR')) {
             const next = this.peekNext();
             if (next && next.type === 'OPEN_PAREN') {
-                const nodeType = this.advance().lexeme as 'node' | 'text' | 'comment' | 'processing-instruction';
+                const testName = this.advance().lexeme.toLowerCase();
                 this.advance(); // consume '('
 
-                // processing-instruction can have an optional literal argument
-                if (nodeType === 'processing-instruction' && this.check('STRING')) {
-                    const name = this.advance().lexeme;
-                    this.consume('CLOSE_PAREN', "Expected ')' after processing-instruction name");
-                    return { type: 'processing-instruction', name };
+                // Handle element() and element(name) and element(name, type) and element(*, type)
+                if (testName === 'element') {
+                    return this.parseElementTest();
                 }
 
-                this.consume('CLOSE_PAREN', "Expected ')' after node type");
-                return { type: 'node-type', nodeType };
+                // Handle attribute() and attribute(name) and attribute(name, type) and attribute(*, type)
+                if (testName === 'attribute') {
+                    return this.parseAttributeTest();
+                }
+
+                // Handle document-node() and document-node(element(...))
+                if (testName === 'document-node') {
+                    return this.parseDocumentNodeTest();
+                }
+
+                // Handle schema-element(name)
+                if (testName === 'schema-element') {
+                    const name = this.parseNameOrWildcard();
+                    this.consume('CLOSE_PAREN', "Expected ')' after schema-element name");
+                    return { type: 'schema-element', name };
+                }
+
+                // Handle schema-attribute(name)
+                if (testName === 'schema-attribute') {
+                    const name = this.parseNameOrWildcard();
+                    this.consume('CLOSE_PAREN', "Expected ')' after schema-attribute name");
+                    return { type: 'schema-attribute', name };
+                }
+
+                // Handle node(), text(), comment(), processing-instruction()
+                if (testName === 'node' || testName === 'text' || testName === 'comment' || testName === 'processing-instruction') {
+                    // processing-instruction can have an optional literal argument
+                    if (testName === 'processing-instruction' && this.check('STRING')) {
+                        const target = this.advance().lexeme;
+                        this.consume('CLOSE_PAREN', "Expected ')' after processing-instruction target");
+                        return { type: 'processing-instruction', target };
+                    }
+
+                    this.consume('CLOSE_PAREN', "Expected ')' after node type");
+                    return { type: 'node-type', nodeType: testName as 'node' | 'text' | 'comment' | 'processing-instruction' };
+                }
             }
             // Fall through to name test if not followed by '('
         }
@@ -569,8 +619,22 @@ export abstract class XPathBaseParser {
         const first = this.peek();
         const second = this.peekNext();
 
+        const nodeTestNames = [
+            'element',
+            'attribute',
+            'schema-element',
+            'schema-attribute',
+            'document-node',
+            'node',
+            'text',
+            'comment',
+            'processing-instruction',
+        ];
+        const isNodeTestName = nodeTestNames.includes(first.lexeme?.toLowerCase?.() ?? '');
+
         // Simple function name followed by '(' (exclude node-type tests)
         if (this.isFunctionNameToken(first.type) && second?.type === 'OPEN_PAREN') {
+            if (isNodeTestName) return false;
             return true;
         }
 
@@ -594,5 +658,87 @@ export abstract class XPathBaseParser {
     private isNcNameToken(type: TokenType | undefined): boolean {
         // Allow any token kinds that can represent NCName parts (prefix/local), including node-type tokens for QNames
         return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'OPERATOR' || type === 'LOCATION' || type === 'NODE_TYPE';
+    }
+
+    private parseNameOrWildcard(): string {
+        let name = '';
+        if (this.match('ASTERISK')) {
+            return '*';
+        }
+        if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION') || this.check('OPERATOR')) {
+            name = this.advance().lexeme;
+            if (this.match('COLON')) {
+                if (this.match('ASTERISK')) {
+                    return `${name}:*`;
+                }
+                if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION') || this.check('OPERATOR')) {
+                    name += ':' + this.advance().lexeme;
+                }
+            }
+        }
+        return name;
+    }
+
+    private parseElementTest(): NodeTest {
+        if (this.check('CLOSE_PAREN')) {
+            this.advance();
+            return { type: 'element' };
+        }
+
+        const name = this.parseNameOrWildcard();
+        let elementType: string | undefined;
+
+        if (this.match('COMMA')) {
+            if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION')) {
+                elementType = this.parseNameOrWildcard();
+            }
+        }
+
+        this.consume('CLOSE_PAREN', "Expected ')' after element test");
+        return {
+            type: 'element',
+            name: name === '*' ? undefined : name,
+            elementType,
+            isWildcardName: name === '*'
+        };
+    }
+
+    private parseAttributeTest(): NodeTest {
+        if (this.check('CLOSE_PAREN')) {
+            this.advance();
+            return { type: 'attribute' };
+        }
+
+        const name = this.parseNameOrWildcard();
+        let elementType: string | undefined;
+
+        if (this.match('COMMA')) {
+            if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION')) {
+                elementType = this.parseNameOrWildcard();
+            }
+        }
+
+        this.consume('CLOSE_PAREN', "Expected ')' after attribute test");
+        return {
+            type: 'attribute',
+            name: name === '*' ? undefined : name,
+            elementType,
+            isWildcardName: name === '*'
+        };
+    }
+
+    private parseDocumentNodeTest(): NodeTest {
+        if (this.check('CLOSE_PAREN')) {
+            this.advance();
+            return { type: 'document-node' };
+        }
+
+        // document-node(element(...)) or document-node(schema-element(...))
+        const elementTest = this.parseNodeTest();
+        this.consume('CLOSE_PAREN', "Expected ')' after document-node test");
+        return {
+            type: 'document-node',
+            elementTest
+        };
     }
 }

@@ -17,9 +17,13 @@ export type AxisType =
     | 'self-and-siblings'; // Custom axis for XSLT template matching
 
 export interface NodeTest {
-    type: 'name' | 'node-type' | 'wildcard' | 'processing-instruction';
+    type: 'name' | 'node-type' | 'wildcard' | 'processing-instruction' | 'element' | 'attribute' | 'schema-element' | 'schema-attribute' | 'document-node';
     name?: string;
     nodeType?: 'node' | 'text' | 'comment' | 'processing-instruction';
+    elementType?: string;  // Type constraint for element/attribute tests
+    isWildcardName?: boolean;  // Indicates wildcard in element(*, type) or attribute(*, type)
+    target?: string;  // For processing-instruction(target)
+    elementTest?: NodeTest;  // For document-node(element(...))
 }
 
 export class XPathStep extends XPathExpression {
@@ -223,14 +227,42 @@ export class XPathStep extends XPathExpression {
         return result;
     }
 
-    private matchesNodeTest(node: any, context?: any): boolean {
+    private matchesNodeTest(node: any, context?: any, test: NodeTest = this.nodeTest): boolean {
         const nodeType = node.nodeType;
 
-        switch (this.nodeTest.type) {
+        const matchesQName = (testName: string, allowedNodeTypes: number[]): boolean => {
+            if (!allowedNodeTypes.includes(nodeType)) return false;
+
+            // Namespace wildcard (prefix:*)
+            if (testName.endsWith(':*')) {
+                const prefix = testName.slice(0, -2);
+                const nsUri = context?.namespaces?.[prefix];
+                if (!nsUri) return false;
+                const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
+                return nodeNsUri === nsUri;
+            }
+
+            const colonIndex = testName.indexOf(':');
+            if (colonIndex > 0) {
+                const prefix = testName.substring(0, colonIndex);
+                const localName = testName.substring(colonIndex + 1);
+                const nsUri = context?.namespaces?.[prefix];
+                if (!nsUri) return false;
+
+                const nodeLocalName = node.localName || (node.nodeName && this.extractLocalName(node.nodeName));
+                const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
+                return nodeLocalName === localName && nodeNsUri === nsUri;
+            }
+
+            const nodeLocalName = node.localName || this.extractLocalName(node.nodeName);
+            return nodeLocalName === testName;
+        };
+
+        switch (test.type) {
             case 'wildcard':
                 // Check if it's a namespaced wildcard like "ns:*"
-                if (this.nodeTest.name && this.nodeTest.name.endsWith(':*')) {
-                    const prefix = this.nodeTest.name.slice(0, -2);
+                if (test.name && test.name.endsWith(':*')) {
+                    const prefix = test.name.slice(0, -2);
                     const nsUri = context?.namespaces?.[prefix];
                     if (!nsUri) return false;  // Unknown prefix - no match
 
@@ -241,39 +273,35 @@ export class XPathStep extends XPathExpression {
                 return nodeType === 1 || nodeType === 2;
 
             case 'name':
-                // Match element or attribute by name
-                if (nodeType !== 1 && nodeType !== 2) return false;
+                return matchesQName(test.name!, [1, 2]);
 
-                const testName = this.nodeTest.name!;
-                const colonIndex = testName.indexOf(':');
+            case 'element':
+                if (nodeType !== 1) return false;
+                if (!test.name || test.isWildcardName) return true; // type constraints ignored at runtime
+                return matchesQName(test.name, [1]);
 
-                if (colonIndex > 0) {
-                    // Prefixed name like "xhtml:root" or "atom:title" or "ns:attr"
-                    const prefix = testName.substring(0, colonIndex);
-                    const localName = testName.substring(colonIndex + 1);
-                    const nsUri = context?.namespaces?.[prefix];
+            case 'attribute':
+                if (nodeType !== 2) return false;
+                if (!test.name || test.isWildcardName) return true; // type constraints ignored at runtime
+                return matchesQName(test.name, [2]);
 
-                    if (!nsUri) {
-                        // Unknown prefix - no match
-                        return false;
-                    }
+            case 'schema-element':
+                return matchesQName(test.name!, [1]);
 
-                    // Match both local name AND namespace URI
-                    // For attributes and elements, we compare their localName with the test's local name
-                    const nodeLocalName = node.localName || (node.nodeName && this.extractLocalName(node.nodeName));
-                    const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
+            case 'schema-attribute':
+                return matchesQName(test.name!, [2]);
 
-                    return nodeLocalName === localName && nodeNsUri === nsUri;
-                }
+            case 'document-node':
+                if (nodeType !== 9) return false;
+                if (!test.elementTest) return true;
 
-                // Unprefixed name - match by local name only
-                // For attributes without a namespace prefix, the nodeName is the full qualified name
-                // We need to check both the localName property and the actual nodeName
-                const nodeLocalName = node.localName || this.extractLocalName(node.nodeName);
-                return nodeLocalName === testName;
+                const root = node.documentElement || (Array.from(node.childNodes || []).find((n: any) => n.nodeType === 1));
+                if (!root) return false;
+
+                return this.matchesNodeTest(root, context, test.elementTest);
 
             case 'node-type':
-                switch (this.nodeTest.nodeType) {
+                switch (test.nodeType) {
                     case 'node':
                         return true; // matches any node
                     case 'text':
@@ -288,8 +316,8 @@ export class XPathStep extends XPathExpression {
 
             case 'processing-instruction':
                 if (nodeType !== 7) return false;
-                if (this.nodeTest.name) {
-                    return node.target === this.nodeTest.name;
+                if (test.target) {
+                    return (node.target ?? node.nodeName) === test.target;
                 }
                 return true;
 
