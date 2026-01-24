@@ -1,10 +1,10 @@
-import { XPathContext } from '../src/context';
+import { XPathContext } from '../../src/context';
 import {
   ValueComparisonExpression,
   GeneralComparisonExpression,
   NodeComparisonExpression,
-} from '../src/expressions';
-import { XPathExpression } from '../src/expressions/expression';
+} from '../../src/expressions';
+import { XPathExpression } from '../../src/expressions/expression';
 
 /**
  * Test helper - creates literal expressions for testing

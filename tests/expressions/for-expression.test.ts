@@ -2,13 +2,13 @@
  * XPath 2.0 For Expression Tests (Section 3.7)
  */
 
-import { XPathContext } from '../src/context';
-import { XPathExpression } from '../src/expressions/expression';
-import { XPathForBinding, XPathForExpression } from '../src/expressions/for-expression';
-import { XPathVariableReference } from '../src/expressions/variable-reference-expression';
-import { XPathArithmeticExpression } from '../src/expressions/arithmetic-expression';
-import { XPathLexer } from '../src/lexer';
-import { XPath20Parser } from '../src/parser';
+import { XPathContext } from '../../src/context';
+import { XPathExpression } from '../../src/expressions/expression';
+import { XPathForBinding, XPathForExpression } from '../../src/expressions/for-expression';
+import { XPathVariableReference } from '../../src/expressions/variable-reference-expression';
+import { XPathArithmeticExpression } from '../../src/expressions/arithmetic-expression';
+import { XPathLexer } from '../../src/lexer';
+import { XPath20Parser } from '../../src/parser';
 
 class LiteralExpression extends XPathExpression {
     constructor(private value: any) { super(); }

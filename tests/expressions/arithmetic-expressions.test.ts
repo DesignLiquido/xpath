@@ -4,10 +4,10 @@
  * https://www.w3.org/TR/xpath20/#id-arithmetic
  */
 
-import { XPathContext } from '../src/context';
-import { XPathArithmeticExpression } from '../src/expressions/arithmetic-expression';
-import { XPathUnaryExpression } from '../src/expressions/unary-expression';
-import { XPathExpression } from '../src/expressions/expression';
+import { XPathContext } from '../../src/context';
+import { XPathArithmeticExpression } from '../../src/expressions/arithmetic-expression';
+import { XPathUnaryExpression } from '../../src/expressions/unary-expression';
+import { XPathExpression } from '../../src/expressions/expression';
 
 /**
  * Test helper - creates literal expressions for testing

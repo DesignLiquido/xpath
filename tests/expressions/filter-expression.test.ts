@@ -1,7 +1,7 @@
-import { XPathLexer } from '../src/lexer';
-import { XPath10Parser } from '../src/parser';
-import { XPathContext } from '../src/context';
-import { XPathFilterExpression } from '../src/expressions';
+import { XPathLexer } from '../../src/lexer';
+import { XPath10Parser } from '../../src/parser';
+import { XPathContext } from '../../src/context';
+import { XPathFilterExpression } from '../../src/expressions';
 
 describe('Filter Expression Evaluation', () => {
     const lexer = new XPathLexer();

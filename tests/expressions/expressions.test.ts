@@ -1,5 +1,5 @@
-import { XPathLexer } from '../src/lexer';
-import { XPath10Parser } from '../src/parser';
+import { XPathLexer } from '../../src/lexer';
+import { XPath10Parser } from '../../src/parser';
 import {
     XPathStringLiteral,
     XPathNumberLiteral,
@@ -10,9 +10,9 @@ import {
     XPathLogicalExpression,
     XPathFunctionCall,
     XPathLocationPath,
-} from '../src/expressions';
-import { XPathContext, NodeType } from '../src/context';
-import { XPathNode } from '../src/node';
+} from '../../src/expressions';
+import { XPathContext, NodeType } from '../../src/context';
+import { XPathNode } from '../../src/node';
 
 describe('Expression Evaluation', () => {
     const lexer = new XPathLexer();

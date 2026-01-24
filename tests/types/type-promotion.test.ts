@@ -15,7 +15,7 @@ import {
   PromotionContext,
   promoteInContext,
   describePromotion
-} from '../src/types/type-promotion';
+} from '../../src/types/type-promotion';
 
 import {
   isNode,
@@ -32,9 +32,9 @@ import {
   createElementWithText,
   createElementWithChildren,
   XPathNode
-} from '../src/types/atomization';
+} from '../../src/types/atomization';
 
-import { getAtomicType } from '../src/types';
+import { getAtomicType } from '../../src/types';
 
 describe('Type Promotion System', () => {
   describe('NumericTypeHierarchy', () => {

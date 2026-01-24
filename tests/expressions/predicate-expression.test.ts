@@ -1,7 +1,7 @@
-import { XPathLexer } from '../src/lexer';
-import { XPath10Parser } from '../src/parser';
-import { XPathContext } from '../src/context';
-import { XPathPredicate } from '../src/expressions';
+import { XPathLexer } from '../../src/lexer';
+import { XPath10Parser } from '../../src/parser';
+import { XPathContext } from '../../src/context';
+import { XPathPredicate } from '../../src/expressions';
 
 describe('Predicate Expression Evaluation', () => {
     const lexer = new XPathLexer();

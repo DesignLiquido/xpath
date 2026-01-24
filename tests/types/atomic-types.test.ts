@@ -9,7 +9,7 @@ import {
   castAs,
   isNumericType,
   xsType,
-} from '../src/types';
+} from '../../src/types';
 
 describe('Atomic Types', () => {
   describe('Type Registry', () => {

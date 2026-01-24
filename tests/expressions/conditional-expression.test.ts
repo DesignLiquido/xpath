@@ -2,11 +2,11 @@
  * XPath 2.0 Conditional Expression Tests (Section 3.8)
  */
 
-import { XPathContext } from '../src/context';
-import { XPathExpression } from '../src/expressions/expression';
-import { XPathConditionalExpression } from '../src/expressions/conditional-expression';
-import { XPathLexer } from '../src/lexer';
-import { XPath20Parser } from '../src/parser';
+import { XPathContext } from '../../src/context';
+import { XPathExpression } from '../../src/expressions/expression';
+import { XPathConditionalExpression } from '../../src/expressions/conditional-expression';
+import { XPathLexer } from '../../src/lexer';
+import { XPath20Parser } from '../../src/parser';
 
 class LiteralExpression extends XPathExpression {
 	constructor(private value: any) { super(); }

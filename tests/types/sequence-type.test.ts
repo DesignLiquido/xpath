@@ -10,7 +10,7 @@ import {
   createEmptySequenceType,
   createItemSequenceType,
   createAtomicSequenceType
-} from '../src/types/sequence-type';
+} from '../../src/types/sequence-type';
 
 import {
   ElementTest,
@@ -29,7 +29,7 @@ import {
   createProcessingInstruction,
   createSchemaElement,
   createSchemaAttribute
-} from '../src/types/kind-tests';
+} from '../../src/types/kind-tests';
 
 import {
   matchesSequenceType,
@@ -42,9 +42,9 @@ import {
   toSequence,
   itemTypesEquivalent,
   sequenceTypesEquivalent
-} from '../src/types/sequence-type-matcher';
+} from '../../src/types/sequence-type-matcher';
 
-import { getAtomicType } from '../src/types';
+import { getAtomicType } from '../../src/types';
 
 describe('SequenceType System', () => {
   describe('OccurrenceIndicator', () => {

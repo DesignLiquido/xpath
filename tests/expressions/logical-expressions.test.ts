@@ -2,9 +2,9 @@
  * XPath 2.0 Logical Expressions Tests (Section 3.6)
  */
 
-import { XPathContext } from '../src/context';
-import { XPathLogicalExpression } from '../src/expressions/logical-expression';
-import { XPathExpression } from '../src/expressions/expression';
+import { XPathContext } from '../../src/context';
+import { XPathLogicalExpression } from '../../src/expressions/logical-expression';
+import { XPathExpression } from '../../src/expressions/expression';
 
 class LiteralExpression extends XPathExpression {
   constructor(private value: any) { super(); }
