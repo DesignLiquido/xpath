@@ -18,6 +18,7 @@ import {
     XPathLocationPath,
     XPathFilterExpression,
     XPathUnionExpression,
+    FilteredPathExpression,
 } from './expressions';
 import { XSLTExtensions, XPathParserOptions, validateExtensions } from './xslt-extensions';
 
@@ -274,7 +275,7 @@ export class XPathParser {
         }
 
         // Otherwise it's a filter expression (possibly followed by path)
-        const filterExpr = this.parseFilterExpr();
+        let expr = this.parseFilterExpr();
 
         // Check if followed by '/' or '//'
         if (this.match('SLASH', 'DOUBLE_SLASH')) {
@@ -286,12 +287,12 @@ export class XPathParser {
                 steps.unshift(new XPathStep('descendant-or-self', { type: 'node-type', nodeType: 'node' }));
             }
 
-            // Combine filter expression with location path
-            // The filter expression becomes the context for the path
-            return new XPathFilterExpression(filterExpr, new XPathLocationPath(steps, false));
+            // Create a composite expression: evaluate filter expr, then apply location path to each result
+            const locationPath = new XPathLocationPath(steps, false);
+            return new FilteredPathExpression(expr, locationPath);
         }
 
-        return filterExpr;
+        return expr;
     }
 
     private isStepStart(): boolean {
@@ -476,12 +477,15 @@ export class XPathParser {
     private parseFilterExpr(): XPathExpression {
         let expr = this.parsePrimaryExpr();
 
-        // Apply predicates
+        // Collect all predicates
+        const predicates: XPathExpression[] = [];
         while (this.check('OPEN_SQUARE_BRACKET')) {
-            const predicates = this.parsePredicates();
-            for (const predicate of predicates) {
-                expr = new XPathFilterExpression(expr, predicate);
-            }
+            predicates.push(...this.parsePredicates());
+        }
+
+        // If there are predicates, wrap in filter expression
+        if (predicates.length > 0) {
+            return new XPathFilterExpression(expr, predicates);
         }
 
         return expr;
