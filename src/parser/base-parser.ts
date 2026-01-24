@@ -10,7 +10,6 @@ import {
     ArithmeticOperator,
     XPathBinaryExpression,
     XPathLogicalExpression,
-    XPathConditionalExpression,
     XPathFunctionCall,
     XPathStep,
     AxisType,
@@ -22,9 +21,10 @@ import {
     FilteredPathExpression,
 } from '../expressions';
 import { XSLTExtensions, XPathBaseParserOptions, validateExtensions } from '../xslt-extensions';
+import { XPathVersion } from '../xpath-version';
 
 /**
- * Recursive descent parser for XPath 1.0 expressions.
+ * Recursive descent parser shared by XPath 1.0+ implementations.
  *
  * Grammar (simplified):
  *   Expr           ::= OrExpr
@@ -43,45 +43,46 @@ import { XSLTExtensions, XPathBaseParserOptions, validateExtensions } from '../x
  *   Step           ::= AxisSpecifier NodeTest Predicate* | AbbreviatedStep
  *   Predicate      ::= '[' Expr ']'
  */
-export class XPathBaseParser {
-    private tokens: XPathToken[] = [];
-    private current: number = 0;
-    private extensions?: XSLTExtensions;
-    private options: XPathBaseParserOptions;
+export abstract class XPathBaseParser {
+    protected tokens: XPathToken[] = [];
+    protected current: number = 0;
+    protected extensions?: XSLTExtensions;
+    protected options: XPathBaseParserOptions;
 
     /**
      * Create a new XPath parser.
      * 
      * @param options Optional parser configuration including XSLT extensions
      */
-    constructor(options?: XPathBaseParserOptions) {
-        this.options = options || {};
-        
-        // Set default version
-        if (!this.options.version) {
-            this.options.version = '1.0';
-        }
+    protected constructor(options?: XPathBaseParserOptions) {
+        this.options = {
+            strict: options?.strict ?? true,
+            version: options?.version,
+            cache: options?.cache,
+            extensions: options?.extensions,
+        };
 
-        // Set default strict mode
-        if (this.options.strict === undefined) {
-            this.options.strict = true;
-        }
-
-        // Validate version support
-        if (this.options.version !== '1.0' && this.options.strict) {
-            throw new Error(
-                `XPath version ${this.options.version} is not yet implemented. ` +
-                `Currently only XPath 1.0 is supported. ` +
-                `Set strict=false to disable this check.`
-            );
-        }
-
-        if (options?.extensions) {
-            const errors = validateExtensions(options.extensions);
+        if (this.options.extensions) {
+            const errors = validateExtensions(this.options.extensions);
             if (errors.length > 0) {
                 throw new Error(`Invalid XSLT extensions: ${errors.join(', ')}`);
             }
-            this.extensions = options.extensions;
+            this.extensions = this.options.extensions;
+        }
+    }
+
+    /**
+     * Enforce the supported XPath versions for a concrete parser.
+     */
+    protected ensureVersionSupport(supportedVersions: XPathVersion[], defaultVersion: XPathVersion): void {
+        const resolvedVersion = this.options.version ?? defaultVersion;
+        this.options.version = resolvedVersion;
+
+        if (this.options.strict !== false && !supportedVersions.includes(resolvedVersion)) {
+            throw new Error(
+                `XPath version ${resolvedVersion} is not supported by ${this.constructor.name}. ` +
+                `Supported versions: ${supportedVersions.join(', ')}`
+            );
         }
     }
 
@@ -111,38 +112,38 @@ export class XPathBaseParser {
 
     // ==================== Token Management ====================
 
-    private peek(): XPathToken {
+    protected peek(): XPathToken {
         return this.tokens[this.current];
     }
 
-    private peekNext(): XPathToken | undefined {
+    protected peekNext(): XPathToken | undefined {
         return this.tokens[this.current + 1];
     }
 
-    private previous(): XPathToken {
+    protected previous(): XPathToken {
         return this.tokens[this.current - 1];
     }
 
-    private isAtEnd(): boolean {
+    protected isAtEnd(): boolean {
         return this.current >= this.tokens.length;
     }
 
-    private advance(): XPathToken {
+    protected advance(): XPathToken {
         if (!this.isAtEnd()) this.current++;
         return this.previous();
     }
 
-    private check(type: TokenType): boolean {
+    protected check(type: TokenType): boolean {
         if (this.isAtEnd()) return false;
         return this.peek().type === type;
     }
 
-    private checkLexeme(lexeme: string): boolean {
+    protected checkLexeme(lexeme: string): boolean {
         if (this.isAtEnd()) return false;
         return this.peek().lexeme === lexeme;
     }
 
-    private match(...types: TokenType[]): boolean {
+    protected match(...types: TokenType[]): boolean {
         for (const type of types) {
             if (this.check(type)) {
                 this.advance();
@@ -152,18 +153,18 @@ export class XPathBaseParser {
         return false;
     }
 
-    private consume(type: TokenType, message: string): XPathToken {
+    protected consume(type: TokenType, message: string): XPathToken {
         if (this.check(type)) return this.advance();
         throw new Error(`${message}. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 
     // ==================== Expression Parsing ====================
 
-    private parseExpr(): XPathExpression {
+    protected parseExpr(): XPathExpression {
         return this.parseOrExpr();
     }
 
-    private parseOrExpr(): XPathExpression {
+    protected parseOrExpr(): XPathExpression {
         let left = this.parseAndExpr();
 
         while (this.check('OPERATOR') && this.peek().lexeme === 'or') {
@@ -175,7 +176,7 @@ export class XPathBaseParser {
         return left;
     }
 
-    private parseAndExpr(): XPathExpression {
+    protected parseAndExpr(): XPathExpression {
         let left = this.parseEqualityExpr();
 
         while (this.check('OPERATOR') && this.peek().lexeme === 'and') {
@@ -187,7 +188,7 @@ export class XPathBaseParser {
         return left;
     }
 
-    private parseEqualityExpr(): XPathExpression {
+    protected parseEqualityExpr(): XPathExpression {
         let left = this.parseRelationalExpr();
 
         while (this.match('EQUALS', 'NOT_EQUALS')) {
@@ -199,7 +200,7 @@ export class XPathBaseParser {
         return left;
     }
 
-    private parseRelationalExpr(): XPathExpression {
+    protected parseRelationalExpr(): XPathExpression {
         let left = this.parseAdditiveExpr();
 
         while (this.match('LESS_THAN', 'GREATER_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN_OR_EQUAL')) {
@@ -211,7 +212,7 @@ export class XPathBaseParser {
         return left;
     }
 
-    private parseAdditiveExpr(): XPathExpression {
+    protected parseAdditiveExpr(): XPathExpression {
         let left = this.parseMultiplicativeExpr();
 
         while (this.match('PLUS', 'MINUS')) {
@@ -223,7 +224,7 @@ export class XPathBaseParser {
         return left;
     }
 
-    private parseMultiplicativeExpr(): XPathExpression {
+    protected parseMultiplicativeExpr(): XPathExpression {
         let left = this.parseUnaryExpr();
 
         while (true) {
@@ -242,7 +243,7 @@ export class XPathBaseParser {
         return left;
     }
 
-    private parseUnaryExpr(): XPathExpression {
+    protected parseUnaryExpr(): XPathExpression {
         if (this.match('MINUS')) {
             const operand = this.parseUnaryExpr();
             return new XPathUnaryExpression('-', operand);
@@ -251,7 +252,7 @@ export class XPathBaseParser {
         return this.parseUnionExpr();
     }
 
-    private parseUnionExpr(): XPathExpression {
+    protected parseUnionExpr(): XPathExpression {
         let left = this.parsePathExpr();
 
         while (this.match('PIPE')) {
@@ -264,7 +265,7 @@ export class XPathBaseParser {
 
     // ==================== Path Expression Parsing ====================
 
-    private parsePathExpr(): XPathExpression {
+    protected parsePathExpr(): XPathExpression {
         // Check if this starts a location path
         if (this.check('SLASH') || this.check('DOUBLE_SLASH')) {
             return this.parseLocationPath();
@@ -296,7 +297,7 @@ export class XPathBaseParser {
         return expr;
     }
 
-    private isStepStart(): boolean {
+    protected isStepStart(): boolean {
         if (this.isAtEnd()) return false;
 
         const token = this.peek();
@@ -328,7 +329,7 @@ export class XPathBaseParser {
         return false;
     }
 
-    private parseLocationPath(): XPathExpression {
+    protected parseLocationPath(): XPathExpression {
         let absolute = false;
         const steps: XPathStep[] = [];
 
@@ -353,7 +354,7 @@ export class XPathBaseParser {
         return new XPathLocationPath(steps, absolute);
     }
 
-    private parseRelativeLocationPath(): XPathStep[] {
+    protected parseRelativeLocationPath(): XPathStep[] {
         const steps: XPathStep[] = [];
 
         steps.push(this.parseStep());
@@ -372,7 +373,7 @@ export class XPathBaseParser {
         return steps;
     }
 
-    private parseStep(): XPathStep {
+    protected parseStep(): XPathStep {
         // Handle abbreviated steps
         if (this.match('DOT')) {
             return new XPathStep('self', { type: 'node-type', nodeType: 'node' });
@@ -406,7 +407,7 @@ export class XPathBaseParser {
         return new XPathStep(axis, nodeTest, predicates);
     }
 
-    private parseNodeTest(): NodeTest {
+    protected parseNodeTest(): NodeTest {
         // Wildcard
         if (this.match('ASTERISK')) {
             return { type: 'wildcard' };
@@ -461,7 +462,7 @@ export class XPathBaseParser {
         throw new Error(`Expected node test, got: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 
-    private parsePredicates(): XPathExpression[] {
+    protected parsePredicates(): XPathExpression[] {
         const predicates: XPathExpression[] = [];
 
         while (this.match('OPEN_SQUARE_BRACKET')) {
@@ -475,7 +476,7 @@ export class XPathBaseParser {
 
     // ==================== Filter Expression Parsing ====================
 
-    private parseFilterExpr(): XPathExpression {
+    protected parseFilterExpr(): XPathExpression {
         let expr = this.parsePrimaryExpr();
 
         // Collect all predicates
@@ -492,12 +493,7 @@ export class XPathBaseParser {
         return expr;
     }
 
-    private parsePrimaryExpr(): XPathExpression {
-        // XPath 2.0: Conditional expression
-        if (this.check('RESERVED_WORD') && this.peek().lexeme === 'if') {
-            return this.parseIfExpr();
-        }
-
+    protected parsePrimaryExpr(): XPathExpression {
         // Variable reference: $name
         if (this.match('DOLLAR')) {
             const name = this.consume('IDENTIFIER', 'Expected variable name after $').lexeme;
@@ -534,30 +530,7 @@ export class XPathBaseParser {
         throw new Error(`Unexpected token in primary expression: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 
-    // XPath 2.0 IfExpr: if '(' Expr ')' then Expr else Expr
-    private parseIfExpr(): XPathExpression {
-        // consume 'if'
-        this.advance();
-        this.consume('OPEN_PAREN', "Expected '(' after 'if'");
-        const testExpr = this.parseExpr();
-        this.consume('CLOSE_PAREN', "Expected ')' after if test expression");
-
-        if (!(this.check('RESERVED_WORD') && this.peek().lexeme === 'then')) {
-            throw new Error("Expected 'then' in conditional expression");
-        }
-        this.advance(); // consume 'then'
-        const thenExpr = this.parseExpr();
-
-        if (!(this.check('RESERVED_WORD') && this.peek().lexeme === 'else')) {
-            throw new Error("Expected 'else' in conditional expression");
-        }
-        this.advance(); // consume 'else'
-        const elseExpr = this.parseExpr();
-
-        return new XPathConditionalExpression(testExpr, thenExpr, elseExpr);
-    }
-
-    private parseFunctionCall(): XPathExpression {
+    protected parseFunctionCall(): XPathExpression {
         const name = this.advance().lexeme;
         this.consume('OPEN_PAREN', "Expected '(' after function name");
 

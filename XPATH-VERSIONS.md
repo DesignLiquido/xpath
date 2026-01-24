@@ -56,22 +56,22 @@ if (isFeatureSupported('2.0', 'ifThenElse')) {
 The parser now accepts version configuration:
 
 ```typescript
-import { XPathParser } from '@designliquido/xpath';
+import { XPathBaseParser } from '@designliquido/xpath';
 
 // XPath 1.0 (default)
-const parser1 = new XPathParser();
+const parser1 = new XPathBaseParser();
 
 // XPath 2.0 (strict mode - will throw error until implemented)
-const parser2 = new XPathParser({ version: '2.0' });
+const parser2 = new XPathBaseParser({ version: '2.0' });
 
 // XPath 2.0 (non-strict mode - allows experimentation)
-const parser3 = new XPathParser({ version: '2.0', strict: false });
+const parser3 = new XPathBaseParser({ version: '2.0', strict: false });
 ```
 
 #### Parser Options Interface
 
 ```typescript
-interface XPathParserOptions {
+interface XPathBaseParserOptions {
   version?: '1.0' | '2.0' | '3.0' | '3.1';  // Default: '1.0'
   extensions?: XSLTExtensions;              // XSLT function extensions
   cache?: boolean;                          // Expression caching

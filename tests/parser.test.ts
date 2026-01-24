@@ -1,5 +1,5 @@
 import { XPathLexer } from '../src/lexer';
-import { XPathBaseParser } from '../src/parser';
+import { XPath10Parser } from '../src/parser';
 import {
     XPathStringLiteral,
     XPathNumberLiteral,
@@ -17,7 +17,7 @@ import {
 
 describe('Parser', () => {
     const lexer = new XPathLexer();
-    const parser = new XPathBaseParser();
+    const parser = new XPath10Parser();
 
     function parse(expression: string) {
         const tokens = lexer.scan(expression);

@@ -1,5 +1,5 @@
 import { XPathLexer } from '../src/lexer';
-import { XPathBaseParser } from '../src/parser';
+import { XPath10Parser } from '../src/parser';
 import { 
     XSLTExtensions, 
     XSLTFunctionMetadata,
@@ -119,7 +119,7 @@ describe('XSLT Extensions', () => {
                 functions: []
             };
 
-            expect(() => new XPathBaseParser({ extensions })).not.toThrow();
+            expect(() => new XPath10Parser({ extensions })).not.toThrow();
         });
 
         it('should reject invalid extensions', () => {
@@ -139,7 +139,7 @@ describe('XSLT Extensions', () => {
                 ]
             };
 
-            expect(() => new XPathBaseParser({ extensions }))
+            expect(() => new XPath10Parser({ extensions }))
                 .toThrow('Invalid XSLT extensions: Duplicate function name: dup');
         });
     });
@@ -188,7 +188,7 @@ describe('XSLT Extensions', () => {
             };
 
             // Create parser with extensions
-            const parser = new XPathBaseParser({ extensions });
+            const parser = new XPath10Parser({ extensions });
 
             // Create lexer and register extension functions
             const lexer = new XPathLexer();
@@ -245,7 +245,7 @@ describe('XSLT Extensions', () => {
             };
 
             // Create parser and lexer
-            const parser = new XPathBaseParser({ extensions });
+            const parser = new XPath10Parser({ extensions });
             const lexer = new XPathLexer();
             lexer.registerFunctions(getExtensionFunctionNames(extensions));
 
