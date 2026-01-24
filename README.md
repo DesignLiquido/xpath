@@ -188,3 +188,185 @@ const firstTitle = selector.select('//book[1]/title', documentNode);
 5. **Performance**: Clear the cache between selections to avoid stale references
 
 For a complete working example, see the [XPathSelector implementation in xslt-processor](https://github.com/DesignLiquido/xslt-processor/blob/main/src/xpath/selector.ts). 
+## XSLT Extensions API
+
+This library provides a pure **XPath 1.0** implementation. However, it also includes a clean integration API for XSLT-specific functions, allowing the `xslt-processor` package (or any other XSLT implementation) to extend XPath with XSLT 1.0 functions like `document()`, `key()`, `format-number()`, `generate-id()`, and others.
+
+### Architecture
+
+The XSLT Extensions API follows a **separation of concerns** pattern:
+
+- **This package (`@designliquido/xpath`)**: Provides type definitions, interfaces, and integration hooks
+- **XSLT processor packages**: Implement the actual XSLT function logic
+
+This approach keeps the XPath library pure while enabling XSLT functionality through a well-defined extension mechanism.
+
+### Key Features
+
+1. **Type Definitions**: `XSLTExtensions`, `XSLTExtensionFunction`, `XSLTFunctionMetadata` interfaces
+2. **Parser Integration**: `XPathParser` accepts `options.extensions` parameter
+3. **Lexer Support**: `XPathLexer.registerFunctions()` for dynamic function registration
+4. **Context Integration**: Extension functions receive `XPathContext` as first parameter
+
+### Basic Usage
+
+Here's how to use XSLT extensions (typically done by the `xslt-processor` package):
+
+```typescript
+import { 
+  XPathParser, 
+  XPathLexer,
+  XSLTExtensions, 
+  XSLTFunctionMetadata,
+  getExtensionFunctionNames,
+  XPathContext
+} from '@designliquido/xpath';
+
+// Define XSLT extension functions
+const xsltFunctions: XSLTFunctionMetadata[] = [
+  {
+    name: 'generate-id',
+    minArgs: 0,
+    maxArgs: 1,
+    implementation: (context: XPathContext, nodeSet?: any[]) => {
+      const node = nodeSet?.[0] || context.node;
+      return `id-${generateUniqueId(node)}`;
+    },
+    description: 'Generate unique identifier for a node'
+  },
+  {
+    name: 'system-property',
+    minArgs: 1,
+    maxArgs: 1,
+    implementation: (context: XPathContext, propertyName: string) => {
+      const properties = {
+        'xsl:version': '1.0',
+        'xsl:vendor': 'Design Liquido XPath',
+        'xsl:vendor-url': 'https://github.com/designliquido/xpath'
+      };
+      return properties[String(propertyName)] || '';
+    },
+    description: 'Query XSLT processor properties'
+  }
+];
+
+// Create extensions bundle
+const extensions: XSLTExtensions = {
+  functions: xsltFunctions,
+  version: '1.0'
+};
+
+// Create parser with extensions
+const parser = new XPathParser({ extensions });
+
+// Create lexer and register extension functions
+const lexer = new XPathLexer();
+lexer.registerFunctions(getExtensionFunctionNames(extensions));
+
+// Parse expression
+const tokens = lexer.scan("generate-id()");
+const expression = parser.parse(tokens);
+
+// Create context with extension functions
+const context: XPathContext = {
+  node: rootNode,
+  functions: {
+    'generate-id': xsltFunctions[0].implementation,
+    'system-property': xsltFunctions[1].implementation
+  }
+};
+
+// Evaluate
+const result = expression.evaluate(context);
+```
+
+### Extension Function Signature
+
+XSLT extension functions receive the evaluation context as their first parameter:
+
+```typescript
+type XSLTExtensionFunction = (
+  context: XPathContext,
+  ...args: any[]
+) => any;
+```
+
+This allows extension functions to access:
+- `context.node` - current context node
+- `context.position` - position in node-set (1-based)
+- `context.size` - size of current node-set
+- `context.variables` - XPath variables
+- `context.functions` - other registered functions
+
+### Available Helper Functions
+
+```typescript
+// Validate extensions bundle for errors
+const errors = validateExtensions(extensions);
+if (errors.length > 0) {
+  console.error('Extension validation errors:', errors);
+}
+
+// Extract function names for lexer registration
+const functionNames = getExtensionFunctionNames(extensions);
+lexer.registerFunctions(functionNames);
+
+// Create empty extensions bundle
+const emptyExtensions = createEmptyExtensions('1.0');
+```
+
+### XSLT 1.0 Functions
+
+The following XSLT 1.0 functions are designed to be implemented via this extension API:
+
+1. **`document()`** - Load external XML documents
+2. **`key()`** - Efficient node lookup using keys
+3. **`format-number()`** - Number formatting with patterns
+4. **`generate-id()`** - Generate unique node identifiers
+5. **`unparsed-entity-uri()`** - Get URI of unparsed entities
+6. **`system-property()`** - Query processor properties
+7. **`element-available()`** - Check XSLT element availability
+8. **`function-available()`** - Check function availability
+
+For detailed implementation guidance, see [TODO.md](TODO.md).
+
+### Context Extensions
+
+XSLT functions may require additional context data beyond standard XPath context:
+
+```typescript
+const context: XPathContext = {
+  node: rootNode,
+  functions: {
+    'generate-id': generateIdImpl,
+    'key': keyImpl,
+    'format-number': formatNumberImpl
+  },
+  // XSLT-specific context extensions
+  xsltVersion: '1.0',
+  // For key() function
+  keys: {
+    'employee-id': { match: 'employee', use: '@id' }
+  },
+  // For document() function
+  documentLoader: (uri: string) => loadXmlDocument(uri),
+  // For format-number() function
+  decimalFormats: {
+    'euro': { decimalSeparator: ',', groupingSeparator: '.' }
+  },
+  // For system-property() function
+  systemProperties: {
+    'xsl:version': '1.0',
+    'xsl:vendor': 'Design Liquido'
+  }
+};
+```
+
+### Complete Example
+
+For a complete implementation example, see the test suite at [tests/xslt-extensions.test.ts](tests/xslt-extensions.test.ts), which demonstrates:
+
+- Creating and validating extension bundles
+- Registering extensions with parser and lexer
+- Implementing sample XSLT functions (`generate-id`, `system-property`)
+- End-to-end evaluation with extension functions

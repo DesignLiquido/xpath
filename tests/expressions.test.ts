@@ -719,7 +719,12 @@ describe('Expression Evaluation', () => {
                 functions: { myFunc: customFunc },
                 variables: {},
             });
-            expect(customFunc).toHaveBeenCalledWith('arg1', 'arg2');
+            // Custom functions now receive context as first argument, then evaluated args
+            expect(customFunc).toHaveBeenCalledWith(
+                expect.objectContaining({ functions: expect.any(Object) }),
+                'arg1',
+                'arg2'
+            );
         });
 
         it('should throw for unknown function', () => {

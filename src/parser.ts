@@ -19,6 +19,7 @@ import {
     XPathFilterExpression,
     XPathUnionExpression,
 } from './expressions';
+import { XSLTExtensions, XPathParserOptions, validateExtensions } from './xslt-extensions';
 
 /**
  * Recursive descent parser for XPath 1.0 expressions.
@@ -43,6 +44,22 @@ import {
 export class XPathParser {
     private tokens: XPathToken[] = [];
     private current: number = 0;
+    private extensions?: XSLTExtensions;
+
+    /**
+     * Create a new XPath parser.
+     * 
+     * @param options Optional parser configuration including XSLT extensions
+     */
+    constructor(options?: XPathParserOptions) {
+        if (options?.extensions) {
+            const errors = validateExtensions(options.extensions);
+            if (errors.length > 0) {
+                throw new Error(`Invalid XSLT extensions: ${errors.join(', ')}`);
+            }
+            this.extensions = options.extensions;
+        }
+    }
 
     parse(tokens: XPathToken[]): XPathExpression {
         this.tokens = tokens;

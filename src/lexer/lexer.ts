@@ -68,6 +68,20 @@ export class XPathLexer {
     expression: string;
     current: number;
     tokens: XPathToken[];
+    private additionalFunctions?: Set<string>;
+
+    /**
+     * Register additional function names to be recognized by the lexer.
+     * Used for XSLT extension functions.
+     */
+    registerFunctions(functionNames: string[]): void {
+        if (!this.additionalFunctions) {
+            this.additionalFunctions = new Set();
+        }
+        for (const name of functionNames) {
+            this.additionalFunctions.add(name);
+        }
+    }
 
     /**
      * Check if character is a valid start of an identifier.
@@ -151,6 +165,11 @@ export class XPathLexer {
         const likelyReservedWord = RESERVED_WORDS[characters.toLowerCase()];
         if (likelyReservedWord) {
             return new XPathToken(likelyReservedWord.type, characters);
+        }
+
+        // Check if this is an extension function
+        if (this.additionalFunctions && this.additionalFunctions.has(characters)) {
+            return new XPathToken("FUNCTION", characters);
         }
 
         if (characters.length > 0) {

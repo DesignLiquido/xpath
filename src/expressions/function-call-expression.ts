@@ -84,9 +84,11 @@ export class XPathFunctionCall extends XPathExpression {
                 return this.jsonToXml(evaluatedArgs, context);
 
             default:
-                // Check for custom functions in context
+                // Check for custom functions in context (including XSLT extension functions)
                 if (context.functions && typeof context.functions[this.name] === 'function') {
-                    return context.functions[this.name](...evaluatedArgs);
+                    // Call custom function with context as first argument, followed by evaluated args
+                    // This allows XSLT functions to access context.node, context.variables, etc.
+                    return context.functions[this.name](context, ...evaluatedArgs);
                 }
                 throw new Error(`Unknown function: ${this.name}`);
         }
