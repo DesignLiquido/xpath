@@ -1,4 +1,10 @@
 export * from './context';
+export {
+    // Export new dynamic context types
+    type XPathDocuments,
+    type XPathCollections,
+    type XPathFunctionRegistry,
+} from './context';
 export * from './lexer';
 export * from './node';
 export * from './parser/base-parser';

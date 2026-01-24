@@ -36,6 +36,24 @@ export type XPathFunctions = Record<string, XPathFunction>;
 export type XPathNamespaces = Record<string, string>;
 
 /**
+ * Type for available documents mapping (URI -> root node).
+ * Used by fn:doc() and related functions (XPath 2.0+).
+ */
+export type XPathDocuments = Record<string, XPathNode | null>;
+
+/**
+ * Type for available collections mapping (URI -> sequence of nodes).
+ * Used by fn:collection() function (XPath 2.0+).
+ */
+export type XPathCollections = Record<string, XPathNode[]>;
+
+/**
+ * Type for function implementations registry.
+ * Maps function names (with optional namespace) to their implementations.
+ */
+export type XPathFunctionRegistry = Record<string, XPathFunction>;
+
+/**
  * The evaluation context for XPath expressions.
  *
  * This context is passed to all expression evaluate() methods and contains:
@@ -43,6 +61,7 @@ export type XPathNamespaces = Record<string, string>;
  * - Position information for predicates
  * - Variable bindings
  * - Custom function definitions
+ * - Dynamic properties like current dateTime, available documents, etc.
  */
 export interface XPathContext {
     /**
@@ -127,6 +146,43 @@ export interface XPathContext {
      * polluting the main interface.
      */
     extensions?: Record<string, any>;
+
+    // ===== XPath 2.0+ Dynamic Context (Section 2.1.2) =====
+
+    /**
+     * Current dateTime in the dynamic context (XPath 2.0+).
+     * Returned by fn:current-dateTime().
+     * If not provided, defaults to system time when accessed.
+     */
+    currentDateTime?: Date;
+
+    /**
+     * Available documents mapping for fn:doc() function (XPath 2.0+).
+     * Maps document URIs to their root document nodes.
+     * Example: { "http://example.com/data.xml": rootNode }
+     */
+    availableDocuments?: XPathDocuments;
+
+    /**
+     * Available collections mapping for fn:collection() function (XPath 2.0+).
+     * Maps collection URIs to sequences of nodes.
+     * Example: { "http://example.com/collection": [node1, node2, ...] }
+     */
+    availableCollections?: XPathCollections;
+
+    /**
+     * Default collection URI when fn:collection() is called without arguments (XPath 2.0+).
+     * If provided, fn:collection() returns availableCollections[defaultCollection].
+     */
+    defaultCollection?: string;
+
+    /**
+     * Function implementations registry (XPath 2.0+).
+     * Maps QName function names to their implementations.
+     * Allows defining custom/XSLT functions at evaluation time.
+     * Format: "localName" or "prefix:localName"
+     */
+    functionRegistry?: XPathFunctionRegistry;
 }
 
 /**
