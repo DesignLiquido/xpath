@@ -301,6 +301,9 @@ export abstract class XPathBaseParser {
     protected isStepStart(): boolean {
         if (this.isAtEnd()) return false;
 
+        // Don't treat QName function calls as location steps
+        if (this.isFunctionCallStart()) return false;
+
         const token = this.peek();
 
         // Abbreviated steps
@@ -526,19 +529,25 @@ export abstract class XPathBaseParser {
             return new XPathNumberLiteral(value);
         }
 
-        // Function call
-        if (this.check('FUNCTION') || this.check('IDENTIFIER')) {
-            const next = this.peekNext();
-            if (next && next.type === 'OPEN_PAREN') {
-                return this.parseFunctionCall();
-            }
+        // Function call (supports QName prefixes)
+        if (this.isFunctionCallStart()) {
+            return this.parseFunctionCall();
         }
 
         throw new Error(`Unexpected token in primary expression: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 
     protected parseFunctionCall(): XPathExpression {
-        const name = this.advance().lexeme;
+        let name = this.advance().lexeme;
+
+        if (this.match('COLON')) {
+            const local = this.advance();
+            if (!this.isNcNameToken(local.type)) {
+                throw new Error('Expected local name after function prefix');
+            }
+            name = `${name}:${local.lexeme}`;
+        }
+
         this.consume('OPEN_PAREN', "Expected '(' after function name");
 
         const args: XPathExpression[] = [];
@@ -552,5 +561,38 @@ export abstract class XPathBaseParser {
         this.consume('CLOSE_PAREN', "Expected ')' after function arguments");
 
         return new XPathFunctionCall(name, args);
+    }
+
+    private isFunctionCallStart(): boolean {
+        if (this.isAtEnd()) return false;
+
+        const first = this.peek();
+        const second = this.peekNext();
+
+        // Simple function name followed by '(' (exclude node-type tests)
+        if (this.isFunctionNameToken(first.type) && second?.type === 'OPEN_PAREN') {
+            return true;
+        }
+
+        // QName: prefix:local followed by '(' (exclude node-type tokens)
+        if (this.isFunctionNameToken(first.type) && second?.type === 'COLON') {
+            const local = this.tokens[this.current + 2];
+            const afterLocal = this.tokens[this.current + 3];
+            if (local && this.isFunctionNameToken(local.type) && afterLocal?.type === 'OPEN_PAREN') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private isFunctionNameToken(type: TokenType | undefined): boolean {
+        // NODE_TYPE tokens (node, text, comment, processing-instruction) are reserved for node tests, not functions
+        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'OPERATOR' || type === 'LOCATION';
+    }
+
+    private isNcNameToken(type: TokenType | undefined): boolean {
+        // Allow any token kinds that can represent NCName parts (prefix/local), including node-type tokens for QNames
+        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'OPERATOR' || type === 'LOCATION' || type === 'NODE_TYPE';
     }
 }

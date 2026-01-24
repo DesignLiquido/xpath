@@ -2,6 +2,7 @@ import { XPathContext, XPathResult } from '../context';
 import { XPathNode } from '../node';
 import { XPathExpression } from './expression';
 import { JsonToXmlConverter, JsonToXmlOptions } from './json-to-xml-converter';
+import { AtomicType, castAs, getAtomicType } from '../types';
 
 export class XPathFunctionCall extends XPathExpression {
     name: string;
@@ -16,6 +17,31 @@ export class XPathFunctionCall extends XPathExpression {
 
     evaluate(context: XPathContext): XPathResult {
         const evaluatedArgs = this.args.map(arg => arg.evaluate(context));
+
+        // XPath 2.0 constructor functions: QName(...) delegates to atomic type cast
+        const constructorType = this.getConstructorType();
+        if (constructorType) {
+            if (evaluatedArgs.length !== 1) {
+                throw new Error(`Constructor function ${this.name} expects exactly one argument`);
+            }
+
+            const raw = evaluatedArgs[0];
+            if (Array.isArray(raw)) {
+                if (raw.length === 0) {
+                    throw new Error(`Constructor function ${this.name} does not allow empty sequence`);
+                }
+                if (raw.length !== 1) {
+                    throw new Error(`Constructor function ${this.name} requires a single item`);
+                }
+                return this.castConstructorValue(constructorType, raw[0]);
+            }
+
+            if (raw === undefined || raw === null) {
+                throw new Error(`Constructor function ${this.name} does not allow empty sequence`);
+            }
+
+            return this.castConstructorValue(constructorType, raw);
+        }
 
         // Built-in XPath 1.0 functions
         switch (this.name) {
@@ -91,6 +117,29 @@ export class XPathFunctionCall extends XPathExpression {
                     return context.functions[this.name](context, ...evaluatedArgs);
                 }
                 throw new Error(`Unknown function: ${this.name}`);
+        }
+    }
+
+    private getConstructorType(): AtomicType | undefined {
+        // Only treat QName function names as constructor functions to avoid clobbering built-ins like string()
+        if (!this.name.includes(':')) {
+            return undefined;
+        }
+
+        const [, localName] = this.name.split(':');
+        if (!localName) {
+            return undefined;
+        }
+
+        return getAtomicType(localName);
+    }
+
+    private castConstructorValue(constructorType: AtomicType, value: unknown): XPathResult {
+        try {
+            return constructorType.cast(value);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            throw new Error(`Constructor function ${this.name} failed: ${message}`);
         }
     }
 
