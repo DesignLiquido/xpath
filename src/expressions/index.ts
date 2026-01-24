@@ -15,6 +15,7 @@ export * from './binary-expression';
 export * from './arithmetic-expression';
 export * from './logical-expression';
 export * from './conditional-expression';
+export * from './for-expression';
 
 // Sequence expressions
 export * from './union-expression';

@@ -1,4 +1,4 @@
-import { XPathConditionalExpression, XPathExpression } from "../expressions";
+import { XPathConditionalExpression, XPathExpression, XPathForExpression } from "../expressions";
 import { XPathBaseParserOptions } from "../xslt-extensions";
 import { XPathBaseParser } from "./base-parser";
 
@@ -6,6 +6,14 @@ export class XPath20Parser extends XPathBaseParser {
     constructor(options?: XPathBaseParserOptions) {
         super(options);
         this.ensureVersionSupport(['2.0'], '2.0');
+    }
+
+    protected parseExpr(): XPathExpression {
+        if (this.checkReservedWord('for')) {
+            return this.parseForExpr();
+        }
+
+        return super.parseExpr();
     }
 
     protected parsePrimaryExpr(): XPathExpression {
@@ -35,5 +43,39 @@ export class XPath20Parser extends XPathBaseParser {
         const elseExpr = this.parseExpr();
 
         return new XPathConditionalExpression(testExpr, thenExpr, elseExpr);
+    }
+
+    private parseForExpr(): XPathExpression {
+        this.consumeReservedWord('for', "Expected 'for' at start of for expression");
+
+        const bindings: { variable: string; expression: XPathExpression }[] = [];
+        do {
+            bindings.push(this.parseForBinding());
+        } while (this.match('COMMA'));
+
+        this.consumeReservedWord('return', "Expected 'return' in for expression");
+        const returnExpr = this.parseExpr();
+
+        return new XPathForExpression(bindings, returnExpr);
+    }
+
+    private parseForBinding(): { variable: string; expression: XPathExpression } {
+        this.consume('DOLLAR', "Expected '$' after 'for'");
+        const name = this.consume('IDENTIFIER', 'Expected variable name in for binding').lexeme;
+        this.consumeReservedWord('in', "Expected 'in' after variable name in for clause");
+        const expression = this.parseExpr();
+        return { variable: name, expression };
+    }
+
+    private checkReservedWord(word: string): boolean {
+        return this.check('RESERVED_WORD') && this.peek().lexeme === word;
+    }
+
+    private consumeReservedWord(word: string, message: string): void {
+        if (this.checkReservedWord(word)) {
+            this.advance();
+            return;
+        }
+        throw new Error(`${message}. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
     }
 }

@@ -33,6 +33,11 @@ const RESERVED_WORDS = {
     "then": { type: "RESERVED_WORD", value: "then" },
     "else": { type: "RESERVED_WORD", value: "else" },
 
+    // FLWOR expressions (XPath 2.0)
+    "for": { type: "RESERVED_WORD", value: "for" },
+    "in": { type: "RESERVED_WORD", value: "in" },
+    "return": { type: "RESERVED_WORD", value: "return" },
+
     // Node set functions
     "last": { type: "FUNCTION", value: "last" },
     "position": { type: "FUNCTION", value: "position" },
