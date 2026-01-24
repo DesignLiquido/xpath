@@ -10,18 +10,11 @@ export * from './binary-expression';
 export * from './arithmetic-expression';
 export * from './logical-expression';
 
-// Sequence expressions (Phase 2.1)
-export * from './sequence-construction';
-export * from './sequence-operations';
+// Comparison expressions (Phase 2.3)
+export * from './value-comparison';
+export * from './general-comparison';
+export * from './node-comparison';
 
-// Path expressions
-export * from './step-expression';
-export * from './predicate-expression';
-export * from './location-path-expression';
-export * from './filter-expression';
-export * from './union-expression';
-
-// Function call
 export * from './function-call-expression';
 
 // JSON/XML conversion
