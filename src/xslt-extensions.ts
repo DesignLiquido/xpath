@@ -140,6 +140,18 @@ export interface XPathBaseParserOptions {
      * Defaults to an empty static context with XPath-defined namespaces.
      */
     staticContext?: XPathStaticContext;
+
+    /**
+     * Enable XPath 1.0 backward compatibility mode (Phase 8.1).
+     * When true, XPath 2.0+ expressions follow XPath 1.0 type conversion rules.
+     * This enables:
+     * - XPath 1.0 boolean conversion semantics
+     * - XPath 1.0 numeric conversion (with NaN for empty sequences)
+     * - XPath 1.0 comparison rules (node-set to string conversion)
+     * - XPath 1.0 logical operator behavior (short-circuit, error suppression)
+     * Default: false (XPath 2.0 semantics)
+     */
+    xpath10CompatibilityMode?: boolean;
 }
 
 /**
