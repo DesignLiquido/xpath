@@ -88,6 +88,11 @@ const XPATH20_RESERVED_WORDS: ReservedWordMap = {
     // SequenceType operations (XPath 2.0)
     "instance": { type: "RESERVED_WORD", value: "instance" },
     "of": { type: "RESERVED_WORD", value: "of" },
+
+    // Cast expressions (XPath 2.0)
+    "cast": { type: "RESERVED_WORD", value: "cast" },
+    "as": { type: "RESERVED_WORD", value: "as" },
+    "castable": { type: "RESERVED_WORD", value: "castable" },
 };
 
 function buildReservedWords(version: XPathVersion): ReservedWordMap {

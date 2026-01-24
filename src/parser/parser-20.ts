@@ -1,4 +1,4 @@
-import { XPathConditionalExpression, XPathExpression, XPathForExpression, XPathInstanceOfExpression, XPathQuantifiedExpression, XPathUnionExpression } from "../expressions";
+import { XPathCastableExpression, XPathConditionalExpression, XPathExpression, XPathForExpression, XPathInstanceOfExpression, XPathQuantifiedExpression, XPathUnionExpression } from "../expressions";
 import { XPathToken } from "../lexer/token";
 import { ITEM_TYPE, OccurrenceIndicator, SequenceType, createAtomicSequenceType, createEmptySequenceType, createItemSequenceType, getAtomicType } from "../types";
 import { XPathBaseParserOptions } from "../xslt-extensions";
@@ -42,13 +42,26 @@ export class XPath20Parser extends XPathBaseParser {
     }
 
     private parseInstanceOfExpr(): XPathExpression {
-        let expr = this.parsePathExpr();
+        let expr = this.parseCastableExpr();
 
         if (this.checkReservedWord('instance')) {
             this.advance();
             this.consumeReservedWord('of', "Expected 'of' after 'instance'");
             const sequenceType = this.parseSequenceType();
             expr = new XPathInstanceOfExpression(expr, sequenceType);
+        }
+
+        return expr;
+    }
+
+    private parseCastableExpr(): XPathExpression {
+        let expr = this.parsePathExpr();
+
+        if (this.checkReservedWord('castable')) {
+            this.advance();
+            this.consumeReservedWord('as', "Expected 'as' after 'castable'");
+            const sequenceType = this.parseSequenceType();
+            expr = new XPathCastableExpression(expr, sequenceType);
         }
 
         return expr;

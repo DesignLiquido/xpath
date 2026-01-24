@@ -18,9 +18,11 @@ export * from './conditional-expression';
 export * from './for-expression';
 export * from './quantified-expression';
 export * from './instance-of-expression';
+export * from './castable-expression';
 
 // Sequence expressions
 export * from './union-expression';
+export * from './sequence-construction';
 
 // Predicates
 export * from './predicate-expression';

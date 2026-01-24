@@ -19,6 +19,7 @@ import {
     XPathFilterExpression,
     XPathUnionExpression,
     FilteredPathExpression,
+    EmptySequenceExpression,
 } from '../expressions';
 import { XSLTExtensions, XPathBaseParserOptions, validateExtensions } from '../xslt-extensions';
 import { XPathVersion } from '../xpath-version';
@@ -502,6 +503,12 @@ export abstract class XPathBaseParser {
 
         // Parenthesized expression
         if (this.match('OPEN_PAREN')) {
+            // Allow empty parentheses to represent the empty sequence in XPath 2.0
+            if (this.check('CLOSE_PAREN')) {
+                this.advance();
+                return new EmptySequenceExpression();
+            }
+
             const expr = this.parseExpr();
             this.consume('CLOSE_PAREN', "Expected ')' after expression");
             return expr;
