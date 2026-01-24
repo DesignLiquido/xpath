@@ -1,6 +1,11 @@
 import { XPathToken } from "./token";
+import { TokenType } from "./token-type";
 
-const RESERVED_WORDS = {
+type XPathVersion = '1.0' | '2.0' | '3.0' | '3.1';
+
+type ReservedWordMap = Record<string, { type: TokenType; value: string }>;
+
+const COMMON_RESERVED_WORDS: ReservedWordMap = {
     // Location axes (XPath 1.0 complete list)
     "ancestor": { type: "LOCATION", value: "ancestor" },
     "ancestor-or-self": { type: "LOCATION", value: "ancestor-or-self" },
@@ -28,22 +33,7 @@ const RESERVED_WORDS = {
     "div": { type: "OPERATOR", value: "div" },
     "mod": { type: "OPERATOR", value: "mod" },
 
-    // Conditional expression keywords (XPath 2.0)
-    "if": { type: "RESERVED_WORD", value: "if" },
-    "then": { type: "RESERVED_WORD", value: "then" },
-    "else": { type: "RESERVED_WORD", value: "else" },
-
-    // FLWOR expressions (XPath 2.0)
-    "for": { type: "RESERVED_WORD", value: "for" },
-    "in": { type: "RESERVED_WORD", value: "in" },
-    "return": { type: "RESERVED_WORD", value: "return" },
-
-    // Quantified expressions (XPath 2.0)
-    "some": { type: "RESERVED_WORD", value: "some" },
-    "every": { type: "RESERVED_WORD", value: "every" },
-    "satisfies": { type: "RESERVED_WORD", value: "satisfies" },
-
-    // Node set functions
+    // Node set functions (XPath 1.0, also valid in later versions)
     "last": { type: "FUNCTION", value: "last" },
     "position": { type: "FUNCTION", value: "position" },
     "count": { type: "FUNCTION", value: "count" },
@@ -79,11 +69,43 @@ const RESERVED_WORDS = {
     "round": { type: "FUNCTION", value: "round" },
 };
 
+const XPATH20_RESERVED_WORDS: ReservedWordMap = {
+    // Conditional expression keywords (XPath 2.0)
+    "if": { type: "RESERVED_WORD", value: "if" },
+    "then": { type: "RESERVED_WORD", value: "then" },
+    "else": { type: "RESERVED_WORD", value: "else" },
+
+    // FLWOR expressions (XPath 2.0)
+    "for": { type: "RESERVED_WORD", value: "for" },
+    "in": { type: "RESERVED_WORD", value: "in" },
+    "return": { type: "RESERVED_WORD", value: "return" },
+
+    // Quantified expressions (XPath 2.0)
+    "some": { type: "RESERVED_WORD", value: "some" },
+    "every": { type: "RESERVED_WORD", value: "every" },
+    "satisfies": { type: "RESERVED_WORD", value: "satisfies" },
+};
+
+function buildReservedWords(version: XPathVersion): ReservedWordMap {
+    const merged: ReservedWordMap = { ...COMMON_RESERVED_WORDS };
+
+    if (version !== '1.0') {
+        Object.assign(merged, XPATH20_RESERVED_WORDS);
+    }
+
+    return merged;
+}
+
 export class XPathLexer {
     expression: string;
     current: number;
     tokens: XPathToken[];
     private additionalFunctions?: Set<string>;
+    private readonly reservedWords: ReservedWordMap;
+
+    constructor(private readonly version: XPathVersion = '2.0') {
+        this.reservedWords = buildReservedWords(version);
+    }
 
     /**
      * Register additional function names to be recognized by the lexer.
@@ -177,7 +199,7 @@ export class XPathLexer {
             }
         }
 
-        const likelyReservedWord = RESERVED_WORDS[characters.toLowerCase()];
+        const likelyReservedWord = this.reservedWords[characters.toLowerCase()];
         if (likelyReservedWord) {
             return new XPathToken(likelyReservedWord.type, characters);
         }
