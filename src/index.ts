@@ -5,6 +5,8 @@ export {
     type XPathCollections,
     type XPathFunctionRegistry,
 } from './context';
+export * from './errors';
+export * from './errors/codes';
 export * from './lexer';
 export * from './node';
 export * from './parser/base-parser';
