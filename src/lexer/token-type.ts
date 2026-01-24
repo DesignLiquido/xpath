@@ -24,6 +24,7 @@ export type TokenType =
     "MINUS" |                   // -
     "ASTERISK" |                // *
     "COMMA" |                   // ,
+    "QUESTION" |                // ?
     "QUOTE" |                   // '
     "DOUBLE_QUOTE" |            // "
     "EQUALS" |                  // =

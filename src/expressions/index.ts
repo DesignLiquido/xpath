@@ -17,6 +17,7 @@ export * from './logical-expression';
 export * from './conditional-expression';
 export * from './for-expression';
 export * from './quantified-expression';
+export * from './instance-of-expression';
 
 // Sequence expressions
 export * from './union-expression';

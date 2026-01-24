@@ -1,4 +1,6 @@
-import { XPathConditionalExpression, XPathExpression, XPathForExpression, XPathQuantifiedExpression } from "../expressions";
+import { XPathConditionalExpression, XPathExpression, XPathForExpression, XPathInstanceOfExpression, XPathQuantifiedExpression, XPathUnionExpression } from "../expressions";
+import { XPathToken } from "../lexer/token";
+import { ITEM_TYPE, OccurrenceIndicator, SequenceType, createAtomicSequenceType, createEmptySequenceType, createItemSequenceType, getAtomicType } from "../types";
 import { XPathBaseParserOptions } from "../xslt-extensions";
 import { XPathBaseParser } from "./base-parser";
 
@@ -20,12 +22,36 @@ export class XPath20Parser extends XPathBaseParser {
         return super.parseExpr();
     }
 
+    protected parseUnionExpr(): XPathExpression {
+        let left = this.parseInstanceOfExpr();
+
+        while (this.match('PIPE')) {
+            const right = this.parseInstanceOfExpr();
+            left = new XPathUnionExpression(left, right);
+        }
+
+        return left;
+    }
+
     protected parsePrimaryExpr(): XPathExpression {
         if (this.check('RESERVED_WORD') && this.peek().lexeme === 'if') {
             return this.parseIfExpr();
         }
 
         return super.parsePrimaryExpr();
+    }
+
+    private parseInstanceOfExpr(): XPathExpression {
+        let expr = this.parsePathExpr();
+
+        if (this.checkReservedWord('instance')) {
+            this.advance();
+            this.consumeReservedWord('of', "Expected 'of' after 'instance'");
+            const sequenceType = this.parseSequenceType();
+            expr = new XPathInstanceOfExpression(expr, sequenceType);
+        }
+
+        return expr;
     }
 
     private parseIfExpr(): XPathExpression {
@@ -83,6 +109,72 @@ export class XPath20Parser extends XPathBaseParser {
         this.consumeReservedWord('in', "Expected 'in' after variable name in for clause");
         const expression = this.parseExpr();
         return { variable: name, expression };
+    }
+
+    private parseSequenceType(): SequenceType {
+        if (this.checkName('empty-sequence')) {
+            this.advance();
+            this.consume('OPEN_PAREN', "Expected '(' after empty-sequence");
+            this.consume('CLOSE_PAREN', "Expected ')' after empty-sequence");
+            return createEmptySequenceType();
+        }
+
+        if (this.checkName('item')) {
+            this.advance();
+            this.consume('OPEN_PAREN', "Expected '(' after item");
+            this.consume('CLOSE_PAREN', "Expected ')' after item()");
+            const occurrence = this.parseOccurrenceIndicator();
+            return createItemSequenceType(ITEM_TYPE, occurrence);
+        }
+
+        const qname = this.parseQName();
+        const occurrence = this.parseOccurrenceIndicator();
+
+        const localName = this.stripPrefix(qname);
+        const atomicType = getAtomicType(localName);
+        if (!atomicType) {
+            throw new Error(`Unknown atomic type: ${qname}`);
+        }
+
+        return createAtomicSequenceType(atomicType, occurrence);
+    }
+
+    private parseOccurrenceIndicator(): OccurrenceIndicator {
+        if (this.match('QUESTION')) return OccurrenceIndicator.ZERO_OR_ONE;
+        if (this.match('ASTERISK')) return OccurrenceIndicator.ZERO_OR_MORE;
+        if (this.match('PLUS')) return OccurrenceIndicator.ONE_OR_MORE;
+        return OccurrenceIndicator.EXACTLY_ONE;
+    }
+
+    private parseQName(): string {
+        const first = this.consumeNameToken('Expected type name in SequenceType');
+        if (this.match('COLON')) {
+            const local = this.consumeNameToken('Expected local name after : in SequenceType').lexeme;
+            return `${first.lexeme}:${local}`;
+        }
+        return first.lexeme;
+    }
+
+    private stripPrefix(qname: string): string {
+        const parts = qname.split(':');
+        return parts.length === 2 ? parts[1] : parts[0];
+    }
+
+    private consumeNameToken(message: string): XPathToken {
+        if (this.isNameToken()) {
+            return this.advance();
+        }
+        throw new Error(`${message}. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
+    }
+
+    private isNameToken(): boolean {
+        if (this.isAtEnd()) return false;
+        const type = this.peek().type;
+        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'NODE_TYPE' || type === 'OPERATOR' || type === 'LOCATION' || type === 'RESERVED_WORD';
+    }
+
+    private checkName(name: string): boolean {
+        return this.isNameToken() && this.peek().lexeme === name;
     }
 
     private checkReservedWord(word: string): boolean {

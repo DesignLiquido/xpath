@@ -84,6 +84,10 @@ const XPATH20_RESERVED_WORDS: ReservedWordMap = {
     "some": { type: "RESERVED_WORD", value: "some" },
     "every": { type: "RESERVED_WORD", value: "every" },
     "satisfies": { type: "RESERVED_WORD", value: "satisfies" },
+
+    // SequenceType operations (XPath 2.0)
+    "instance": { type: "RESERVED_WORD", value: "instance" },
+    "of": { type: "RESERVED_WORD", value: "of" },
 };
 
 function buildReservedWords(version: XPathVersion): ReservedWordMap {
@@ -296,6 +300,8 @@ export class XPathLexer {
                 return new XPathToken("ASTERISK", char);
             case ",":
                 return new XPathToken("COMMA", char);
+            case "?":
+                return new XPathToken("QUESTION", char);
 
             // Tokens that may be single or double character
             case ".":
