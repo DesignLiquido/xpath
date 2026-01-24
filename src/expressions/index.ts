@@ -10,6 +10,10 @@ export * from './binary-expression';
 export * from './arithmetic-expression';
 export * from './logical-expression';
 
+// Sequence expressions (Phase 2.1)
+export * from './sequence-construction';
+export * from './sequence-operations';
+
 // Path expressions
 export * from './step-expression';
 export * from './predicate-expression';
