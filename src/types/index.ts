@@ -57,6 +57,40 @@ export {
   MatchResult
 } from './sequence-type-matcher';
 
+// Re-export Type Promotion system
+export {
+  NumericTypeHierarchy,
+  getNumericHierarchyLevel,
+  canPromoteNumeric,
+  promoteNumericValue,
+  getCommonNumericType,
+  canPromoteToString,
+  promoteToString,
+  promoteUntypedToNumeric,
+  PromotionContext,
+  promoteInContext,
+  describePromotion
+} from './type-promotion';
+
+// Re-export Atomization system
+export {
+  atomize,
+  atomizeToSingleValue,
+  extractStringValues,
+  atomizationToSequence,
+  isAtomizationSuccess,
+  getAtomizationErrorDescription,
+  isNode,
+  hasElementOnlyContent,
+  getNodeTypedValue,
+  getNodeStringValue,
+  createTestNode,
+  createElementWithText,
+  createElementWithChildren,
+  AtomizationResult,
+  XPathNode
+} from './atomization';
+
 // Re-export all type implementations
 export { AnyAtomicTypeImpl, UntypedAtomicImpl, StringTypeImpl, BooleanTypeImpl } from './simple-types';
 export { DecimalTypeImpl, FloatTypeImpl, DoubleTypeImpl, IntegerTypeImpl } from './numeric-types';
