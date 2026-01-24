@@ -45,6 +45,7 @@ export class XPathParser {
     private tokens: XPathToken[] = [];
     private current: number = 0;
     private extensions?: XSLTExtensions;
+    private options: XPathParserOptions;
 
     /**
      * Create a new XPath parser.
@@ -52,6 +53,27 @@ export class XPathParser {
      * @param options Optional parser configuration including XSLT extensions
      */
     constructor(options?: XPathParserOptions) {
+        this.options = options || {};
+        
+        // Set default version
+        if (!this.options.version) {
+            this.options.version = '1.0';
+        }
+
+        // Set default strict mode
+        if (this.options.strict === undefined) {
+            this.options.strict = true;
+        }
+
+        // Validate version support
+        if (this.options.version !== '1.0' && this.options.strict) {
+            throw new Error(
+                `XPath version ${this.options.version} is not yet implemented. ` +
+                `Currently only XPath 1.0 is supported. ` +
+                `Set strict=false to disable this check.`
+            );
+        }
+
         if (options?.extensions) {
             const errors = validateExtensions(options.extensions);
             if (errors.length > 0) {
@@ -59,6 +81,13 @@ export class XPathParser {
             }
             this.extensions = options.extensions;
         }
+    }
+
+    /**
+     * Get the parser options.
+     */
+    getOptions(): Readonly<XPathParserOptions> {
+        return this.options;
     }
 
     parse(tokens: XPathToken[]): XPathExpression {

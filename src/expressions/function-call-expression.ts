@@ -223,7 +223,7 @@ export class XPathFunctionCall extends XPathExpression {
     private sum(args: XPathResult[]): number {
         const nodeSet = args[0];
         if (!Array.isArray(nodeSet)) return 0;
-        return nodeSet.reduce((acc: number, node: XPathNode) => {
+        return (nodeSet as any[]).reduce((acc: number, node: XPathNode) => {
             const value = Number(node?.textContent ?? node);
             return acc + (isNaN(value) ? 0 : value);
         }, 0);

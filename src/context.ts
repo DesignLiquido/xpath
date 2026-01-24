@@ -91,16 +91,58 @@ export interface XPathContext {
      * Used by functions like json-to-xml() which are only available in XSLT 3.0+
      */
     xsltVersion?: string;
+
+    /**
+     * XPath specification version being used.
+     * Default: '1.0'
+     * 
+     * This affects:
+     * - Function library available
+     * - Type system behavior
+     * - Sequence vs node-set handling
+     */
+    xpathVersion?: '1.0' | '2.0' | '3.0' | '3.1';
+
+    /**
+     * Default collation for string comparisons (XPath 2.0+).
+     * Default: Unicode codepoint collation
+     */
+    defaultCollation?: string;
+
+    /**
+     * Base URI for resolving relative URIs (XPath 2.0+).
+     */
+    baseUri?: string;
+
+    /**
+     * Implicit timezone as duration offset from UTC (XPath 2.0+).
+     * Example: '-PT5H' for US Eastern Time (UTC-5)
+     */
+    implicitTimezone?: string;
+
+    /**
+     * Extension data for XSLT or custom implementations.
+     * This allows attaching arbitrary data to the context without
+     * polluting the main interface.
+     */
+    extensions?: Record<string, any>;
 }
 
 /**
  * Result types that can be returned from XPath evaluation.
+ * 
+ * XPath 1.0: node-set, string, number, boolean
+ * XPath 2.0+: sequences (which subsume node-sets), atomic values, functions
  */
 export type XPathResult =
-    | XPathNode[]      // Node set
+    | XPathNode[]      // Node set (XPath 1.0) or sequence of nodes (XPath 2.0+)
     | string           // String
     | number           // Number
-    | boolean;         // Boolean
+    | boolean          // Boolean
+    | any[]            // Sequence (XPath 2.0+)
+    | Map<any, any>    // Map (XPath 3.0+)
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    | Function;        // Function item (XPath 3.0+)
 
 /**
  * Creates a new XPath context with the given node as the context node.

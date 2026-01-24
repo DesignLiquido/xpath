@@ -101,6 +101,15 @@ export interface XSLTExtensions {
  */
 export interface XPathParserOptions {
     /**
+     * XPath specification version to use.
+     * Default: '1.0'
+     * 
+     * Note: Only XPath 1.0 is currently implemented.
+     * Versions 2.0, 3.0, and 3.1 are reserved for future implementation.
+     */
+    version?: '1.0' | '2.0' | '3.0' | '3.1';
+
+    /**
      * Optional XSLT extensions to enable.
      * When provided, the parser will recognize and allow calling XSLT functions.
      */
@@ -111,6 +120,13 @@ export interface XPathParserOptions {
      * Default: false
      */
     cache?: boolean;
+
+    /**
+     * Strict mode: throw errors for unsupported features.
+     * When false, unsupported features may be silently ignored or cause warnings.
+     * Default: true
+     */
+    strict?: boolean;
 }
 
 /**

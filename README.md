@@ -2,11 +2,50 @@
 
 Our XPath implementation in TypeScript.
 
+## Current Status
+
+- **XPath 1.0**: ✅ Fully implemented and tested (390 tests passing)
+- **XPath 2.0/3.0/3.1**: 🔧 Infrastructure prepared, awaiting implementation
+
+## Features
+
+- ✅ Complete XPath 1.0 specification support
+- ✅ Pure TypeScript implementation with strong typing
+- ✅ XSLT Extensions API for XSLT 1.0 functions
+- ✅ Version infrastructure for future XPath 2.0+ support
+- ✅ Custom function support
+- ✅ Flexible context system
+- ✅ Comprehensive test coverage
+
 ## Motivation
 
 We maintain another open source package called [`xslt-processor`](https://github.com/DesignLiquido/xslt-processor). The XPath component the project had became impossible to maintain due to a variety of reasons. `xslt-processor` uses this project as a submodule since version 4.
 
 This repository is intended to solve a particular problem in our packages, but it can be used by any other NPM package.
+
+## Quick Start
+
+```typescript
+import { XPathParser, XPathLexer, createContext } from '@designliquido/xpath';
+
+// Create parser and lexer
+const parser = new XPathParser();
+const lexer = new XPathLexer();
+
+// Parse an XPath expression
+const tokens = lexer.scan('//book[price > 30]/title');
+const expression = parser.parse(tokens);
+
+// Evaluate against your DOM
+const context = createContext(documentNode);
+const result = expression.evaluate(context);
+```
+
+## Documentation
+
+- **[Custom Selectors](#custom-selectors)** - Integrate XPath with custom DOM implementations
+- **[XSLT Extensions API](#xslt-extensions-api)** - Extend XPath with XSLT functions
+- **[XPath Version Support](XPATH-VERSIONS.md)** - Infrastructure for XPath 2.0/3.0/3.1
 
 ## Custom Selectors
 
