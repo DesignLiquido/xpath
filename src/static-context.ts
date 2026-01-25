@@ -7,47 +7,10 @@
  */
 
 import { SequenceType } from './types/sequence-type';
-import { XS_NAMESPACE } from './types';
+import { DEFAULT_FUNCTION_NAMESPACE, DEFAULT_COLLATION, RESERVED_FUNCTION_NAMES, XS_NAMESPACE } from './constants';
 
-/** Default function namespace for XPath/XQuery F&O library. */
-export const DEFAULT_FUNCTION_NAMESPACE = 'http://www.w3.org/2005/xpath-functions';
-
-/** Unicode codepoint collation URI (default per spec). */
-export const DEFAULT_COLLATION = 'http://www.w3.org/2005/xpath-functions/collation/codepoint';
-
-/**
- * Reserved function names (Appendix A.3). These should not be overridden by
- * user-defined signatures.
- */
-export const RESERVED_FUNCTION_NAMES: ReadonlyArray<string> = [
-    'last',
-    'position',
-    'count',
-    'id',
-    'local-name',
-    'namespace-uri',
-    'name',
-    'string',
-    'concat',
-    'starts-with',
-    'contains',
-    'substring-before',
-    'substring-after',
-    'substring',
-    'string-length',
-    'normalize-space',
-    'translate',
-    'boolean',
-    'not',
-    'true',
-    'false',
-    'lang',
-    'number',
-    'sum',
-    'floor',
-    'ceiling',
-    'round',
-];
+// Re-export constants from unified constants.ts
+export { DEFAULT_FUNCTION_NAMESPACE, DEFAULT_COLLATION, RESERVED_FUNCTION_NAMES };
 
 export interface FunctionSignature {
     /** QName (prefix:local or local) of the function. */

@@ -1,21 +1,6 @@
 import { XPathNode } from "./node";
 
 /**
- * Node type constants (matching DOM specification)
- */
-export const NodeType = {
-    ELEMENT_NODE: 1,
-    ATTRIBUTE_NODE: 2,
-    TEXT_NODE: 3,
-    CDATA_SECTION_NODE: 4,
-    PROCESSING_INSTRUCTION_NODE: 7,
-    COMMENT_NODE: 8,
-    DOCUMENT_NODE: 9,
-    DOCUMENT_FRAGMENT_NODE: 11,
-    NAMESPACE_NODE: 13,
-} as const;
-
-/**
  * Type for custom XPath functions that can be registered in the context.
  */
 export type XPathFunction = (...args: any[]) => any;

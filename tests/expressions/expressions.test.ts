@@ -1,17 +1,7 @@
 import { XPathLexer } from '../../src/lexer';
 import { XPath10Parser } from '../../src/parser';
-import {
-    XPathStringLiteral,
-    XPathNumberLiteral,
-    XPathVariableReference,
-    XPathUnaryExpression,
-    XPathArithmeticExpression,
-    XPathBinaryExpression,
-    XPathLogicalExpression,
-    XPathFunctionCall,
-    XPathLocationPath,
-} from '../../src/expressions';
-import { XPathContext, NodeType } from '../../src/context';
+import { NodeType } from '../../src/constants';
+import { XPathContext } from '../../src/context';
 import { XPathNode } from '../../src/node';
 
 describe('Expression Evaluation', () => {

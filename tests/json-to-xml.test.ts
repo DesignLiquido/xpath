@@ -1,6 +1,7 @@
 import { XPathLexer } from '../src/lexer';
 import { XPath10Parser } from '../src/parser';
-import { XPathContext, NodeType } from '../src/context';
+import { XPathContext } from '../src/context';
+import { NodeType } from '../src/constants';
 
 describe('json-to-xml Function', () => {
     const lexer = new XPathLexer();

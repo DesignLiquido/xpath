@@ -3,6 +3,8 @@
  * Based on XML Schema Part 2: Datatypes and XPath 2.0 Section 2.5.1
  */
 
+import { XS_NAMESPACE } from '../constants';
+
 /**
  * Base interface for all atomic types
  */
@@ -15,10 +17,8 @@ export interface AtomicType {
   cast(value: any): any;
 }
 
-/**
- * XML Schema namespace
- */
-export const XS_NAMESPACE = 'http://www.w3.org/2001/XMLSchema';
+// Re-export constant from unified constants.ts
+export { XS_NAMESPACE };
 
 /**
  * Creates a qualified type name for an XS type

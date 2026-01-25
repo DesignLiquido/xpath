@@ -1,5 +1,5 @@
 import { XPathNode } from '../node';
-import { NodeType } from '../context';
+import { NodeType } from '../constants';
 
 /**
  * Options for JSON-to-XML conversion

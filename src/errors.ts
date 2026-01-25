@@ -9,10 +9,10 @@
  * Reference: https://www.w3.org/TR/xpath20/#errors
  */
 
-/**
- * XPath error namespace per spec
- */
-export const XPATH_ERROR_NAMESPACE = 'http://www.w3.org/2005/xqt-errors';
+import { XPATH_ERROR_NAMESPACE } from './constants';
+
+// Re-export constant from unified constants.ts
+export { XPATH_ERROR_NAMESPACE };
 
 /**
  * Base error class for all XPath errors
