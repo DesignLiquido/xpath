@@ -4,7 +4,7 @@ Our XPath implementation in TypeScript.
 
 ## Current Status
 
-- **XPath 1.0**: ✅ Fully implemented and tested (390 tests passing)
+- **XPath 1.0**: ✅ Fully implemented and tested (1176 tests passing across 36 test suites)
 - **XPath 2.0/3.0/3.1**: 🔧 Infrastructure prepared, awaiting implementation
 
 ## Features
@@ -15,7 +15,33 @@ Our XPath implementation in TypeScript.
 - ✅ Version infrastructure for future XPath 2.0+ support
 - ✅ Custom function support
 - ✅ Flexible context system
-- ✅ Comprehensive test coverage
+- ✅ Comprehensive test coverage (1176 tests, 77% code coverage)
+- ✅ Complete TypeDoc API documentation
+- ✅ Automated GitHub Pages publishing
+
+## Documentation
+
+Comprehensive documentation is available:
+
+- **[API Documentation](https://designliquido.github.io/xpath/)** - Auto-generated TypeDoc API reference (published via GitHub Pages)
+- **[Custom Selectors](#custom-selectors)** - Integrate XPath with custom DOM implementations
+- **[XSLT Extensions API](#xslt-extensions-api)** - Extend XPath with XSLT functions
+- **[XPath Version Support](XPATH-VERSIONS.md)** - Infrastructure for XPath 2.0/3.0/3.1
+- **[Implementation Plan](docs/guides/XPATH-2.0-IMPLEMENTATION-PLAN.md)** - XPath 2.0 feature roadmap
+- **[Migration Guide](docs/guides/XPATH-MIGRATION-GUIDE.md)** - Upgrading from XPath 1.0 to 2.0
+- **[Incompatibilities Guide](docs/guides/XPATH-INCOMPATIBILITIES.md)** - Known version differences
+
+### Building Documentation
+
+```bash
+# Generate TypeDoc documentation
+yarn docs
+
+# Watch for changes and regenerate
+yarn docs:watch
+```
+
+Documentation is automatically built and published to GitHub Pages on every push to the main branch.
 
 ## Motivation
 
@@ -40,12 +66,6 @@ const expression = parser.parse(tokens);
 const context = createContext(documentNode);
 const result = expression.evaluate(context);
 ```
-
-## Documentation
-
-- **[Custom Selectors](#custom-selectors)** - Integrate XPath with custom DOM implementations
-- **[XSLT Extensions API](#xslt-extensions-api)** - Extend XPath with XSLT functions
-- **[XPath Version Support](XPATH-VERSIONS.md)** - Infrastructure for XPath 2.0/3.0/3.1
 
 ## Custom Selectors
 
