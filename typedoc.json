@@ -1,0 +1,24 @@
+{
+  "entryPoints": [
+    "src/index.ts"
+  ],
+  "readme": "docs/README.md",
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "hideGenerator": true,
+  "sort": [
+    "source-order"
+  ],
+  "tsconfig": "tsconfig.json",
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
+  "outputs": [
+    {
+      "name": "markdown",
+      "path": "docs/api"
+    }
+  ]
+}
