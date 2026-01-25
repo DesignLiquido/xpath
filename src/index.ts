@@ -17,6 +17,7 @@ export * from './static-context';
 export * from './xslt-extensions';
 export * from './xpath-version';
 export * from './static-typing';
+export * from './schema';
 // Re-export types but exclude XPathNode (from ./node) and toSequence (from ./xpath-version)
 export {
   AtomicType,
