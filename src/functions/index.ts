@@ -14,3 +14,4 @@ export * from './qname-functions';
 export * from './uri-functions';
 export * from './boolean-functions';
 export * from './error-functions';
+export * from './collection-functions';
