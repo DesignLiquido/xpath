@@ -1,3 +1,4 @@
+export * from './constants';
 export * from './context';
 export {
     // Export new dynamic context types
@@ -15,6 +16,7 @@ export * from './parser/base-parser';
 export * from './static-context';
 export * from './xslt-extensions';
 export * from './xpath-version';
+export * from './static-typing';
 // Re-export types but exclude XPathNode (from ./node) and toSequence (from ./xpath-version)
 export {
   AtomicType,
