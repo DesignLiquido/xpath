@@ -105,12 +105,10 @@ export function min(arg: XPathResult, collation?: XPathResult): number | string 
     const values = Array.isArray(arg) ? arg : [arg];
     if (values.length === 0) return null;
 
-    // Determine if we're comparing numbers or strings
-    const firstValue = values[0];
-    const isNumeric = typeof firstValue === 'number' ||
-        (typeof firstValue === 'string' && !isNaN(Number(firstValue)));
+    // Determine comparison mode: numeric if all items can be converted to numbers
+    const allNumeric = values.every(v => !isNaN(toNumber(v)));
 
-    if (isNumeric) {
+    if (allNumeric) {
         let minVal = Infinity;
         for (const value of values) {
             const num = toNumber(value);
@@ -121,9 +119,10 @@ export function min(arg: XPathResult, collation?: XPathResult): number | string 
     } else {
         // String comparison
         let minStr: string | null = null;
+        const coll = typeof collation === 'string' ? collation : undefined;
         for (const value of values) {
             const str = toString(value);
-            if (minStr === null || str < minStr) {
+            if (minStr === null || compareStrings(str, minStr, coll) < 0) {
                 minStr = str;
             }
         }
@@ -142,12 +141,10 @@ export function max(arg: XPathResult, collation?: XPathResult): number | string 
     const values = Array.isArray(arg) ? arg : [arg];
     if (values.length === 0) return null;
 
-    // Determine if we're comparing numbers or strings
-    const firstValue = values[0];
-    const isNumeric = typeof firstValue === 'number' ||
-        (typeof firstValue === 'string' && !isNaN(Number(firstValue)));
+    // Determine comparison mode: numeric if all items can be converted to numbers
+    const allNumeric = values.every(v => !isNaN(toNumber(v)));
 
-    if (isNumeric) {
+    if (allNumeric) {
         let maxVal = -Infinity;
         for (const value of values) {
             const num = toNumber(value);
@@ -158,9 +155,10 @@ export function max(arg: XPathResult, collation?: XPathResult): number | string 
     } else {
         // String comparison
         let maxStr: string | null = null;
+        const coll = typeof collation === 'string' ? collation : undefined;
         for (const value of values) {
             const str = toString(value);
-            if (maxStr === null || str > maxStr) {
+            if (maxStr === null || compareStrings(str, maxStr, coll) > 0) {
                 maxStr = str;
             }
         }
@@ -188,4 +186,25 @@ function toString(value: unknown): string {
         return (value as { textContent?: string }).textContent ?? '';
     }
     return String(value);
+}
+
+/**
+ * String comparison with optional collation.
+ * Currently supports codepoint collation by default. Other collations fall back to
+ * localeCompare with 'en' and sensitivity 'variant'.
+ */
+function compareStrings(a: string, b: string, collation?: string): number {
+    // Default or codepoint collation: simple Unicode codepoint ordering
+    if (!collation || collation.endsWith('/collation/codepoint')) {
+        if (a === b) return 0;
+        return a < b ? -1 : 1;
+    }
+    // Fallback: locale-aware comparison
+    try {
+        return a.localeCompare(b, 'en', { sensitivity: 'variant' });
+    } catch {
+        // If localeCompare fails, fallback to codepoint ordering
+        if (a === b) return 0;
+        return a < b ? -1 : 1;
+    }
 }
