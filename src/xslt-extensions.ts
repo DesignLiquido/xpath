@@ -8,6 +8,7 @@
 import { XPathContext } from './context';
 import { XPathStaticContext } from './static-context';
 import { XPathNode } from './node';
+import { WarningConfiguration, WarningCollector } from './warnings';
 
 /**
  * Signature for an XSLT extension function.
@@ -152,6 +153,20 @@ export interface XPathBaseParserOptions {
      * Default: false (XPath 2.0 semantics)
      */
     xpath10CompatibilityMode?: boolean;
+
+    /**
+     * Warning configuration for deprecated features and migration guidance (Phase 8.2).
+     * Configure how warnings are collected, filtered, and reported.
+     * Default: warnings enabled with 'info' minimum severity
+     */
+    warningConfig?: WarningConfiguration;
+
+    /**
+     * Warning collector instance for gathering warnings during parsing.
+     * If not provided, a new collector will be created based on warningConfig.
+     * Passing an existing collector allows aggregating warnings across multiple parses.
+     */
+    warningCollector?: WarningCollector;
 }
 
 /**

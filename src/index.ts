@@ -8,6 +8,7 @@ export {
 export * from './compatibility';
 export * from './errors';
 export * from './errors/codes';
+export * from './warnings';
 export * from './lexer';
 export * from './node';
 export * from './parser/base-parser';

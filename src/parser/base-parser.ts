@@ -30,6 +30,11 @@ import {
     unresolvedNameReference,
     functionSignatureMismatch,
 } from '../errors';
+import {
+    WarningCollector,
+    createWarningCollector,
+    createNoOpWarningCollector,
+} from '../warnings';
 
 /**
  * Recursive descent parser shared by XPath 1.0+ implementations.
@@ -57,11 +62,11 @@ export abstract class XPathBaseParser {
     protected extensions?: XSLTExtensions;
     protected options: XPathBaseParserOptions;
     protected staticContext: XPathStaticContext;
-    private namespaceAxisWarningEmitted = false;
+    protected warningCollector: WarningCollector;
 
     /**
      * Create a new XPath parser.
-     * 
+     *
      * @param options Optional parser configuration including XSLT extensions
      */
     protected constructor(options?: XPathBaseParserOptions) {
@@ -72,9 +77,22 @@ export abstract class XPathBaseParser {
             extensions: options?.extensions,
             enableNamespaceAxis: options?.enableNamespaceAxis ?? false,
             staticContext: options?.staticContext ?? createStaticContext(),
+            xpath10CompatibilityMode: options?.xpath10CompatibilityMode ?? false,
+            warningConfig: options?.warningConfig,
+            warningCollector: options?.warningCollector,
         };
 
         this.staticContext = this.options.staticContext!;
+
+        // Initialize warning collector
+        if (this.options.warningCollector) {
+            this.warningCollector = this.options.warningCollector;
+        } else if (this.options.warningConfig) {
+            this.warningCollector = createWarningCollector(this.options.warningConfig);
+        } else {
+            // Default: create a warning collector that doesn't log to console
+            this.warningCollector = createWarningCollector({ logToConsole: false });
+        }
 
         if (this.options.extensions) {
             const errors = validateExtensions(this.options.extensions);
@@ -83,6 +101,14 @@ export abstract class XPathBaseParser {
             }
             this.extensions = this.options.extensions;
         }
+    }
+
+    /**
+     * Get the warning collector for this parser.
+     * Useful for retrieving warnings after parsing.
+     */
+    getWarningCollector(): WarningCollector {
+        return this.warningCollector;
     }
 
     /**
@@ -110,6 +136,17 @@ export abstract class XPathBaseParser {
     parse(tokens: XPathToken[]): XPathExpression {
         this.tokens = tokens;
         this.current = 0;
+
+        // Emit compatibility mode warning if using XPath 2.0+ with compatibility mode
+        if (this.options.xpath10CompatibilityMode &&
+            this.options.version &&
+            this.options.version !== '1.0') {
+            this.warningCollector.emit(
+                'XPWC0001',
+                `XPath ${this.options.version} with compatibility mode`,
+                tokens.map(t => t.lexeme).join('')
+            );
+        }
 
         if (tokens.length === 0) {
             throw grammarViolation('Empty expression');
@@ -670,11 +707,15 @@ export abstract class XPathBaseParser {
         return false;
     }
 
+    /**
+     * Emit deprecation warning for namespace axis usage.
+     */
     private warnNamespaceAxis(): void {
-        if (this.namespaceAxisWarningEmitted) return;
-        this.namespaceAxisWarningEmitted = true;
-        // eslint-disable-next-line no-console
-        console.warn('The namespace axis (namespace::) is deprecated and disabled by default. Set enableNamespaceAxis to use it.');
+        this.warningCollector.emit(
+            'XPWD0001',
+            'namespace:: axis',
+            this.tokens.map(t => t.lexeme).join('')
+        );
     }
 
     private isFunctionNameToken(type: TokenType | undefined): boolean {
