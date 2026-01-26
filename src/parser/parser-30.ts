@@ -304,6 +304,61 @@ export class XPath30Parser extends XPath20Parser {
     }
 
     /**
+     * Override isStepStart to exclude function references.
+     * In XPath 3.0, name#arity is a function reference, not a location step.
+     */
+    protected isStepStart(): boolean {
+        // If it looks like a function reference, it's not a step
+        if (this.isFunctionRefStart()) {
+            return false;
+        }
+        
+        return super.isStepStart();
+    }
+
+    /**
+     * Override parseFilterExpr to handle dynamic function calls.
+     * In XPath 3.0, any primary expression followed by '(' is a dynamic function call.
+     * Syntax: $func(args), (inline-function)(args), etc.
+     */
+    protected parseFilterExpr(): XPathExpression {
+        let expr = this.parsePrimaryExpr();
+
+        // Check for dynamic function call: expr(args)
+        // This handles cases like $func(args) where $func is a function item
+        // Note: parsePrimaryExpr already handles normal function calls (name(...))
+        // so if we see '(' here, it must be a dynamic call
+        if (this.check('OPEN_PAREN')) {
+            // It's a dynamic function call
+            this.advance(); // consume '('
+            
+            const args: XPathExpression[] = [];
+            if (!this.check('CLOSE_PAREN')) {
+                do {
+                    args.push(this.parseExprSingle());
+                } while (this.match('COMMA'));
+            }
+            
+            this.consume('CLOSE_PAREN', "Expected ')' after function arguments");
+            expr = new XPathDynamicFunctionCall(expr, args);
+        }
+
+        // Collect all predicates
+        const predicates: XPathExpression[] = [];
+        while (this.check('OPEN_SQUARE_BRACKET')) {
+            predicates.push(...this.parsePredicates());
+        }
+
+        // If there are predicates, wrap in filter expression
+        if (predicates.length > 0) {
+            const XPathFilterExpression = require('../expressions').XPathFilterExpression;
+            return new XPathFilterExpression(expr, predicates);
+        }
+
+        return expr;
+    }
+
+    /**
      * Check if this looks like a function reference (name#arity).
      * Handles names with hyphens like upper-case#1 or prefix:upper-case#1
      */

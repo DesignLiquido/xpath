@@ -253,7 +253,7 @@ describe('XPath 3.0 Parser', () => {
     });
 
     describe('Named Function References (#)', () => {
-        it.skip('should create function reference', () => {
+        it('should create function reference', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
             const tokens = lexer.scan('upper-case#1');
@@ -263,7 +263,7 @@ describe('XPath 3.0 Parser', () => {
             expect(result.arity).toBe(1);
         });
 
-        it.skip('should use function reference with dynamic call', () => {
+        it('should use function reference with dynamic call', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
             const tokens = lexer.scan('let $f := upper-case#1 return $f("hello")');
@@ -284,7 +284,7 @@ describe('XPath 3.0 Parser', () => {
             expect(result.arity).toBe(1);
         });
 
-        it.skip('should invoke inline function immediately', () => {
+        it('should invoke inline function immediately', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
             const tokens = lexer.scan('let $double := function($x) { $x * 2 } return $double(5)');
@@ -293,7 +293,7 @@ describe('XPath 3.0 Parser', () => {
             expect(result).toBe(10);
         });
 
-        it.skip('should support multiple parameters', () => {
+        it('should support multiple parameters', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
             const tokens = lexer.scan('let $add := function($a, $b) { $a + $b } return $add(3, 4)');
@@ -302,7 +302,7 @@ describe('XPath 3.0 Parser', () => {
             expect(result).toBe(7);
         });
 
-        it.skip('should capture closure variables', () => {
+        it('should capture closure variables', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
             const tokens = lexer.scan('let $multiplier := 3, $multiply := function($x) { $x * $multiplier } return $multiply(5)');

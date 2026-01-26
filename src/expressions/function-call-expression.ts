@@ -9,6 +9,7 @@ import {
     typeMismatch,
     invalidCastArgument,
 } from '../errors';
+import * as HOF from '../functions/higher-order-functions';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -188,6 +189,17 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         const node = arg ? (Array.isArray(arg) ? arg[0] : arg) : ctx.node;
         return node?.nodeName ?? '';
     },
+
+    // Higher-order functions (XPath 3.0)
+    'for-each': HOF.forEach,
+    'filter': HOF.filter,
+    'fold-left': HOF.foldLeft,
+    'fold-right': HOF.foldRight,
+    'for-each-pair': HOF.forEachPair,
+    'sort': HOF.sort,
+    'apply': HOF.apply,
+    'function-name': HOF.functionName,
+    'function-arity': HOF.functionArity,
 };
 
 /**
@@ -213,6 +225,16 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'subsequence': [2, 3],
     'insert-before': [3, 3],
     'remove': [2, 2],
+    // Higher-order functions
+    'for-each': [2, 2],
+    'filter': [2, 2],
+    'fold-left': [3, 3],
+    'fold-right': [3, 3],
+    'for-each-pair': [3, 3],
+    'sort': [1, 3],
+    'apply': [2, 2],
+    'function-name': [1, 1],
+    'function-arity': [1, 1],
 };
 
 /**
