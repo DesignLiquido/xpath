@@ -72,7 +72,12 @@ export class XPath30Parser extends XPath20Parser {
     /**
      * Parse a single expression (not comma-separated).
      */
-    private parseExprSingle(): XPathExpression {
+    protected parseExprSingle(): XPathExpression {
+        // ExprSingle allows FLWOR expressions like let/for without top-level comma sequences
+        if (this.checkReservedWordInternal('let')) {
+            return this.parseLetExpr();
+        }
+
         return super.parseExpr();
     }
 

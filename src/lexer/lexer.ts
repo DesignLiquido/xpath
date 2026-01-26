@@ -135,6 +135,14 @@ const XPATH30_RESERVED_WORDS: ReservedWordMap = {
     "function": { type: "RESERVED_WORD", value: "function" },
 };
 
+const XPATH31_RESERVED_WORDS: ReservedWordMap = {
+    // Map constructor keyword (XPath 3.1)
+    "map": { type: "RESERVED_WORD", value: "map" },
+
+    // Array constructor keyword (XPath 3.1)
+    "array": { type: "RESERVED_WORD", value: "array" },
+};
+
 function buildReservedWords(version: XPathVersion): ReservedWordMap {
     const merged: ReservedWordMap = { ...COMMON_RESERVED_WORDS };
 
@@ -144,6 +152,10 @@ function buildReservedWords(version: XPathVersion): ReservedWordMap {
 
     if (version === '3.0' || version === '3.1') {
         Object.assign(merged, XPATH30_RESERVED_WORDS);
+    }
+
+    if (version === '3.1') {
+        Object.assign(merged, XPATH31_RESERVED_WORDS);
     }
 
     return merged;

@@ -16,6 +16,7 @@ export * from './parser/base-parser';
 export { XPath10Parser } from './parser/parser-10';
 export { XPath20Parser } from './parser/parser-20';
 export { XPath30Parser } from './parser/parser-30';
+export { XPath31Parser } from './parser/parser-31';
 export { createXPathParser, XPathParser } from './parser';
 export * from './static-context';
 export * from './xslt-extensions';
