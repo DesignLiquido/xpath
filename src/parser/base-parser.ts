@@ -647,7 +647,11 @@ export abstract class XPathBaseParser {
     protected parseFunctionCall(): XPathExpression {
         let name = this.advance().lexeme;
 
-        if (this.match('COLON')) {
+        // Handle EQName: Q{uri}local
+        if (name.startsWith('Q{')) {
+            // EQName is already fully qualified, use as-is
+            this.consume('OPEN_PAREN', "Expected '(' after function name");
+        } else if (this.match('COLON')) {
             const local = this.advance();
             if (!this.isNcNameToken(local.type)) {
                 throw grammarViolation('Expected local name after namespace prefix');
@@ -655,7 +659,9 @@ export abstract class XPathBaseParser {
             name = `${name}:${local.lexeme}`;
         }
 
-        this.consume('OPEN_PAREN', "Expected '(' after function name");
+        if (!name.startsWith('Q{')) {
+            this.consume('OPEN_PAREN', "Expected '(' after function name");
+        }
 
         const args: XPathExpression[] = [];
 
@@ -689,6 +695,11 @@ export abstract class XPathBaseParser {
         ];
         const isNodeTestName = nodeTestNames.includes(first.lexeme?.toLowerCase?.() ?? '');
 
+        // EQName followed by '(' is a function call
+        if (first.type === 'EQNAME' && second?.type === 'OPEN_PAREN') {
+            return true;
+        }
+
         // Simple function name followed by '(' (exclude node-type tests)
         if (this.isFunctionNameToken(first.type) && second?.type === 'OPEN_PAREN') {
             if (isNodeTestName) return false;
@@ -720,7 +731,7 @@ export abstract class XPathBaseParser {
 
     private isFunctionNameToken(type: TokenType | undefined): boolean {
         // NODE_TYPE tokens (node, text, comment, processing-instruction) are reserved for node tests, not functions
-        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'OPERATOR' || type === 'LOCATION';
+        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'OPERATOR' || type === 'LOCATION' || type === 'EQNAME';
     }
 
     private isNcNameToken(type: TokenType | undefined): boolean {
@@ -732,6 +743,9 @@ export abstract class XPathBaseParser {
         let name = '';
         if (this.match('ASTERISK')) {
             return '*';
+        }
+        if (this.check('EQNAME')) {
+            return this.advance().lexeme;
         }
         if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION') || this.check('OPERATOR')) {
             name = this.advance().lexeme;

@@ -368,6 +368,49 @@ export class XPathLexer {
         throw new Error(`Invalid number: ${characters}`);
     }
 
+    /**
+     * Parse EQName (Expanded QName): Q{uri}local-name
+     * XPath 3.0 syntax for directly specifying namespace URIs.
+     * Example: Q{http://www.w3.org/2005/xpath-functions/math}pi
+     */
+    parseEQName(): XPathToken {
+        // Q is already consumed, consume the opening brace
+        this.next(); // consume '{'
+        
+        let uri = "";
+        // Read until closing brace
+        while (this.current < this.expression.length && this.expression[this.current] !== "}") {
+            uri += this.next();
+        }
+
+        if (this.current >= this.expression.length) {
+            throw new Error(`Unterminated EQName: missing '}' after URI`);
+        }
+
+        this.next(); // consume '}'
+
+        // Now parse the local name
+        let localName = "";
+        if (this.current < this.expression.length && this.isAlpha(this.expression[this.current])) {
+            while (this.current < this.expression.length) {
+                const char = this.expression[this.current];
+                if (this.isAlphaNumeric(char) || char === "-" || char === "_") {
+                    localName += this.next();
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (localName.length === 0) {
+            throw new Error(`EQName missing local name after '}': Q{${uri}}`);
+        }
+
+        // Store the full EQName as "Q{uri}local"
+        const fullEQName = `Q{${uri}}${localName}`;
+        return new XPathToken("EQNAME", fullEQName);
+    }
+
     scanToken(): XPathToken | null {
         const char = this.next();
 
@@ -413,6 +456,14 @@ export class XPathLexer {
                 return new XPathToken("COMMA", char);
             case "?":
                 return new XPathToken("QUESTION", char);
+
+            case "Q":
+                // XPath 3.0: Q{uri}local is an EQName (expanded QName)
+                if (this.peek() === "{") {
+                    return this.parseEQName();
+                }
+                // Otherwise treat as identifier
+                return this.parseIdentifier(char);
 
             // Tokens that may be single or double character
             case ".":

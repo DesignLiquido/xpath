@@ -8,6 +8,7 @@ export type TokenType =
     "LOCATION" |
     "NODE_TYPE" |
     "OPERATOR" |
+    "EQNAME" |                  // Q{uri}local (XPath 3.0)
 
     // Single character tokens
     "AT" |                      // @

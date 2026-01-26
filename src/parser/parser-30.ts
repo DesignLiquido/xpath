@@ -361,11 +361,19 @@ export class XPath30Parser extends XPath20Parser {
     /**
      * Check if this looks like a function reference (name#arity).
      * Handles names with hyphens like upper-case#1 or prefix:upper-case#1
+     * Also handles EQNames like Q{uri}name#1
      */
     private isFunctionRefStart(): boolean {
         if (this.isAtEnd()) return false;
 
         const token = this.peek();
+        
+        // EQName followed by # is a function reference
+        if (token.type === 'EQNAME') {
+            const next = this.peekNext();
+            return next?.type === 'HASH';
+        }
+        
         // Check for identifier/function/operator/location that could start a QName
         if (token.type === 'IDENTIFIER' || token.type === 'FUNCTION' || token.type === 'OPERATOR' || token.type === 'LOCATION') {
             // Scan ahead to find a HASH token, allowing for:

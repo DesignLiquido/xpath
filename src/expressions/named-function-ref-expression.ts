@@ -49,23 +49,11 @@ export class XPathNamedFunctionRef extends XPathExpression {
      * Resolve the named function to a function item.
      */
     private resolveFunction(context: XPathContext): XPathFunctionItem | null {
-        // Parse the name to get namespace prefix and local name
-        const { prefix, localName } = this.parseName(this.name);
+        // Parse the name to get namespace and local name
+        const { namespace: parsedNamespace, localName } = this.parseNameWithNamespace(this.name, context);
 
-        // Determine the namespace
-        let namespace: string | undefined;
-        if (prefix) {
-            if (prefix === 'fn') {
-                namespace = FN_NAMESPACE;
-            } else if (prefix === 'math') {
-                namespace = MATH_NAMESPACE;
-            } else if (context.namespaces && context.namespaces[prefix]) {
-                namespace = context.namespaces[prefix];
-            }
-        } else {
-            // Default function namespace
-            namespace = FN_NAMESPACE;
-        }
+        // Use the parsed namespace
+        const namespace = parsedNamespace;
 
         // Try to get built-in function
         const builtIn = getBuiltInFunction(localName);
@@ -93,8 +81,8 @@ export class XPathNamedFunctionRef extends XPathExpression {
 
         // Check context's function registry
         if (context.functionRegistry) {
-            const fullName = prefix ? `${prefix}:${localName}` : localName;
-            const registeredFunc = context.functionRegistry[fullName];
+            // Try looking up by local name or full name
+            const registeredFunc = context.functionRegistry[localName] || context.functionRegistry[this.name];
             if (registeredFunc) {
                 return {
                     __isFunctionItem: true as const,
@@ -151,17 +139,43 @@ export class XPathNamedFunctionRef extends XPathExpression {
     }
 
     /**
-     * Parse a QName into prefix and local name.
+     * Parse a QName or EQName into namespace and local name.
+     * Handles both prefix:local format and Q{uri}local format.
      */
-    private parseName(name: string): { prefix?: string; localName: string } {
+    private parseNameWithNamespace(name: string, context: XPathContext): { namespace?: string; localName: string } {
+        // Check if it's an EQName (Q{uri}local)
+        if (name.startsWith('Q{')) {
+            const match = name.match(/^Q\{([^}]*)\}(.+)$/);
+            if (match) {
+                const [, uri, localName] = match;
+                return {
+                    namespace: uri || undefined,
+                    localName,
+                };
+            }
+        }
+
+        // Parse as traditional QName (prefix:local)
         const colonIndex = name.indexOf(':');
         if (colonIndex > 0) {
-            return {
-                prefix: name.substring(0, colonIndex),
-                localName: name.substring(colonIndex + 1),
-            };
+            const prefix = name.substring(0, colonIndex);
+            const localName = name.substring(colonIndex + 1);
+            
+            // Resolve prefix to namespace
+            let namespace: string | undefined;
+            if (prefix === 'fn') {
+                namespace = FN_NAMESPACE;
+            } else if (prefix === 'math') {
+                namespace = MATH_NAMESPACE;
+            } else if (context.namespaces && context.namespaces[prefix]) {
+                namespace = context.namespaces[prefix];
+            }
+            
+            return { namespace, localName };
         }
-        return { localName: name };
+        
+        // No prefix, use default function namespace
+        return { namespace: FN_NAMESPACE, localName: name };
     }
 
     toString(): string {
