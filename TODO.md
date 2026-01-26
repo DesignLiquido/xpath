@@ -2,7 +2,7 @@
 
 ## XSLT Extensions
 
-This library is a pure **XPath 1.0/2.0** implementation that provides a clean integration point for XSLT-specific functions through the **XSLT Extensions API**.
+This library is a pure **XPath 1.0/2.0/3.0** implementation that provides a clean integration point for XSLT-specific functions through the **XSLT Extensions API**.
 
 The XSLT function implementations live in the `xslt-processor` package, while this package provides the interface definitions and integration hooks.
 
