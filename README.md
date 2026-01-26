@@ -423,7 +423,7 @@ const context: XPathContext = {
 
 ### Complete Example
 
-For a complete implementation example, see the test suite at [tests/xslt-extensions.test.ts](tests/xslt-extensions.test.ts), which demonstrates:
+For a complete implementation example, see the test suite at [https://github.com/DesignLiquido/xpath/blob/main/tests/xslt-extensions.test.ts](tests/xslt-extensions.test.ts), which demonstrates:
 
 - Creating and validating extension bundles
 - Registering extensions with parser and lexer
