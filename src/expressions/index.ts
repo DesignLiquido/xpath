@@ -50,3 +50,4 @@ export * from './dynamic-function-call-expression';
 
 // XPath 3.1 expressions
 export * from './map-constructor-expression';
+export * from './array-constructor-expression';

@@ -260,6 +260,61 @@ export function createEmptyExtensions(version?: '1.0' | '2.0' | '3.0'): XSLTExte
 
 ---
 
+## XPath 3.1 Implementation Status
+
+### Phase 1: Specification Review & Gap Analysis ✅ COMPLETE
+
+**Completed:** January 26, 2026
+**Status:** Ready for Phase 2 implementation
+
+#### Phase 1 Deliverables:
+- ✅ [XPATH-31-IMPLEMENTATION-PLAN.md](XPATH-31-IMPLEMENTATION-PLAN.md) - 8-phase implementation roadmap
+- ✅ [XPATH-31-PHASE1-GAP-ANALYSIS.md](XPATH-31-PHASE1-GAP-ANALYSIS.md) - Comprehensive gap analysis
+- ✅ [XPATH-31-PHASE1-DETAILED-TASKS.md](XPATH-31-PHASE1-DETAILED-TASKS.md) - Task breakdown (62 tasks)
+
+### Phase 2: Map Operations Enhancement ✅ COMPLETE
+
+**Completed:** January 26, 2026
+
+#### Phase 2 Deliverables:
+- ✅ Map constructors: `map { key: value, ... }`
+- ✅ Map functions (9 functions in `map:` namespace)
+  - `map:size`, `map:keys`, `map:contains`, `map:get`
+  - `map:put`, `map:entry`, `map:merge`
+  - `map:for-each`, `map:remove`
+- ✅ XPath31Parser with map constructor parsing
+
+### Phase 3: Array Operations Enhancement ✅ COMPLETE
+
+**Completed:** January 26, 2026
+
+#### Phase 3 Deliverables:
+- ✅ Array constructors:
+  - Square bracket syntax: `[item1, item2, ...]`
+  - Curly brace syntax: `array { expr }`
+- ✅ Array functions (17 functions in `array:` namespace):
+  - `array:size`, `array:get`, `array:put`, `array:append`
+  - `array:subarray`, `array:remove`, `array:insert-before`
+  - `array:head`, `array:tail`, `array:reverse`
+  - `array:join`, `array:flatten`
+  - `array:for-each`, `array:filter`
+  - `array:fold-left`, `array:fold-right`, `array:sort`
+- ✅ Parser support for `array:*` and `map:*` namespaced function calls
+- ✅ Single-item sequence unwrapping for function arguments
+- ✅ Comprehensive test coverage (56 array function tests, 40 array constructor tests)
+
+**Test Status:** 1509 tests passing (2 skipped for `to` range operator)
+
+#### Next Steps:
+👉 **Begin Phase 4: JSON Integration** or **Phase 5: Lookup Operator Refinement**
+
+**Remaining Critical Gaps:**
+1. Lookup Operator (`?` unary and postfix) - Phase 5
+2. JSON Support (parse-json, serialize) - Phase 4
+3. Type System Enhancements (TypedMapTest, TypedArrayTest) - Phase 6
+
+---
+
 ## Other Future Enhancements
 
 ### XPath 2.0+ Features

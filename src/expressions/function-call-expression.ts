@@ -15,6 +15,7 @@ import * as SEQ30 from '../functions/sequence-functions-30';
 import * as SEQ from '../functions/sequence-functions';
 import * as ENV from '../functions/environment-functions';
 import * as STR30 from '../functions/string-functions-30';
+import * as ARRAY from '../functions/array-functions';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -224,6 +225,25 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'environment-variable': ENV.environmentVariable,
     'available-environment-variables': ENV.availableEnvironmentVariables,
 
+    // Array functions (XPath 3.1)
+    'array:size': ARRAY.arraySize,
+    'array:get': ARRAY.arrayGet,
+    'array:put': ARRAY.arrayPut,
+    'array:append': ARRAY.arrayAppend,
+    'array:subarray': ARRAY.arraySubarray,
+    'array:remove': ARRAY.arrayRemove,
+    'array:insert-before': ARRAY.arrayInsertBefore,
+    'array:head': ARRAY.arrayHead,
+    'array:tail': ARRAY.arrayTail,
+    'array:reverse': ARRAY.arrayReverse,
+    'array:join': ARRAY.arrayJoin,
+    'array:flatten': ARRAY.arrayFlatten,
+    'array:for-each': ARRAY.arrayForEach,
+    'array:filter': ARRAY.arrayFilter,
+    'array:fold-left': ARRAY.arrayFoldLeft,
+    'array:fold-right': ARRAY.arrayFoldRight,
+    'array:sort': ARRAY.arraySort,
+
     // String functions (XPath 3.0 additions)
     'analyze-string': STR30.analyzeString,
     'format-integer': STR30.formatInteger,
@@ -286,6 +306,24 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     // Environment functions (XPath 3.0)
     'environment-variable': [1, 1],
     'available-environment-variables': [0, 0],
+    // Array functions (XPath 3.1)
+    'array:size': [1, 1],
+    'array:get': [2, 2],
+    'array:put': [3, 3],
+    'array:append': [2, 2],
+    'array:subarray': [2, 3],
+    'array:remove': [2, 2],
+    'array:insert-before': [3, 3],
+    'array:head': [1, 1],
+    'array:tail': [1, 1],
+    'array:reverse': [1, 1],
+    'array:join': [1, 1],
+    'array:flatten': [1, 1],
+    'array:for-each': [2, 2],
+    'array:filter': [2, 2],
+    'array:fold-left': [3, 3],
+    'array:fold-right': [3, 3],
+    'array:sort': [1, 3],
     // String functions (XPath 3.0 additions)
     'analyze-string': [2, 3],
     'format-integer': [2, 3],
@@ -425,6 +463,11 @@ export class XPathFunctionCall extends XPathExpression {
                     // If still not found and namespace is math, try with math: prefix
                     if (!builtInFunc && namespace === 'http://www.w3.org/2005/xpath-functions/math') {
                         builtInFunc = BUILT_IN_FUNCTIONS['math:' + localName];
+                    }
+
+                    // If still not found and namespace is array, try with array: prefix
+                    if (!builtInFunc && namespace === 'http://www.w3.org/2005/xpath-functions/array') {
+                        builtInFunc = BUILT_IN_FUNCTIONS['array:' + localName];
                     }
                 }
                 

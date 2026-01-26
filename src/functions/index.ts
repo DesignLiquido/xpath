@@ -20,3 +20,4 @@ export * from './math-functions';
 export * from './sequence-functions-30';
 export * from './environment-functions';
 export * from './string-functions-30';
+export * from './array-functions';
