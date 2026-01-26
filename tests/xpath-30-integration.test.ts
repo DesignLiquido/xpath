@@ -90,8 +90,8 @@ describe('XPath 3.0 Integration Tests', () => {
             expect(result).toBe('John Doe');
         });
 
-        test.skip('concatenation with function results', () => {
-            const xpath = 'fn:upper-case("hello") || " " || fn:lower-case("WORLD")';
+        test('concatenation with function results', () => {
+            const xpath = 'upper-case("hello") || " " || lower-case("WORLD")';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe('HELLO world');
@@ -173,29 +173,31 @@ describe('XPath 3.0 Integration Tests', () => {
     });
 
     describe('Arrow Operator (=>)', () => {
-        test.skip('arrow operator with function call', () => {
-            const xpath = '"hello" => fn:upper-case()';
+        test('arrow operator with function call', () => {
+            const xpath = '"hello" => upper-case()';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe('HELLO');
         });
 
-        test.skip('chained arrow operators', () => {
-            const xpath = '"  hello world  " => fn:normalize-space() => fn:upper-case()';
+        test('chained arrow operators', () => {
+            const xpath = '"  hello world  " => normalize-space() => upper-case()';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe('HELLO WORLD');
         });
 
-        test.skip('arrow operator with sequence', () => {
-            const xpath = '(1, 2, 3) => fn:count()';
+        test('arrow operator with sequence', () => {
+            const xpath = '(1, 2, 3) => count()';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe(3);
         });
 
-        test.skip('arrow with simple map', () => {
-            const xpath = '(1, 2, 3) => (. * 2)';
+        test('simple map instead of arrow with expression', () => {
+            // Note: Arrow operator requires a function call, not an expression
+            // Use simple map (!) for applying expressions to sequences
+            const xpath = '(1, 2, 3) ! (. * 2)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(Array.isArray(result)).toBe(true);
@@ -204,8 +206,8 @@ describe('XPath 3.0 Integration Tests', () => {
     });
 
     describe('Complex Integration Scenarios', () => {
-        test.skip('let with arrow and simple map', () => {
-            const xpath = 'let $nums := (1, 2, 3) return $nums => fn:count()';
+        test('let with arrow and simple map', () => {
+            const xpath = 'let $nums := (1, 2, 3) return $nums => count()';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe(3);
@@ -233,8 +235,8 @@ describe('XPath 3.0 Integration Tests', () => {
             expect(result).toBe('Value is large');
         });
 
-        test.skip('sequential lets with arrow and simple map', () => {
-            const xpath = 'let $nums := (1, 2, 3), $doubled := $nums ! (. * 2) return $doubled => fn:sum()';
+        test('sequential lets with arrow and simple map', () => {
+            const xpath = 'let $nums := (1, 2, 3), $doubled := $nums ! (. * 2) return $doubled => sum()';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe(12); // 2+4+6
@@ -242,16 +244,16 @@ describe('XPath 3.0 Integration Tests', () => {
     });
 
     describe('XPath 3.0 Math Functions Integration', () => {
-        test.skip('math functions with let binding', () => {
-            const xpath = 'let $radius := 5 return fn:math:pi() * ($radius * $radius)';
+        test('math functions with let binding', () => {
+            const xpath = 'let $radius := 5 return math:pi() * ($radius * $radius)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(typeof result).toBe('number');
             expect(result).toBeCloseTo(78.54, 1); // pi * 25
         });
 
-        test.skip('math operations in simple map', () => {
-            const xpath = '(1, 2, 3, 4, 5) ! fn:math:sqrt(. * 4)';
+        test('math operations in simple map', () => {
+            const xpath = '(1, 2, 3, 4, 5) ! math:sqrt(. * 4)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(Array.isArray(result)).toBe(true);
@@ -264,23 +266,23 @@ describe('XPath 3.0 Integration Tests', () => {
     });
 
     describe('Sequence Functions Integration', () => {
-        test.skip('head with let expression', () => {
-            const xpath = 'let $seq := (10, 20, 30) return fn:head($seq)';
+        test('head with let expression', () => {
+            const xpath = 'let $seq := (10, 20, 30) return head($seq)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe(10);
         });
 
-        test.skip('tail with simple map', () => {
-            const xpath = 'let $seq := (1, 2, 3, 4) return fn:tail($seq)';
+        test('tail with let expression', () => {
+            const xpath = 'let $seq := (1, 2, 3, 4) return tail($seq)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(Array.isArray(result)).toBe(true);
             expect(result).toEqual([2, 3, 4]);
         });
 
-        test.skip('sort with string concatenation in result', () => {
-            const xpath = 'let $items := ("charlie", "alice", "bob"), $sorted := fn:sort($items) return $sorted ! ("Item: " || .)';
+        test('sort with string concatenation in result', () => {
+            const xpath = 'let $items := ("charlie", "alice", "bob"), $sorted := sort($items) return $sorted ! ("Item: " || .)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(Array.isArray(result)).toBe(true);
@@ -293,8 +295,8 @@ describe('XPath 3.0 Integration Tests', () => {
     });
 
     describe('Edge Cases and Error Handling', () => {
-        test.skip('let with empty sequence', () => {
-            const xpath = 'let $empty := () return fn:count($empty)';
+        test('let with empty sequence', () => {
+            const xpath = 'let $empty := () return count($empty)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe(0);
