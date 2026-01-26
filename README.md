@@ -24,10 +24,10 @@ Our XPath implementation in TypeScript.
 Comprehensive documentation is available:
 
 - **[API Documentation](https://designliquido.github.io/xpath/)** - Auto-generated TypeDoc API reference (published via GitHub Pages)
+- **[Interactive XPath Tester](https://designliquido.github.io/xpath/xpath-tester.html)** - Test XPath expressions in your browser
 - **[Custom Selectors](#custom-selectors)** - Integrate XPath with custom DOM implementations
 - **[XSLT Extensions API](#xslt-extensions-api)** - Extend XPath with XSLT functions
 - **[XPath Version Support](XPATH-VERSIONS.md)** - Infrastructure for XPath 2.0/3.0/3.1
-- **[Implementation Plan](docs/guides/XPATH-2.0-IMPLEMENTATION-PLAN.md)** - XPath 2.0 feature roadmap
 - **[Migration Guide](docs/guides/XPATH-MIGRATION-GUIDE.md)** - Upgrading from XPath 1.0 to 2.0
 - **[Incompatibilities Guide](docs/guides/XPATH-INCOMPATIBILITIES.md)** - Known version differences
 

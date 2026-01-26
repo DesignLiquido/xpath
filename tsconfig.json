@@ -21,6 +21,7 @@
         "coverage/**/*",
         "demo/**/*",
         "dist/**/*",
+        "docs/**/*",
         "interactive-tests/js/**/*",
         "node_modules/**/*",
         "tests/**/*"
