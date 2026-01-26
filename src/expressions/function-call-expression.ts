@@ -10,6 +10,7 @@ import {
     invalidCastArgument,
 } from '../errors';
 import * as HOF from '../functions/higher-order-functions';
+import * as MATH from '../functions/math-functions';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -200,6 +201,22 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'apply': HOF.apply,
     'function-name': HOF.functionName,
     'function-arity': HOF.functionArity,
+
+    // Math functions (XPath 3.0 math namespace)
+    'math:pi': MATH.pi,
+    'math:exp': MATH.exp,
+    'math:exp10': MATH.exp10,
+    'math:log': MATH.log,
+    'math:log10': MATH.log10,
+    'math:pow': MATH.pow,
+    'math:sqrt': MATH.sqrt,
+    'math:sin': MATH.sin,
+    'math:cos': MATH.cos,
+    'math:tan': MATH.tan,
+    'math:asin': MATH.asin,
+    'math:acos': MATH.acos,
+    'math:atan': MATH.atan,
+    'math:atan2': MATH.atan2,
 };
 
 /**
@@ -235,6 +252,21 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'apply': [2, 2],
     'function-name': [1, 1],
     'function-arity': [1, 1],
+    // Math functions
+    'math:pi': [0, 0],
+    'math:exp': [1, 1],
+    'math:exp10': [1, 1],
+    'math:log': [1, 1],
+    'math:log10': [1, 1],
+    'math:pow': [2, 2],
+    'math:sqrt': [1, 1],
+    'math:sin': [1, 1],
+    'math:cos': [1, 1],
+    'math:tan': [1, 1],
+    'math:asin': [1, 1],
+    'math:acos': [1, 1],
+    'math:atan': [1, 1],
+    'math:atan2': [2, 2],
 };
 
 /**
@@ -358,7 +390,21 @@ export class XPathFunctionCall extends XPathExpression {
 
             default:
                 // Check built-in XPath 2.0/3.0 functions from the BUILT_IN_FUNCTIONS map
-                const builtInFunc = BUILT_IN_FUNCTIONS[this.name];
+                let builtInFunc = BUILT_IN_FUNCTIONS[this.name];
+                
+                // If not found and name is an EQName, try to resolve it
+                if (!builtInFunc && this.name.startsWith('Q{')) {
+                    const { namespace, localName } = this.parseEQName(this.name);
+                    
+                    // Try local name first
+                    builtInFunc = BUILT_IN_FUNCTIONS[localName];
+                    
+                    // If still not found and namespace is math, try with math: prefix
+                    if (!builtInFunc && namespace === 'http://www.w3.org/2005/xpath-functions/math') {
+                        builtInFunc = BUILT_IN_FUNCTIONS['math:' + localName];
+                    }
+                }
+                
                 if (builtInFunc) {
                     return builtInFunc(context, ...evaluatedArgs);
                 }
@@ -371,6 +417,19 @@ export class XPathFunctionCall extends XPathExpression {
                 }
                 throw unresolvedNameReference(this.name, 'function');
         }
+    }
+
+    private parseEQName(name: string): { namespace: string; localName: string } {
+        // Parse EQName format: Q{namespace}localName
+        const match = name.match(/^Q\{([^}]*)\}(.+)$/);
+        if (match) {
+            return {
+                namespace: match[1],
+                localName: match[2],
+            };
+        }
+        // Fallback if not a valid EQName
+        return { namespace: '', localName: name };
     }
 
     private getConstructorType(): AtomicType | undefined {

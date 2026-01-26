@@ -99,7 +99,7 @@ describe('XPath 3.0 EQNames', () => {
             expect(result).toBe('abc');
         });
 
-        it.skip('should parse math EQName function reference', () => {
+        it('should parse math EQName function reference', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
             const tokens = lexer.scan('Q{http://www.w3.org/2005/xpath-functions/math}sqrt#1');

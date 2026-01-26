@@ -55,12 +55,20 @@ export class XPathNamedFunctionRef extends XPathExpression {
         // Use the parsed namespace
         const namespace = parsedNamespace;
 
-        // Try to get built-in function
-        const builtIn = getBuiltInFunction(localName);
+        // Try to get built-in function - first try local name, then with namespace prefix
+        let builtIn = getBuiltInFunction(localName);
+        let lookupName = localName;
+        
+        // If not found and namespace is math, try with math: prefix
+        if (!builtIn && namespace === MATH_NAMESPACE) {
+            builtIn = getBuiltInFunction('math:' + localName);
+            lookupName = 'math:' + localName;
+        }
+        
         if (builtIn) {
             // Verify arity matches
-            const expectedArity = getBuiltInFunctionArity(localName);
-            if (expectedArity !== undefined && !this.arityMatches(localName, this.arity)) {
+            const expectedArity = getBuiltInFunctionArity(lookupName);
+            if (expectedArity !== undefined && !this.arityMatches(lookupName, this.arity)) {
                 throw new Error(`Function ${this.name} does not accept ${this.arity} arguments`);
             }
 

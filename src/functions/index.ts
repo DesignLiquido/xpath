@@ -15,3 +15,5 @@ export * from './uri-functions';
 export * from './boolean-functions';
 export * from './error-functions';
 export * from './collection-functions';
+export * from './higher-order-functions';
+export * from './math-functions';
