@@ -17,3 +17,6 @@ export * from './error-functions';
 export * from './collection-functions';
 export * from './higher-order-functions';
 export * from './math-functions';
+export * from './sequence-functions-30';
+export * from './environment-functions';
+export * from './string-functions-30';

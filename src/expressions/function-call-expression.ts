@@ -11,6 +11,10 @@ import {
 } from '../errors';
 import * as HOF from '../functions/higher-order-functions';
 import * as MATH from '../functions/math-functions';
+import * as SEQ30 from '../functions/sequence-functions-30';
+import * as SEQ from '../functions/sequence-functions';
+import * as ENV from '../functions/environment-functions';
+import * as STR30 from '../functions/string-functions-30';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -145,14 +149,6 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         const len = Math.round(Number(length));
         return seq.slice(Math.max(0, startIdx), Math.max(0, startIdx) + len);
     },
-    'head': (_ctx, seq) => {
-        if (!Array.isArray(seq)) return seq;
-        return seq.length > 0 ? seq[0] : null;
-    },
-    'tail': (_ctx, seq) => {
-        if (!Array.isArray(seq)) return [];
-        return seq.slice(1);
-    },
     'insert-before': (_ctx, seq, pos, inserts) => {
         if (!Array.isArray(seq)) seq = seq === null ? [] : [seq];
         if (!Array.isArray(inserts)) inserts = [inserts];
@@ -197,7 +193,7 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'fold-left': HOF.foldLeft,
     'fold-right': HOF.foldRight,
     'for-each-pair': HOF.forEachPair,
-    'sort': HOF.sort,
+    'sort': SEQ30.sort,
     'apply': HOF.apply,
     'function-name': HOF.functionName,
     'function-arity': HOF.functionArity,
@@ -217,6 +213,21 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'math:acos': MATH.acos,
     'math:atan': MATH.atan,
     'math:atan2': MATH.atan2,
+
+    // Sequence functions (XPath 3.0)
+    'head': (_ctx, seq) => SEQ.head(seq),
+    'tail': (_ctx, seq) => SEQ.tail(seq),
+    'innermost': SEQ30.innermost,
+    'outermost': SEQ30.outermost,
+
+    // Environment functions (XPath 3.0)
+    'environment-variable': ENV.environmentVariable,
+    'available-environment-variables': ENV.availableEnvironmentVariables,
+
+    // String functions (XPath 3.0 additions)
+    'analyze-string': STR30.analyzeString,
+    'format-integer': STR30.formatInteger,
+    'format-number': STR30.formatNumber,
 };
 
 /**
@@ -267,6 +278,18 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'math:acos': [1, 1],
     'math:atan': [1, 1],
     'math:atan2': [2, 2],
+    // Sequence functions (XPath 3.0)
+    'head': [1, 1],
+    'tail': [1, 1],
+    'innermost': [1, 1],
+    'outermost': [1, 1],
+    // Environment functions (XPath 3.0)
+    'environment-variable': [1, 1],
+    'available-environment-variables': [0, 0],
+    // String functions (XPath 3.0 additions)
+    'analyze-string': [2, 3],
+    'format-integer': [2, 3],
+    'format-number': [2, 3],
 };
 
 /**
