@@ -58,7 +58,8 @@ describe('XPath 2.0 Quantified Expressions (Phase 3.3)', () => {
     });
 
     describe('Parser integration', () => {
-        const lexer = new XPathLexer();
+        // Use XPath 2.0 lexer to recognize 'some', 'every', 'satisfies' as reserved words
+        const lexer = new XPathLexer('2.0');
         const parser = new XPath20Parser();
 
         function parseEval(expression: string, context: XPathContext): any {

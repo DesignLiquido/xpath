@@ -3,6 +3,37 @@ import { TokenType } from "./token-type";
 
 type XPathVersion = '1.0' | '2.0' | '3.0' | '3.1';
 
+/**
+ * Configuration options for the XPath lexer.
+ */
+export interface XPathLexerOptions {
+    /**
+     * XPath specification version to use for tokenization.
+     *
+     * - '1.0': XPath 1.0 keywords only (and, or, div, mod, axes, node types, core functions)
+     * - '2.0': Adds XPath 2.0 reserved words (if, then, else, for, return, some, every, etc.)
+     * - '3.0'/'3.1': Same as 2.0 (reserved words are forward-compatible)
+     *
+     * Default: '1.0'
+     *
+     * @example
+     * ```typescript
+     * // XPath 1.0 lexer (treats 'if', 'then', 'else' as identifiers)
+     * const lexer10 = new XPathLexer({ version: '1.0' });
+     *
+     * // XPath 2.0 lexer (treats 'if', 'then', 'else' as reserved words)
+     * const lexer20 = new XPathLexer({ version: '2.0' });
+     * ```
+     */
+    version?: XPathVersion;
+}
+
+/**
+ * Default XPath version for the lexer.
+ * Set to '1.0' for backward compatibility.
+ */
+const DEFAULT_LEXER_VERSION: XPathVersion = '1.0';
+
 type ReservedWordMap = Record<string, { type: TokenType; value: string }>;
 
 const COMMON_RESERVED_WORDS: ReservedWordMap = {
@@ -106,15 +137,69 @@ function buildReservedWords(version: XPathVersion): ReservedWordMap {
     return merged;
 }
 
+/**
+ * Lexer (tokenizer) for XPath expressions.
+ *
+ * Converts XPath expression strings into a sequence of tokens that can be
+ * parsed by XPath10Parser or XPath20Parser.
+ *
+ * @example
+ * ```typescript
+ * // Create lexer with default options (XPath 1.0)
+ * const lexer = new XPathLexer();
+ *
+ * // Create lexer with explicit version
+ * const lexer10 = new XPathLexer('1.0');
+ * const lexer20 = new XPathLexer('2.0');
+ *
+ * // Create lexer with options object
+ * const lexer = new XPathLexer({ version: '2.0' });
+ *
+ * // Tokenize an expression
+ * const tokens = lexer.scan('//book[@price > 10]');
+ * ```
+ */
 export class XPathLexer {
     expression: string;
     current: number;
     tokens: XPathToken[];
     private additionalFunctions?: Set<string>;
     private readonly reservedWords: ReservedWordMap;
+    private readonly version: XPathVersion;
 
-    constructor(private readonly version: XPathVersion = '2.0') {
-        this.reservedWords = buildReservedWords(version);
+    /**
+     * Create a new XPath lexer.
+     *
+     * @param versionOrOptions - Either an XPath version string ('1.0', '2.0', '3.0', '3.1')
+     *                           or an options object with a version property.
+     *                           Defaults to '1.0' for backward compatibility.
+     *
+     * @example
+     * ```typescript
+     * // All of these create an XPath 1.0 lexer:
+     * const lexer1 = new XPathLexer();
+     * const lexer2 = new XPathLexer('1.0');
+     * const lexer3 = new XPathLexer({ version: '1.0' });
+     *
+     * // Create an XPath 2.0 lexer:
+     * const lexer4 = new XPathLexer('2.0');
+     * const lexer5 = new XPathLexer({ version: '2.0' });
+     * ```
+     */
+    constructor(versionOrOptions?: XPathVersion | XPathLexerOptions) {
+        if (typeof versionOrOptions === 'object') {
+            this.version = versionOrOptions.version ?? DEFAULT_LEXER_VERSION;
+        } else {
+            this.version = versionOrOptions ?? DEFAULT_LEXER_VERSION;
+        }
+        this.reservedWords = buildReservedWords(this.version);
+    }
+
+    /**
+     * Get the XPath version this lexer is configured for.
+     */
+    getVersion(): XPathVersion {
+        return this.version;
     }
 
     /**

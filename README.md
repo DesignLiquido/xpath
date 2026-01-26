@@ -52,11 +52,11 @@ This repository is intended to solve a particular problem in our packages, but i
 ## Quick Start
 
 ```typescript
-import { XPathBaseParser, XPathLexer, createContext } from '@designliquido/xpath';
+import { XPath10Parser, XPathLexer, createContext } from '@designliquido/xpath';
 
-// Create parser and lexer
-const parser = new XPathBaseParser();
-const lexer = new XPathLexer();
+// Create parser and lexer for XPath 1.0
+const parser = new XPath10Parser();
+const lexer = new XPathLexer('1.0');
 
 // Parse an XPath expression
 const tokens = lexer.scan('//book[price > 30]/title');
@@ -66,6 +66,92 @@ const expression = parser.parse(tokens);
 const context = createContext(documentNode);
 const result = expression.evaluate(context);
 ```
+
+## Choosing XPath Version
+
+This library supports multiple XPath versions. Choose the appropriate parser and lexer configuration based on your needs.
+
+### XPath 1.0 (Default)
+
+For XPath 1.0 expressions (XSLT 1.0 compatibility):
+
+```typescript
+import { XPath10Parser, XPathLexer, createContext } from '@designliquido/xpath';
+
+// Explicit version
+const lexer = new XPathLexer('1.0');
+const parser = new XPath10Parser();
+
+// Or use defaults (both default to 1.0)
+const lexer = new XPathLexer();
+const parser = new XPath10Parser();
+
+const tokens = lexer.scan('//book[@price > 30]');
+const ast = parser.parse(tokens);
+```
+
+### XPath 2.0
+
+For XPath 2.0 expressions with conditionals, for expressions, and quantified expressions:
+
+```typescript
+import { XPath20Parser, XPathLexer, createContext } from '@designliquido/xpath';
+
+// IMPORTANT: Use matching versions for lexer and parser
+const lexer = new XPathLexer('2.0');  // Recognizes 'if', 'then', 'else', 'for', etc.
+const parser = new XPath20Parser();
+
+// if-then-else expressions
+const tokens1 = lexer.scan("if ($price > 100) then 'expensive' else 'affordable'");
+const ast1 = parser.parse(tokens1);
+
+// for expressions
+const tokens2 = lexer.scan('for $x in (1, 2, 3) return $x * 2');
+const ast2 = parser.parse(tokens2);
+
+// quantified expressions
+const tokens3 = lexer.scan('some $x in //item satisfies $x/@stock > 0');
+const ast3 = parser.parse(tokens3);
+```
+
+### Using the Factory Function
+
+For automatic parser selection based on version:
+
+```typescript
+import { createXPathParser, XPathLexer } from '@designliquido/xpath';
+
+// Create parser for specific version
+const parser10 = createXPathParser('1.0');
+const parser20 = createXPathParser('2.0');
+
+// With options
+const parser = createXPathParser('1.0', {
+    enableNamespaceAxis: true
+});
+```
+
+### Lexer Version Differences
+
+The lexer version determines how certain keywords are tokenized:
+
+| Keyword | XPath 1.0 | XPath 2.0 |
+|---------|-----------|-----------|
+| `if`    | Identifier (element name) | Reserved word |
+| `then`  | Identifier (element name) | Reserved word |
+| `else`  | Identifier (element name) | Reserved word |
+| `for`   | Identifier (element name) | Reserved word |
+| `return`| Identifier (element name) | Reserved word |
+| `some`  | Identifier (element name) | Reserved word |
+| `every` | Identifier (element name) | Reserved word |
+
+**Important:** Always match your lexer and parser versions. Using an XPath 1.0 lexer with an XPath 2.0 parser will cause parsing errors for 2.0-specific syntax.
+
+### XPath Version Reference
+
+For detailed information about version-specific features and the implementation roadmap, see:
+- **[XPATH-VERSIONS.md](XPATH-VERSIONS.md)** - Version support infrastructure and feature flags
+- **[Migration Guide](docs/guides/XPATH-MIGRATION-GUIDE.md)** - Upgrading from XPath 1.0 to 2.0
 
 ## Custom Selectors
 
@@ -77,18 +163,19 @@ Here's how to create a custom selector class:
 
 ```typescript
 import { XPathLexer } from './lexer';
-import { XPathBaseParser } from './parser';
+import { XPath10Parser } from './parser';
 import { createContext } from './context';
 import { XPathNode } from './node';
 
 export class CustomXPathSelector {
     private lexer: XPathLexer;
-    private parser: XPathBaseParser;
+    private parser: XPath10Parser;
     private nodeCache: WeakMap<YourNodeType, XPathNode> = new WeakMap();
 
     constructor() {
-        this.lexer = new XPathLexer();
-        this.parser = new XPathBaseParser();
+        // Use XPath 1.0 for most DOM use cases
+        this.lexer = new XPathLexer('1.0');
+        this.parser = new XPath10Parser();
     }
 
     public select(expression: string, contextNode: YourNodeType): YourNodeType[] {
@@ -272,10 +359,10 @@ This approach keeps the XPath library pure while enabling XSLT functionality thr
 Here's how to use XSLT extensions (typically done by the `xslt-processor` package):
 
 ```typescript
-import { 
-  XPathBaseParser, 
+import {
+  XPath10Parser,
   XPathLexer,
-  XSLTExtensions, 
+  XSLTExtensions,
   XSLTFunctionMetadata,
   getExtensionFunctionNames,
   XPathContext
@@ -315,11 +402,11 @@ const extensions: XSLTExtensions = {
   version: '1.0'
 };
 
-// Create parser with extensions
-const parser = new XPathBaseParser({ extensions });
+// Create parser with extensions (XPath 1.0 for XSLT 1.0 compatibility)
+const parser = new XPath10Parser({ extensions });
 
 // Create lexer and register extension functions
-const lexer = new XPathLexer();
+const lexer = new XPathLexer('1.0');
 lexer.registerFunctions(getExtensionFunctionNames(extensions));
 
 // Parse expression
@@ -429,3 +516,76 @@ For a complete implementation example, see the test suite at [https://github.com
 - Registering extensions with parser and lexer
 - Implementing sample XSLT functions (`generate-id`, `system-property`)
 - End-to-end evaluation with extension functions
+
+## API Migration Guide
+
+This section documents changes to the API and how to migrate from older versions.
+
+### Migrating to Versioned Parser/Lexer API
+
+Prior versions used abstract or unversioned parser/lexer classes. The new API uses explicit versioned classes for better clarity and type safety.
+
+#### Parser Migration
+
+```typescript
+// OLD (deprecated):
+import { XPathBaseParser } from '@designliquido/xpath';
+const parser = new XPathBaseParser();  // Error: XPathBaseParser is abstract
+
+// NEW (recommended):
+import { XPath10Parser } from '@designliquido/xpath';
+const parser = new XPath10Parser();
+
+// Or use the factory:
+import { createXPathParser } from '@designliquido/xpath';
+const parser = createXPathParser('1.0');
+```
+
+#### Lexer Migration
+
+```typescript
+// OLD (may have defaulted to 2.0):
+import { XPathLexer } from '@designliquido/xpath';
+const lexer = new XPathLexer();  // Was defaulting to '2.0'
+
+// NEW (explicit version, defaults to 1.0):
+import { XPathLexer } from '@designliquido/xpath';
+const lexer = new XPathLexer('1.0');  // Explicit XPath 1.0
+
+// Or with options object:
+const lexer = new XPathLexer({ version: '1.0' });
+```
+
+#### Breaking Change: Lexer Default Version
+
+**Important:** The lexer default version has changed from `'2.0'` to `'1.0'` for backward compatibility with XPath 1.0/XSLT 1.0 use cases.
+
+If your code relied on the old default and uses XPath 2.0 features, update your lexer instantiation:
+
+```typescript
+// If you were using XPath 2.0 features with the old default:
+const lexer = new XPathLexer();  // OLD: defaulted to 2.0
+
+// Update to explicit 2.0:
+const lexer = new XPathLexer('2.0');
+```
+
+#### Quick Reference
+
+| Old API | New API |
+|---------|---------|
+| `new XPathBaseParser()` | `new XPath10Parser()` or `createXPathParser('1.0')` |
+| `new XPathBaseParser({ version: '2.0' })` | `new XPath20Parser()` or `createXPathParser('2.0')` |
+| `new XPathLexer()` (was 2.0) | `new XPathLexer('1.0')` (now 1.0) |
+| `new XPathLexer('2.0')` | `new XPathLexer('2.0')` (unchanged) |
+
+#### Compatibility Alias
+
+For gradual migration, `XPathParser` is available as an alias for `XPath10Parser`:
+
+```typescript
+import { XPathParser } from '@designliquido/xpath';
+const parser = new XPathParser();  // Same as new XPath10Parser()
+```
+
+This alias is deprecated and will be removed in a future major version. Prefer using `XPath10Parser` directly.

@@ -104,10 +104,17 @@ export interface XSLTExtensions {
 export interface XPathBaseParserOptions {
     /**
      * XPath specification version to use.
+     *
+     * - '1.0': XPath 1.0 (default, fully implemented)
+     * - '2.0': XPath 2.0 (adds if-then-else, for, quantified expressions, type system)
+     * - '3.0': XPath 3.0 (not yet implemented, falls back to 2.0 parser)
+     * - '3.1': XPath 3.1 (not yet implemented, falls back to 2.0 parser)
+     *
+     * When using XPath10Parser, only '1.0' is valid.
+     * When using XPath20Parser, only '2.0' is valid (in strict mode).
+     * Use createXPathParser() factory for automatic version selection.
+     *
      * Default: '1.0'
-     * 
-     * Note: Only XPath 1.0 is currently implemented.
-     * Versions 2.0, 3.0, and 3.1 are reserved for future implementation.
      */
     version?: '1.0' | '2.0' | '3.0' | '3.1';
 
@@ -143,14 +150,19 @@ export interface XPathBaseParserOptions {
     staticContext?: XPathStaticContext;
 
     /**
-     * Enable XPath 1.0 backward compatibility mode (Phase 8.1).
+     * Enable XPath 1.0 backward compatibility mode.
+     *
      * When true, XPath 2.0+ expressions follow XPath 1.0 type conversion rules.
      * This enables:
      * - XPath 1.0 boolean conversion semantics
      * - XPath 1.0 numeric conversion (with NaN for empty sequences)
      * - XPath 1.0 comparison rules (node-set to string conversion)
      * - XPath 1.0 logical operator behavior (short-circuit, error suppression)
-     * Default: false (XPath 2.0 semantics)
+     *
+     * This option is only meaningful when version is '2.0' or higher.
+     * When version is '1.0', this option is ignored (1.0 semantics are used).
+     *
+     * Default: false (XPath 2.0 semantics when using 2.0+ parser)
      */
     xpath10CompatibilityMode?: boolean;
 

@@ -49,7 +49,8 @@ describe('XPath 2.0 For Expressions (Phase 3.2)', () => {
     });
 
     describe('Parser integration', () => {
-        const lexer = new XPathLexer();
+        // Use XPath 2.0 lexer to recognize 'for', 'in', 'return' as reserved words
+        const lexer = new XPathLexer('2.0');
         const parser = new XPath20Parser();
 
         function parseEval(expression: string, context: XPathContext): any {

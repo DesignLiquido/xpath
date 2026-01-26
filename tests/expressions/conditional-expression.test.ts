@@ -88,7 +88,8 @@ describe('XPath 2.0 Conditional Expression (Phase 3.1)', () => {
 	});
 
 	describe('Parser integration', () => {
-		const lexer = new XPathLexer();
+		// Use XPath 2.0 lexer to recognize 'if', 'then', 'else' as reserved words
+		const lexer = new XPathLexer('2.0');
 		const parser = new XPath20Parser();
 
 		function parseEval(expression: string) {
