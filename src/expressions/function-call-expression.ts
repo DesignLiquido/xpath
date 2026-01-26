@@ -10,6 +10,225 @@ import {
     invalidCastArgument,
 } from '../errors';
 
+/**
+ * Built-in function registry for XPath 3.0 function references.
+ * Maps function names to their implementations.
+ */
+const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[]) => any> = {
+    // String functions
+    'upper-case': (_ctx, arg) => String(arg).toUpperCase(),
+    'lower-case': (_ctx, arg) => String(arg).toLowerCase(),
+    'concat': (_ctx, ...args) => args.map(a => String(a)).join(''),
+    'string-join': (_ctx, seq, sep = '') => {
+        if (Array.isArray(seq)) {
+            return seq.map(s => String(s)).join(String(sep));
+        }
+        return String(seq);
+    },
+    'substring': (_ctx, str, start, len?) => {
+        const s = String(str);
+        const startIdx = Math.round(Number(start)) - 1;
+        if (len === undefined) {
+            return s.substring(Math.max(0, startIdx));
+        }
+        const length = Math.round(Number(len));
+        const adjustedStart = Math.max(0, startIdx);
+        return s.substring(adjustedStart, adjustedStart + length);
+    },
+    'string-length': (_ctx, arg) => String(arg).length,
+    'normalize-space': (_ctx, arg) => String(arg).trim().replace(/\s+/g, ' '),
+    'contains': (_ctx, str, sub) => String(str).includes(String(sub)),
+    'starts-with': (_ctx, str, sub) => String(str).startsWith(String(sub)),
+    'ends-with': (_ctx, str, sub) => String(str).endsWith(String(sub)),
+    'translate': (_ctx, str, from, to) => {
+        const s = String(str);
+        const f = String(from);
+        const t = String(to);
+        let result = '';
+        for (const char of s) {
+            const idx = f.indexOf(char);
+            if (idx === -1) result += char;
+            else if (idx < t.length) result += t[idx];
+        }
+        return result;
+    },
+    'replace': (_ctx, input, pattern, replacement) => {
+        const regex = new RegExp(String(pattern), 'g');
+        return String(input).replace(regex, String(replacement));
+    },
+    'matches': (_ctx, input, pattern) => {
+        const regex = new RegExp(String(pattern));
+        return regex.test(String(input));
+    },
+    'tokenize': (_ctx, input, pattern = '\\s+') => {
+        const regex = new RegExp(String(pattern));
+        return String(input).split(regex).filter(s => s.length > 0);
+    },
+
+    // Numeric functions
+    'abs': (_ctx, arg) => Math.abs(Number(arg)),
+    'ceiling': (_ctx, arg) => Math.ceil(Number(arg)),
+    'floor': (_ctx, arg) => Math.floor(Number(arg)),
+    'round': (_ctx, arg) => Math.round(Number(arg)),
+    'round-half-to-even': (_ctx, arg, precision = 0) => {
+        const p = Math.pow(10, Number(precision));
+        const n = Number(arg) * p;
+        const floor = Math.floor(n);
+        const decimal = n - floor;
+        if (decimal === 0.5) {
+            return (floor % 2 === 0 ? floor : floor + 1) / p;
+        }
+        return Math.round(n) / p;
+    },
+    'number': (_ctx, arg) => Number(arg),
+
+    // Boolean functions
+    'true': () => true,
+    'false': () => false,
+    'not': (_ctx, arg) => !arg,
+    'boolean': (_ctx, arg) => {
+        if (typeof arg === 'boolean') return arg;
+        if (typeof arg === 'number') return arg !== 0 && !isNaN(arg);
+        if (typeof arg === 'string') return arg.length > 0;
+        if (Array.isArray(arg)) return arg.length > 0;
+        return !!arg;
+    },
+
+    // Sequence functions
+    'count': (_ctx, seq) => Array.isArray(seq) ? seq.length : (seq === null || seq === undefined ? 0 : 1),
+    'sum': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return Number(seq) || 0;
+        return seq.reduce((acc, val) => acc + (Number(val) || 0), 0);
+    },
+    'avg': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return Number(seq);
+        if (seq.length === 0) return null;
+        const sum = seq.reduce((acc, val) => acc + (Number(val) || 0), 0);
+        return sum / seq.length;
+    },
+    'min': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return Number(seq);
+        if (seq.length === 0) return null;
+        return Math.min(...seq.map(v => Number(v)));
+    },
+    'max': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return Number(seq);
+        if (seq.length === 0) return null;
+        return Math.max(...seq.map(v => Number(v)));
+    },
+    'empty': (_ctx, seq) => {
+        if (seq === null || seq === undefined) return true;
+        if (Array.isArray(seq)) return seq.length === 0;
+        return false;
+    },
+    'exists': (_ctx, seq) => {
+        if (seq === null || seq === undefined) return false;
+        if (Array.isArray(seq)) return seq.length > 0;
+        return true;
+    },
+    'reverse': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return [seq];
+        return [...seq].reverse();
+    },
+    'distinct-values': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return [seq];
+        return Array.from(new Set(seq));
+    },
+    'subsequence': (_ctx, seq, start, length?) => {
+        if (!Array.isArray(seq)) seq = [seq];
+        const startIdx = Math.round(Number(start)) - 1;
+        if (length === undefined) {
+            return seq.slice(Math.max(0, startIdx));
+        }
+        const len = Math.round(Number(length));
+        return seq.slice(Math.max(0, startIdx), Math.max(0, startIdx) + len);
+    },
+    'head': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return seq;
+        return seq.length > 0 ? seq[0] : null;
+    },
+    'tail': (_ctx, seq) => {
+        if (!Array.isArray(seq)) return [];
+        return seq.slice(1);
+    },
+    'insert-before': (_ctx, seq, pos, inserts) => {
+        if (!Array.isArray(seq)) seq = seq === null ? [] : [seq];
+        if (!Array.isArray(inserts)) inserts = [inserts];
+        const position = Math.max(0, Math.round(Number(pos)) - 1);
+        return [...seq.slice(0, position), ...inserts, ...seq.slice(position)];
+    },
+    'remove': (_ctx, seq, pos) => {
+        if (!Array.isArray(seq)) seq = [seq];
+        const position = Math.round(Number(pos)) - 1;
+        if (position < 0 || position >= seq.length) return seq;
+        return [...seq.slice(0, position), ...seq.slice(position + 1)];
+    },
+
+    // Node functions
+    'position': (ctx) => ctx.position ?? 0,
+    'last': (ctx) => ctx.size ?? 0,
+    'string': (ctx, arg?) => {
+        if (arg === undefined) {
+            return ctx.node?.textContent ?? '';
+        }
+        if (Array.isArray(arg) && arg.length > 0) {
+            return arg[0]?.textContent ?? String(arg[0]);
+        }
+        return String(arg);
+    },
+    'local-name': (ctx, arg?) => {
+        const node = arg ? (Array.isArray(arg) ? arg[0] : arg) : ctx.node;
+        return node?.localName ?? '';
+    },
+    'namespace-uri': (ctx, arg?) => {
+        const node = arg ? (Array.isArray(arg) ? arg[0] : arg) : ctx.node;
+        return node?.namespaceUri ?? '';
+    },
+    'name': (ctx, arg?) => {
+        const node = arg ? (Array.isArray(arg) ? arg[0] : arg) : ctx.node;
+        return node?.nodeName ?? '';
+    },
+};
+
+/**
+ * Function arity information for variadic functions.
+ * Format: [minArgs, maxArgs]
+ */
+const FUNCTION_ARITY: Record<string, [number, number]> = {
+    'concat': [2, Infinity],
+    'substring': [2, 3],
+    'string-join': [1, 2],
+    'normalize-space': [0, 1],
+    'string-length': [0, 1],
+    'local-name': [0, 1],
+    'namespace-uri': [0, 1],
+    'name': [0, 1],
+    'round': [1, 2],
+    'round-half-to-even': [1, 2],
+    'string': [0, 1],
+    'number': [0, 1],
+    'replace': [3, 4],
+    'matches': [2, 3],
+    'tokenize': [1, 3],
+    'subsequence': [2, 3],
+    'insert-before': [3, 3],
+    'remove': [2, 2],
+};
+
+/**
+ * Get a built-in function implementation by name.
+ */
+export function getBuiltInFunction(name: string): ((context: XPathContext, ...args: any[]) => any) | undefined {
+    return BUILT_IN_FUNCTIONS[name];
+}
+
+/**
+ * Get the arity range for a built-in function.
+ */
+export function getBuiltInFunctionArity(name: string): [number, number] | undefined {
+    return FUNCTION_ARITY[name];
+}
+
 export class XPathFunctionCall extends XPathExpression {
     name: string;
     args: XPathExpression[];
@@ -116,6 +335,12 @@ export class XPathFunctionCall extends XPathExpression {
                 return this.jsonToXml(evaluatedArgs, context);
 
             default:
+                // Check built-in XPath 2.0/3.0 functions from the BUILT_IN_FUNCTIONS map
+                const builtInFunc = BUILT_IN_FUNCTIONS[this.name];
+                if (builtInFunc) {
+                    return builtInFunc(context, ...evaluatedArgs);
+                }
+
                 // Check for custom functions in context (including XSLT extension functions)
                 if (context.functions && typeof context.functions[this.name] === 'function') {
                     // Call custom function with context as first argument, followed by evaluated args

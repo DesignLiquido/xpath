@@ -1,9 +1,11 @@
 export * from './base-parser';
 export * from './parser-10';
 export * from './parser-20';
+export * from './parser-30';
 
 import { XPath10Parser } from './parser-10';
 import { XPath20Parser } from './parser-20';
+import { XPath30Parser } from './parser-30';
 import { XPathBaseParserOptions } from '../xslt-extensions';
 import { XPathVersion, DEFAULT_XPATH_VERSION } from '../xpath-version';
 
@@ -32,7 +34,7 @@ import { XPathVersion, DEFAULT_XPATH_VERSION } from '../xpath-version';
 export function createXPathParser(
     version: XPathVersion = DEFAULT_XPATH_VERSION,
     options?: Omit<XPathBaseParserOptions, 'version'>
-): XPath10Parser | XPath20Parser {
+): XPath10Parser | XPath20Parser | XPath30Parser {
     const fullOptions: XPathBaseParserOptions = { ...options, version };
 
     switch (version) {
@@ -42,9 +44,7 @@ export function createXPathParser(
             return new XPath20Parser(fullOptions);
         case '3.0':
         case '3.1':
-            // Fall back to XPath 2.0 parser for 3.0/3.1 until implemented
-            // The parser will validate version support internally
-            return new XPath20Parser(fullOptions);
+            return new XPath30Parser(fullOptions);
         default:
             throw new Error(`Unsupported XPath version: ${version}`);
     }

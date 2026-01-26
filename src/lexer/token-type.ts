@@ -39,4 +39,11 @@ export type TokenType =
     "COLON_COLON" |             // ::
     "NOT_EQUALS" |              // !=
     "LESS_THAN_OR_EQUAL" |      // <=
-    "GREATER_THAN_OR_EQUAL";    // >=
+    "GREATER_THAN_OR_EQUAL" |   // >=
+
+    // XPath 3.0 tokens
+    "SIMPLE_MAP" |              // !
+    "CONCAT" |                  // ||
+    "HASH" |                    // #
+    "FAT_ARROW" |               // =>
+    "ASSIGNMENT";               // :=

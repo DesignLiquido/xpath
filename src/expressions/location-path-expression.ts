@@ -19,8 +19,17 @@ export class XPathLocationPath extends XPathExpression {
             const root = this.getDocumentRoot(context?.node);
             nodes = root ? [root] : [];
         } else {
-            // Start from context node
-            nodes = context?.node ? [context.node] : [];
+            // Start from context node or context item (XPath 3.0)
+            if (context?.node) {
+                nodes = [context.node];
+            } else if (context?.contextItem !== undefined) {
+                // XPath 3.0: atomic context item - only valid for self axis (.)
+                // For location paths starting with '.', the first step will handle atomic items
+                // We use a special marker to indicate we're starting with an atomic context
+                nodes = [{ __atomicContextItem: context.contextItem }];
+            } else {
+                nodes = [];
+            }
         }
 
         // Apply each step
@@ -28,9 +37,17 @@ export class XPathLocationPath extends XPathExpression {
             const nextNodes: any[] = [];
 
             for (const node of nodes) {
-                const stepContext = { ...context, node };
-                const result = step.evaluate(stepContext);
-                nextNodes.push(...result);
+                // Handle atomic context item marker
+                if (node && node.__atomicContextItem !== undefined) {
+                    // Pass the atomic item through the step context
+                    const stepContext = { ...context, contextItem: node.__atomicContextItem };
+                    const result = step.evaluate(stepContext);
+                    nextNodes.push(...result);
+                } else {
+                    const stepContext = { ...context, node };
+                    const result = step.evaluate(stepContext);
+                    nextNodes.push(...result);
+                }
             }
 
             // Remove duplicates while preserving document order

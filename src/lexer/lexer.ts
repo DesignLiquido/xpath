@@ -127,11 +127,23 @@ const XPATH20_RESERVED_WORDS: ReservedWordMap = {
     "treat": { type: "RESERVED_WORD", value: "treat" },
 };
 
+const XPATH30_RESERVED_WORDS: ReservedWordMap = {
+    // Let expression (XPath 3.0)
+    "let": { type: "RESERVED_WORD", value: "let" },
+
+    // Function keyword for inline functions (XPath 3.0)
+    "function": { type: "RESERVED_WORD", value: "function" },
+};
+
 function buildReservedWords(version: XPathVersion): ReservedWordMap {
     const merged: ReservedWordMap = { ...COMMON_RESERVED_WORDS };
 
     if (version !== '1.0') {
         Object.assign(merged, XPATH20_RESERVED_WORDS);
+    }
+
+    if (version === '3.0' || version === '3.1') {
+        Object.assign(merged, XPATH30_RESERVED_WORDS);
     }
 
     return merged;
@@ -370,7 +382,15 @@ export class XPathLexer {
             case "$":
                 return new XPathToken("DOLLAR", char);
             case "|":
+                // XPath 3.0: || is string concatenation operator
+                if (this.match("|")) {
+                    return new XPathToken("CONCAT", "||");
+                }
                 return new XPathToken("PIPE", char);
+
+            case "#":
+                // XPath 3.0: # is used for named function references (fn:name#arity)
+                return new XPathToken("HASH", char);
             case "{":
                 return new XPathToken("OPEN_CURLY_BRACKET", char);
             case "}":
@@ -415,16 +435,25 @@ export class XPathLexer {
                 if (this.match(":")) {
                     return new XPathToken("COLON_COLON", "::");
                 }
+                // XPath 3.0: := is variable assignment in let expressions
+                if (this.match("=")) {
+                    return new XPathToken("ASSIGNMENT", ":=");
+                }
                 return new XPathToken("COLON", char);
 
             case "=":
+                // XPath 3.0: => is the arrow operator
+                if (this.match(">")) {
+                    return new XPathToken("FAT_ARROW", "=>");
+                }
                 return new XPathToken("EQUALS", char);
 
             case "!":
                 if (this.match("=")) {
                     return new XPathToken("NOT_EQUALS", "!=");
                 }
-                throw new Error(`Unexpected character: ${char}`);
+                // XPath 3.0: ! is the simple map operator
+                return new XPathToken("SIMPLE_MAP", char);
 
             case "<":
                 if (this.match("=")) {

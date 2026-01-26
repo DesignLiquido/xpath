@@ -38,3 +38,12 @@ export * from './function-call-expression';
 
 // JSON/XML conversion
 export * from './json-to-xml-converter';
+
+// XPath 3.0 expressions
+export * from './let-expression';
+export * from './simple-map-expression';
+export * from './string-concat-expression';
+export * from './arrow-expression';
+export * from './named-function-ref-expression';
+export * from './inline-function-expression';
+export * from './dynamic-function-call-expression';

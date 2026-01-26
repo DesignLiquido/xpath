@@ -101,6 +101,20 @@ export { HexBinaryTypeImpl, Base64BinaryTypeImpl } from './binary-types';
 export { AnyURITypeImpl, QNameTypeImpl } from './uri-qname-types';
 export { IntegerDerivedTypeImpl } from './integer-derived-types';
 
+// XPath 3.0 Function Type System
+export {
+  FunctionType,
+  FunctionItem,
+  createFunctionItem,
+  isFunctionItem,
+  createFunctionType,
+  describeFunctionType,
+  FN_NAMESPACE,
+  MATH_NAMESPACE,
+  MAP_NAMESPACE,
+  ARRAY_NAMESPACE,
+} from './function-type';
+
 // Import all type implementations
 import { AnyAtomicTypeImpl } from './simple-types';
 import { UntypedAtomicImpl } from './simple-types';

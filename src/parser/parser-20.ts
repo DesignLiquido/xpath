@@ -7,7 +7,9 @@ import { XPathBaseParser } from "./base-parser";
 export class XPath20Parser extends XPathBaseParser {
     constructor(options?: XPathBaseParserOptions) {
         super(options);
-        this.ensureVersionSupport(['2.0'], '2.0');
+        // Allow 3.0/3.1 to pass through for XPath30Parser subclass
+        // XPath 2.0 features are a subset of 3.0/3.1
+        this.ensureVersionSupport(['2.0', '3.0', '3.1'], '2.0');
     }
 
     protected parseExpr(): XPathExpression {

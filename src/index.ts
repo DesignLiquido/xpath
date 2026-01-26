@@ -15,6 +15,7 @@ export * from './node';
 export * from './parser/base-parser';
 export { XPath10Parser } from './parser/parser-10';
 export { XPath20Parser } from './parser/parser-20';
+export { XPath30Parser } from './parser/parser-30';
 export { createXPathParser, XPathParser } from './parser';
 export * from './static-context';
 export * from './xslt-extensions';
@@ -108,5 +109,16 @@ export {
   GDayTypeImpl,
   GMonthTypeImpl,
   HexBinaryTypeImpl,
-  Base64BinaryTypeImpl
+  Base64BinaryTypeImpl,
+  // XPath 3.0 Function Type System
+  FunctionType,
+  FunctionItem,
+  createFunctionItem,
+  isFunctionItem,
+  createFunctionType,
+  describeFunctionType,
+  FN_NAMESPACE,
+  MATH_NAMESPACE,
+  MAP_NAMESPACE,
+  ARRAY_NAMESPACE,
 } from './types';

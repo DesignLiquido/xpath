@@ -40,6 +40,19 @@ export class XPathStep extends XPathExpression {
 
     evaluate(context: any): any[] {
         const node = context?.node;
+
+        // XPath 3.0: When the context item is an atomic value and axis is 'self',
+        // return the atomic value (stored in context.contextItem)
+        if (!node && this.axis === 'self' && context?.contextItem !== undefined) {
+            const item = context.contextItem;
+            // Apply predicates if any
+            if (this.predicates.length === 0) {
+                return [item];
+            }
+            // For atomic items with predicates, evaluate predicates
+            return this.applyPredicatesToAtomicItem(item, context);
+        }
+
         if (!node) return [];
 
         // Get candidate nodes based on axis
@@ -52,6 +65,23 @@ export class XPathStep extends XPathExpression {
         candidates = this.applyPredicates(candidates, context);
 
         return candidates;
+    }
+
+    /**
+     * Apply predicates to an atomic item context.
+     */
+    private applyPredicatesToAtomicItem(item: any, context: any): any[] {
+        const itemContext = { ...context, contextItem: item, position: 1, size: 1 };
+        for (const predicate of this.predicates) {
+            const result = predicate.evaluate(itemContext);
+            // Numeric predicate: position check
+            if (typeof result === 'number') {
+                if (result !== 1) return [];
+            } else if (!this.toBoolean(result)) {
+                return [];
+            }
+        }
+        return [item];
     }
 
     private getNodesByAxis(node: any, context?: any): any[] {

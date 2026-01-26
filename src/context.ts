@@ -183,21 +183,32 @@ export interface XPathContext {
 }
 
 /**
+ * Represents an XPath 3.0 function item.
+ * This is a simplified interface to avoid circular dependencies.
+ */
+export interface XPathFunctionItem {
+    __isFunctionItem: true;
+    implementation: (...args: any[]) => any;
+    arity: number;
+    name?: string;
+    namespace?: string;
+}
+
+/**
  * Result types that can be returned from XPath evaluation.
- * 
+ *
  * XPath 1.0: node-set, string, number, boolean
  * XPath 2.0+: sequences (which subsume node-sets), atomic values, functions
  */
 export type XPathResult =
-    | XPathNode[]      // Node set (XPath 1.0) or sequence of nodes (XPath 2.0+)
-    | string           // String
-    | number           // Number
-    | boolean          // Boolean
-    | any[]            // Sequence (XPath 2.0+)
-    | Map<any, any>    // Map (XPath 3.0+)
-    | null             // Empty sequence (XPath 2.0+)
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    | Function;        // Function item (XPath 3.0+)
+    | XPathNode[]         // Node set (XPath 1.0) or sequence of nodes (XPath 2.0+)
+    | string              // String
+    | number              // Number
+    | boolean             // Boolean
+    | any[]               // Sequence (XPath 2.0+)
+    | Map<any, any>       // Map (XPath 3.0+)
+    | null                // Empty sequence (XPath 2.0+)
+    | XPathFunctionItem;  // Function item (XPath 3.0+)
 
 /**
  * Creates a new XPath context with the given node as the context node.
