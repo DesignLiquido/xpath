@@ -16,6 +16,7 @@ import * as SEQ from '../functions/sequence-functions';
 import * as ENV from '../functions/environment-functions';
 import * as STR30 from '../functions/string-functions-30';
 import * as ARRAY from '../functions/array-functions';
+import * as MAP from '../functions/map-functions';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -244,6 +245,17 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'array:fold-right': ARRAY.arrayFoldRight,
     'array:sort': ARRAY.arraySort,
 
+    // Map functions (XPath 3.1)
+    'map:size': MAP.mapSize,
+    'map:keys': MAP.mapKeys,
+    'map:contains': MAP.mapContains,
+    'map:get': MAP.mapGet,
+    'map:put': MAP.mapPut,
+    'map:entry': MAP.mapEntry,
+    'map:merge': MAP.mapMerge,
+    'map:for-each': MAP.mapForEach,
+    'map:remove': MAP.mapRemove,
+
     // String functions (XPath 3.0 additions)
     'analyze-string': STR30.analyzeString,
     'format-integer': STR30.formatInteger,
@@ -324,6 +336,18 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'array:fold-left': [3, 3],
     'array:fold-right': [3, 3],
     'array:sort': [1, 3],
+
+    // Map functions (XPath 3.1)
+    'map:size': [1, 1],
+    'map:keys': [1, 1],
+    'map:contains': [2, 2],
+    'map:get': [2, 2],
+    'map:put': [3, 3],
+    'map:entry': [2, 2],
+    'map:merge': [1, 2],
+    'map:for-each': [2, 2],
+    'map:remove': [2, 2],
+
     // String functions (XPath 3.0 additions)
     'analyze-string': [2, 3],
     'format-integer': [2, 3],
