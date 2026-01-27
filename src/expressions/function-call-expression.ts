@@ -260,6 +260,7 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
 
     // JSON functions (XPath 3.1)
     'parse-json': JSONF.parseJson,
+    'serialize': JSONF.serialize,
 
     // String functions (XPath 3.0 additions)
     'analyze-string': STR30.analyzeString,
@@ -355,6 +356,7 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
 
     // JSON functions (XPath 3.1)
     'parse-json': [1, 2],
+    'serialize': [1, 2],
 
     // String functions (XPath 3.0 additions)
     'analyze-string': [2, 3],
