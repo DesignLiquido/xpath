@@ -622,11 +622,67 @@ export class XPathFunctionCall extends XPathExpression {
             }
             const firstNode = value[0];
             // Return the text content of the first node
-            return firstNode?.textContent ?? String(firstNode);
+            return this.getNodeStringValue(firstNode);
         }
 
         // For primitive values, use JavaScript's String conversion
         return String(value);
+    }
+
+    /**
+     * Gets the string-value of a node according to XPath 1.0 specification.
+     * - Element nodes: Concatenation of all descendant text nodes
+     * - Text nodes: The character data
+     * - Attribute nodes: The attribute value
+     * - Other nodes: Their text content
+     */
+    private getNodeStringValue(node: any): string {
+        if (!node) {
+            return '';
+        }
+
+        // If textContent is available, use it
+        if (typeof node.textContent === 'string') {
+            return node.textContent;
+        }
+
+        // For text nodes (nodeType 3) or attribute nodes (nodeType 2), use nodeValue
+        if (node.nodeType === 3 || node.nodeType === 2) {
+            return node.nodeValue ?? '';
+        }
+
+        // For element nodes (nodeType 1), document nodes (nodeType 9),
+        // or document fragments (nodeType 11), recursively get text content
+        if (node.nodeType === 1 || node.nodeType === 9 || node.nodeType === 11) {
+            return this.getDescendantTextContent(node);
+        }
+
+        // Fallback for other node types
+        if (node.nodeValue !== undefined && node.nodeValue !== null) {
+            return String(node.nodeValue);
+        }
+
+        return '';
+    }
+
+    /**
+     * Recursively gets the text content of all descendant text nodes.
+     */
+    private getDescendantTextContent(node: any): string {
+        if (!node.childNodes || node.childNodes.length === 0) {
+            return '';
+        }
+
+        let text = '';
+        for (let i = 0; i < node.childNodes.length; i++) {
+            const child = node.childNodes[i];
+            if (child.nodeType === 3) { // Text node
+                text += child.nodeValue ?? '';
+            } else if (child.nodeType === 1) { // Element node
+                text += this.getDescendantTextContent(child);
+            }
+        }
+        return text;
     }
 
     private stringLength(args: XPathResult[], context: XPathContext): number {
