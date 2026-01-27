@@ -240,6 +240,9 @@ describe('json-to-xml', () => {
 });
 
 describe('xml-to-json', () => {
+    // Mock context - xmlToJson accepts context as first arg for BUILT_IN_FUNCTIONS compatibility
+    const mockContext = {};
+
     it('converts a simple XML element to JSON', () => {
         // Create a simple XML node
         const node: XPathNode = {
@@ -249,7 +252,7 @@ describe('xml-to-json', () => {
             childNodes: [],
             attributes: [],
         };
-        const result = xmlToJson(node);
+        const result = xmlToJson(mockContext, node);
         expect(result).toBeDefined();
         expect(typeof result).toBe('string');
     });
@@ -268,7 +271,7 @@ describe('xml-to-json', () => {
             childNodes: [textNode],
             attributes: [],
         };
-        const result = xmlToJson(element);
+        const result = xmlToJson(mockContext, element);
         expect(result).not.toBeNull();
         if (result) {
             const parsed = JSON.parse(result);
@@ -298,7 +301,7 @@ describe('xml-to-json', () => {
             childNodes: [child],
             attributes: [],
         };
-        const result = xmlToJson(parent);
+        const result = xmlToJson(mockContext, parent);
         expect(result).not.toBeNull();
         if (result) {
             const parsed = JSON.parse(result);
@@ -307,17 +310,17 @@ describe('xml-to-json', () => {
     });
 
     it('handles null input gracefully', () => {
-        const result = xmlToJson(null);
+        const result = xmlToJson(mockContext, null);
         expect(result).toBeNull();
     });
 
     it('handles undefined input gracefully', () => {
-        const result = xmlToJson(undefined);
+        const result = xmlToJson(mockContext, undefined);
         expect(result).toBeNull();
     });
 
     it('handles empty sequence', () => {
-        const result = xmlToJson([]);
+        const result = xmlToJson(mockContext, []);
         expect(result).toBeNull();
     });
 
@@ -336,7 +339,7 @@ describe('xml-to-json', () => {
             documentElement: root,
             childNodes: [root],
         };
-        const result = xmlToJson(doc);
+        const result = xmlToJson(mockContext, doc);
         expect(result).not.toBeNull();
     });
 });

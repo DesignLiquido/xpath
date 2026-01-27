@@ -262,10 +262,12 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'map:remove': MAP.mapRemove,
 
     // JSON functions (XPath 3.1)
+    // Note: xml-to-json is NOT registered here because XSLT provides its own version
+    // with version checking (only allowed in XSLT 3.0). The XSLT version is registered
+    // via context.functions in xpath.ts and takes precedence.
     'parse-json': JSONF.parseJson,
     serialize: JSONF.serialize,
     'json-to-xml': JSONF.jsonToXml,
-    'xml-to-json': JSONF.xmlToJson,
 
     // String functions (XPath 3.0 additions)
     'analyze-string': STR30.analyzeString,
@@ -360,10 +362,10 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'map:remove': [2, 2],
 
     // JSON functions (XPath 3.1)
+    // Note: xml-to-json arity not registered here - handled by XSLT context.functions
     'parse-json': [1, 2],
     serialize: [1, 2],
     'json-to-xml': [1, 2],
-    'xml-to-json': [1, 1],
 
     // String functions (XPath 3.0 additions)
     'analyze-string': [2, 3],

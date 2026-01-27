@@ -239,7 +239,8 @@ function nodeToJsonValue(node: XPathNode | null): any {
 
 // Main: fn:xml-to-json($node-sequence as node()*) as xs:string?
 // Converts XML nodes to JSON string representation (inverse of json-to-xml)
-export function xmlToJson(nodes: any): string | null {
+// Note: First parameter is context for BUILT_IN_FUNCTIONS compatibility
+export function xmlToJson(context: any, nodes?: any): string | null {
     // Handle empty sequence or null
     if (nodes === null || nodes === undefined) {
         return null;
