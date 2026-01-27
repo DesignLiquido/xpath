@@ -11,6 +11,8 @@
 
 import { XPathContext, XPathResult, XPathFunctionItem } from '../context';
 import { XPathExpression } from './expression';
+import { isXPathMap } from './map-constructor-expression';
+import { isXPathArray, getArrayMember } from './array-constructor-expression';
 
 /**
  * Check if a value is a function item.
@@ -50,6 +52,28 @@ export class XPathDynamicFunctionCall extends XPathExpression {
     evaluate(context: XPathContext): XPathResult {
         // Evaluate the function expression to get a function item
         const funcValue = this.functionExpr.evaluate(context) as any;
+
+        // XPath 3.1: Maps are single-argument functions (key lookup)
+        if (isXPathMap(funcValue)) {
+            if (this.args.length !== 1) {
+                throw new Error(`Map lookup expects 1 argument but got ${this.args.length}`);
+            }
+            const key = String(this.args[0].evaluate(context));
+            const value = funcValue[key];
+            if (value === undefined) {
+                throw new Error(`XPDY0002: Key "${key}" not found in map`);
+            }
+            return value;
+        }
+
+        // XPath 3.1: Arrays are single-argument functions (position lookup)
+        if (isXPathArray(funcValue)) {
+            if (this.args.length !== 1) {
+                throw new Error(`Array lookup expects 1 argument but got ${this.args.length}`);
+            }
+            const position = Number(this.args[0].evaluate(context));
+            return getArrayMember(funcValue, position);
+        }
 
         // Check if it's a function item
         if (isFunctionItem(funcValue)) {

@@ -101,7 +101,7 @@ export function createFunctionTest(
     const typeName = isWildcard
         ? 'function(*)'
         : `function(${parameterTypes?.map((p) => p.toString()).join(', ') ?? ''})` +
-        (returnType ? ` as ${returnType.toString()}` : '');
+          (returnType ? ` as ${returnType.toString()}` : '');
 
     return {
         name: typeName,
@@ -132,11 +132,12 @@ export function createFunctionTest(
 
             // If we have parameter types, enforce arity equality when we can observe it
             if (paramCount !== undefined) {
-                const observedArity = isTypedMap || isTypedArray
-                    ? 1
-                    : typeof value === 'function'
-                        ? value.length
-                        : typeof value?.arity === 'number'
+                const observedArity =
+                    isTypedMap || isTypedArray
+                        ? 1
+                        : typeof value === 'function'
+                          ? value.length
+                          : typeof value?.arity === 'number'
                             ? value.arity
                             : undefined;
 

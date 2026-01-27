@@ -13,7 +13,11 @@
 //       https://www.w3.org/TR/xpath-functions-31/#func-xml-to-json
 
 import { XPathMap, isXPathMap } from '../expressions/map-constructor-expression';
-import { XPathArray, isXPathArray, createXPathArray } from '../expressions/array-constructor-expression';
+import {
+    XPathArray,
+    isXPathArray,
+    createXPathArray,
+} from '../expressions/array-constructor-expression';
 import { XPathError } from '../errors';
 import { JsonToXmlConverter } from '../expressions/json-to-xml-converter';
 import { XPathNode } from '../node';
@@ -33,13 +37,15 @@ function jsToXPath(value: any): any {
         return map;
     }
     // Atomic values: string, number, boolean
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+        return value;
     throw new XPathError('FOJS0001', 'Unsupported JSON value type');
 }
 
 // Main: fn:parse-json($json-string as xs:string, $options as map(*)?) as item()?
 export function parseJson(jsonString: any, options?: any): any {
-    if (typeof jsonString !== 'string') throw new XPathError('XPTY0004', 'parse-json: first argument must be a string');
+    if (typeof jsonString !== 'string')
+        throw new XPathError('XPTY0004', 'parse-json: first argument must be a string');
     let opts = { liberal: false, duplicates: 'use-last' };
     if (options && isXPathMap(options)) {
         const lib = options['liberal'];
@@ -50,7 +56,8 @@ export function parseJson(jsonString: any, options?: any): any {
     try {
         // Liberal mode: allow comments, trailing commas, etc. (not implemented)
         // Duplicates: only 'use-last' supported (per spec, others error)
-        if (opts.duplicates !== 'use-last') throw new XPathError('FOJS0001', 'Only duplicates="use-last" is supported');
+        if (opts.duplicates !== 'use-last')
+            throw new XPathError('FOJS0001', 'Only duplicates="use-last" is supported');
         // TODO: Implement liberal mode if needed
         const parsed = JSON.parse(jsonString);
         return jsToXPath(parsed);
@@ -75,7 +82,8 @@ function xpathToJs(value: any): any {
         return obj;
     }
     // Atomic values: string, number, boolean pass through
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+        return value;
     // Arrays (plain JS arrays from sequences)
     if (Array.isArray(value)) {
         return value.map(xpathToJs);
@@ -123,7 +131,7 @@ export function serialize(value: any, options?: any): string {
 
 // Export for function registry
 export const jsonFunctions = {
-    'parse-json': parseJson
+    'parse-json': parseJson,
 };
 
 // Main: fn:json-to-xml($json-string as xs:string?, $options as map(*)?) as node()?
@@ -151,7 +159,10 @@ export function jsonToXml(jsonString: any, options?: any): XPathNode | null {
         const converter = new JsonToXmlConverter();
         return converter.convert(jsonString, opts);
     } catch (e: any) {
-        throw new XPathError('FOJS0001', 'json-to-xml: ' + (e && e.message ? e.message : String(e)));
+        throw new XPathError(
+            'FOJS0001',
+            'json-to-xml: ' + (e && e.message ? e.message : String(e))
+        );
     }
 }
 
@@ -256,6 +267,9 @@ export function xmlToJson(nodes: any): string | null {
         // Serialize to JSON
         return JSON.stringify(toSerialize);
     } catch (e: any) {
-        throw new XPathError('FOJS0002', 'xml-to-json: ' + (e && e.message ? e.message : String(e)));
+        throw new XPathError(
+            'FOJS0002',
+            'xml-to-json: ' + (e && e.message ? e.message : String(e))
+        );
     }
 }

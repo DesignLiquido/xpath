@@ -15,46 +15,46 @@ function parseXPath(xpath: string) {
 describe('TypedMapTest (map(key-type, value-type))', () => {
     describe('Parsing', () => {
         it('should parse map(*) as wildcard map type', () => {
-            const expr = parseXPath(". instance of map(*)");
+            const expr = parseXPath('. instance of map(*)');
             expect(expr).toBeDefined();
         });
 
         it('should parse map(xs:string, xs:integer) as typed map', () => {
-            const expr = parseXPath(". instance of map(xs:string, xs:integer)");
+            const expr = parseXPath('. instance of map(xs:string, xs:integer)');
             expect(expr).toBeDefined();
         });
 
         it('should parse map(xs:QName, xs:anyAtomicType) with qualified names', () => {
-            const expr = parseXPath(". instance of map(xs:QName, xs:anyAtomicType)");
+            const expr = parseXPath('. instance of map(xs:QName, xs:anyAtomicType)');
             expect(expr).toBeDefined();
         });
 
         it('should parse nested map types', () => {
-            const expr = parseXPath(". instance of map(xs:string, map(xs:integer, xs:string))");
+            const expr = parseXPath('. instance of map(xs:string, map(xs:integer, xs:string))');
             expect(expr).toBeDefined();
         });
 
         it('should parse array as value type in map', () => {
-            const expr = parseXPath(". instance of map(xs:string, array(xs:integer))");
+            const expr = parseXPath('. instance of map(xs:string, array(xs:integer))');
             expect(expr).toBeDefined();
         });
     });
 
     describe('Instance-of expression', () => {
         it('should return true when map matches map(*)', () => {
-            const expr = parseXPath("map { \"key\": 1, \"another\": 2 } instance of map(*)");
+            const expr = parseXPath('map { "key": 1, "another": 2 } instance of map(*)');
             const result = expr.evaluate({});
             expect(result).toBe(true);
         });
 
         it('should return false when non-map is tested against map(*)', () => {
-            const expr = parseXPath("\"string\" instance of map(*)");
+            const expr = parseXPath('"string" instance of map(*)');
             const result = expr.evaluate({});
             expect(result).toBe(false);
         });
 
         it('should return false when non-map (array) is tested against map(*)', () => {
-            const expr = parseXPath("[1, 2, 3] instance of map(*)");
+            const expr = parseXPath('[1, 2, 3] instance of map(*)');
             const result = expr.evaluate({});
             expect(result).toBe(false);
         });
@@ -68,9 +68,7 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
         });
 
         it('should return false when map has wrong key type', () => {
-            const expr = parseXPath(
-                'map { "key": 10 } instance of map(xs:integer, xs:integer)'
-            );
+            const expr = parseXPath('map { "key": 10 } instance of map(xs:integer, xs:integer)');
             const result = expr.evaluate({});
             expect(result).toBe(false);
         });
@@ -126,9 +124,7 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
 
     describe('Type compatibility', () => {
         it('should match map(xs:string, xs:integer) with map(*)', () => {
-            const expr = parseXPath(
-                'let $m := map { "a": 1 } return $m instance of map(*)'
-            );
+            const expr = parseXPath('let $m := map { "a": 1 } return $m instance of map(*)');
             const result = expr.evaluate({});
             expect(result).toBe(true);
         });
@@ -171,8 +167,8 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
     describe('With for/let expressions', () => {
         it('should check type in conditional within for loop', () => {
             const expr = parseXPath(
-                'for $m in (map { "a": 1 }, map { "b": "string" }, map { "c": 2 }) '
-                + 'return if ($m instance of map(xs:string, xs:integer)) then map:size($m) else 0'
+                'for $m in (map { "a": 1 }, map { "b": "string" }, map { "c": 2 }) ' +
+                    'return if ($m instance of map(xs:string, xs:integer)) then map:size($m) else 0'
             );
             const result = expr.evaluate({});
             // Should return sizes for matching maps and 0 for non-matching
@@ -182,13 +178,13 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
 
     describe('Error handling', () => {
         it('should handle null/undefined maps gracefully', () => {
-            const expr = parseXPath(". instance of map(*)");
+            const expr = parseXPath('. instance of map(*)');
             const result = expr.evaluate({});
             expect(typeof result).toBe('boolean');
         });
 
         it('should not throw on empty sequence', () => {
-            const expr = parseXPath("() instance of map(*)");
+            const expr = parseXPath('() instance of map(*)');
             const result = expr.evaluate({});
             expect(result).toBe(false);
         });
@@ -196,17 +192,17 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
 
     describe('Occurrence indicators with map types', () => {
         it('should parse map(xs:string, xs:integer)?', () => {
-            const expr = parseXPath(". instance of map(xs:string, xs:integer)?");
+            const expr = parseXPath('. instance of map(xs:string, xs:integer)?');
             expect(expr).toBeDefined();
         });
 
         it('should parse map(xs:string, xs:integer)*', () => {
-            const expr = parseXPath(". instance of map(xs:string, xs:integer)*");
+            const expr = parseXPath('. instance of map(xs:string, xs:integer)*');
             expect(expr).toBeDefined();
         });
 
         it('should parse map(xs:string, xs:integer)+', () => {
-            const expr = parseXPath(". instance of map(xs:string, xs:integer)+");
+            const expr = parseXPath('. instance of map(xs:string, xs:integer)+');
             expect(expr).toBeDefined();
         });
 
@@ -219,9 +215,7 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
         });
 
         it('should reject sequence when occurrence is not met', () => {
-            const expr = parseXPath(
-                '() instance of map(xs:string, xs:integer)+'
-            );
+            const expr = parseXPath('() instance of map(xs:string, xs:integer)+');
             const result = expr.evaluate({});
             expect(result).toBe(false);
         });
@@ -229,7 +223,7 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
 
     describe('Type display/toString', () => {
         it('should have readable type names', () => {
-            const expr = parseXPath(". instance of map(*)");
+            const expr = parseXPath('. instance of map(*)');
             // Just verify the expression is defined, toString() may vary
             expect(expr).toBeDefined();
         });
@@ -239,27 +233,27 @@ describe('TypedMapTest (map(key-type, value-type))', () => {
 describe('TypedArrayTest (array(member-type))', () => {
     describe('Parsing', () => {
         it('should parse array(*) as wildcard array type', () => {
-            const expr = parseXPath(". instance of array(*)");
+            const expr = parseXPath('. instance of array(*)');
             expect(expr).toBeDefined();
         });
 
         it('should parse array(xs:integer) as typed array', () => {
-            const expr = parseXPath(". instance of array(xs:integer)");
+            const expr = parseXPath('. instance of array(xs:integer)');
             expect(expr).toBeDefined();
         });
 
         it('should parse array(xs:string) with atomic type', () => {
-            const expr = parseXPath(". instance of array(xs:string)");
+            const expr = parseXPath('. instance of array(xs:string)');
             expect(expr).toBeDefined();
         });
 
         it('should parse nested array types', () => {
-            const expr = parseXPath(". instance of array(array(xs:integer))");
+            const expr = parseXPath('. instance of array(array(xs:integer))');
             expect(expr).toBeDefined();
         });
 
         it('should parse map as member type in array', () => {
-            const expr = parseXPath(". instance of array(map(xs:string, xs:integer))");
+            const expr = parseXPath('. instance of array(map(xs:string, xs:integer))');
             expect(expr).toBeDefined();
         });
     });
@@ -330,9 +324,7 @@ describe('TypedArrayTest (array(member-type))', () => {
         });
 
         it('should work with treat-as and array(*)', () => {
-            const expr = parseXPath(
-                '[1, "two", 3] treat as array(*) instance of array(*)'
-            );
+            const expr = parseXPath('[1, "two", 3] treat as array(*) instance of array(*)');
             const result = expr.evaluate({});
             expect(result).toBe(true);
         });
@@ -340,25 +332,19 @@ describe('TypedArrayTest (array(member-type))', () => {
 
     describe('Type compatibility', () => {
         it('should match array(xs:integer) with array(*)', () => {
-            const expr = parseXPath(
-                'let $a := [1, 2, 3] return $a instance of array(*)'
-            );
+            const expr = parseXPath('let $a := [1, 2, 3] return $a instance of array(*)');
             const result = expr.evaluate({});
             expect(result).toBe(true);
         });
 
         it('should support nested typed array checking', () => {
-            const expr = parseXPath(
-                '[[1, 2], [3, 4]] instance of array(array(xs:integer))'
-            );
+            const expr = parseXPath('[[1, 2], [3, 4]] instance of array(array(xs:integer))');
             const result = expr.evaluate({});
             expect(result).toBe(true);
         });
 
         it('should reject nested array with wrong inner type', () => {
-            const expr = parseXPath(
-                '[[1, 2], ["a", "b"]] instance of array(array(xs:integer))'
-            );
+            const expr = parseXPath('[[1, 2], ["a", "b"]] instance of array(array(xs:integer))');
             const result = expr.evaluate({});
             expect(result).toBe(false);
         });
@@ -366,9 +352,7 @@ describe('TypedArrayTest (array(member-type))', () => {
 
     describe('With variables', () => {
         it('should check type of array stored in variable', () => {
-            const expr = parseXPath(
-                'let $a := [1, 2, 3] return $a instance of array(xs:integer)'
-            );
+            const expr = parseXPath('let $a := [1, 2, 3] return $a instance of array(xs:integer)');
             const result = expr.evaluate({});
             expect(result).toBe(true);
         });
@@ -384,45 +368,41 @@ describe('TypedArrayTest (array(member-type))', () => {
 
     describe('Error handling', () => {
         it('should handle null/undefined arrays gracefully', () => {
-            const expr = parseXPath(". instance of array(*)");
+            const expr = parseXPath('. instance of array(*)');
             const result = expr.evaluate({});
             expect(typeof result).toBe('boolean');
         });
 
         it('should not throw on invalid array structure', () => {
-            const expr = parseXPath("[ ] instance of array(*)"); // Array literal
+            const expr = parseXPath('[ ] instance of array(*)'); // Array literal
             expect(() => expr.evaluate({})).not.toThrow();
         });
     });
 
     describe('Occurrence indicators with array types', () => {
         it('should parse array(xs:integer)?', () => {
-            const expr = parseXPath(". instance of array(xs:integer)?");
+            const expr = parseXPath('. instance of array(xs:integer)?');
             expect(expr).toBeDefined();
         });
 
         it('should parse array(xs:integer)*', () => {
-            const expr = parseXPath(". instance of array(xs:integer)*");
+            const expr = parseXPath('. instance of array(xs:integer)*');
             expect(expr).toBeDefined();
         });
 
         it('should parse array(xs:integer)+', () => {
-            const expr = parseXPath(". instance of array(xs:integer)+");
+            const expr = parseXPath('. instance of array(xs:integer)+');
             expect(expr).toBeDefined();
         });
 
         it('should handle occurrence indicator with instance-of', () => {
-            const expr = parseXPath(
-                '([1, 2], [3, 4]) instance of array(xs:integer)+'
-            );
+            const expr = parseXPath('([1, 2], [3, 4]) instance of array(xs:integer)+');
             const result = expr.evaluate({});
             expect(result).toBe(true);
         });
 
         it('should reject sequence when occurrence is not met', () => {
-            const expr = parseXPath(
-                '() instance of array(xs:integer)+'
-            );
+            const expr = parseXPath('() instance of array(xs:integer)+');
             const result = expr.evaluate({});
             expect(result).toBe(false);
         });
