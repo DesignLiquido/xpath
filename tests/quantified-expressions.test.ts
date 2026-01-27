@@ -4,15 +4,22 @@
 
 import { XPathContext } from '../src/context';
 import { XPathExpression } from '../src/expressions/expression';
-import { XPathQuantifiedBinding, XPathQuantifiedExpression } from '../src/expressions/quantified-expression';
+import {
+    XPathQuantifiedBinding,
+    XPathQuantifiedExpression,
+} from '../src/expressions/quantified-expression';
 import { XPathVariableReference } from '../src/expressions/variable-reference-expression';
 import { XPathBinaryExpression } from '../src/expressions/binary-expression';
 import { XPathLexer } from '../src/lexer';
 import { XPath20Parser } from '../src/parser';
 
 class LiteralExpression extends XPathExpression {
-    constructor(private value: any) { super(); }
-    evaluate(_ctx: XPathContext): any { return this.value; }
+    constructor(private value: any) {
+        super();
+    }
+    evaluate(_ctx: XPathContext): any {
+        return this.value;
+    }
 }
 
 describe('XPath 2.0 Quantified Expressions (Phase 3.3)', () => {
@@ -22,7 +29,11 @@ describe('XPath 2.0 Quantified Expressions (Phase 3.3)', () => {
         const bindings: XPathQuantifiedBinding[] = [
             { variable: 'x', expression: new LiteralExpression([0, 1, 2]) },
         ];
-        const pred = new XPathBinaryExpression(new XPathVariableReference('x'), new LiteralExpression(1), '>');
+        const pred = new XPathBinaryExpression(
+            new XPathVariableReference('x'),
+            new LiteralExpression(1),
+            '>'
+        );
         const expr = new XPathQuantifiedExpression('some', bindings, pred);
         expect(expr.evaluate(ctx)).toBe(true);
     });
@@ -31,16 +42,31 @@ describe('XPath 2.0 Quantified Expressions (Phase 3.3)', () => {
         const bindings: XPathQuantifiedBinding[] = [
             { variable: 'x', expression: new LiteralExpression([1, 2, 3]) },
         ];
-        const pred = new XPathBinaryExpression(new XPathVariableReference('x'), new LiteralExpression(0), '>');
+        const pred = new XPathBinaryExpression(
+            new XPathVariableReference('x'),
+            new LiteralExpression(0),
+            '>'
+        );
         const expr = new XPathQuantifiedExpression('every', bindings, pred);
         expect(expr.evaluate(ctx)).toBe(true);
     });
 
     it('handles empty sequence: some => false, every => true', () => {
-        const emptyBinding: XPathQuantifiedBinding = { variable: 'x', expression: new LiteralExpression(null) };
-        const pred = new XPathBinaryExpression(new XPathVariableReference('x'), new LiteralExpression(0), '>');
-        expect(new XPathQuantifiedExpression('some', [emptyBinding], pred).evaluate(ctx)).toBe(false);
-        expect(new XPathQuantifiedExpression('every', [emptyBinding], pred).evaluate(ctx)).toBe(true);
+        const emptyBinding: XPathQuantifiedBinding = {
+            variable: 'x',
+            expression: new LiteralExpression(null),
+        };
+        const pred = new XPathBinaryExpression(
+            new XPathVariableReference('x'),
+            new LiteralExpression(0),
+            '>'
+        );
+        expect(new XPathQuantifiedExpression('some', [emptyBinding], pred).evaluate(ctx)).toBe(
+            false
+        );
+        expect(new XPathQuantifiedExpression('every', [emptyBinding], pred).evaluate(ctx)).toBe(
+            true
+        );
     });
 
     it('supports multiple bindings (Cartesian expansion)', () => {
@@ -50,7 +76,11 @@ describe('XPath 2.0 Quantified Expressions (Phase 3.3)', () => {
         ];
         const pred = new XPathBinaryExpression(
             new XPathVariableReference('x'),
-            new XPathBinaryExpression(new XPathVariableReference('y'), new LiteralExpression(5), '>'),
+            new XPathBinaryExpression(
+                new XPathVariableReference('y'),
+                new LiteralExpression(5),
+                '>'
+            ),
             '>'
         );
         const someExpr = new XPathQuantifiedExpression('some', bindings, pred);

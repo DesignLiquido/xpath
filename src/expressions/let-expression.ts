@@ -62,7 +62,7 @@ export class XPathLetExpression extends XPathExpression {
     }
 
     toString(): string {
-        const bindingStrs = this.bindings.map(b => `$${b.variable} := ${b.expression}`);
+        const bindingStrs = this.bindings.map((b) => `$${b.variable} := ${b.expression}`);
         return `let ${bindingStrs.join(', ')} return ${this.returnExpr}`;
     }
 }

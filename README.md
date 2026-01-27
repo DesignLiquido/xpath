@@ -98,7 +98,7 @@ For XPath 2.0 expressions with conditionals, for expressions, and quantified exp
 import { XPath20Parser, XPathLexer, createContext } from '@designliquido/xpath';
 
 // IMPORTANT: Use matching versions for lexer and parser
-const lexer = new XPathLexer('2.0');  // Recognizes 'if', 'then', 'else', 'for', etc.
+const lexer = new XPathLexer('2.0'); // Recognizes 'if', 'then', 'else', 'for', etc.
 const parser = new XPath20Parser();
 
 // if-then-else expressions
@@ -127,7 +127,7 @@ const parser20 = createXPathParser('2.0');
 
 // With options
 const parser = createXPathParser('1.0', {
-    enableNamespaceAxis: true
+    enableNamespaceAxis: true,
 });
 ```
 
@@ -135,21 +135,22 @@ const parser = createXPathParser('1.0', {
 
 The lexer version determines how certain keywords are tokenized:
 
-| Keyword | XPath 1.0 | XPath 2.0 |
-|---------|-----------|-----------|
-| `if`    | Identifier (element name) | Reserved word |
-| `then`  | Identifier (element name) | Reserved word |
-| `else`  | Identifier (element name) | Reserved word |
-| `for`   | Identifier (element name) | Reserved word |
-| `return`| Identifier (element name) | Reserved word |
-| `some`  | Identifier (element name) | Reserved word |
-| `every` | Identifier (element name) | Reserved word |
+| Keyword  | XPath 1.0                 | XPath 2.0     |
+| -------- | ------------------------- | ------------- |
+| `if`     | Identifier (element name) | Reserved word |
+| `then`   | Identifier (element name) | Reserved word |
+| `else`   | Identifier (element name) | Reserved word |
+| `for`    | Identifier (element name) | Reserved word |
+| `return` | Identifier (element name) | Reserved word |
+| `some`   | Identifier (element name) | Reserved word |
+| `every`  | Identifier (element name) | Reserved word |
 
 **Important:** Always match your lexer and parser versions. Using an XPath 1.0 lexer with an XPath 2.0 parser will cause parsing errors for 2.0-specific syntax.
 
 ### XPath Version Reference
 
 For detailed information about version-specific features and the implementation roadmap, see:
+
 - **[XPATH-VERSIONS.md](XPATH-VERSIONS.md)** - Version support infrastructure and feature flags
 - **[Migration Guide](docs/guides/XPATH-MIGRATION-GUIDE.md)** - Upgrading from XPath 1.0 to 2.0
 
@@ -181,20 +182,20 @@ export class CustomXPathSelector {
     public select(expression: string, contextNode: YourNodeType): YourNodeType[] {
         // 1. Tokenize the XPath expression
         const tokens = this.lexer.scan(expression);
-        
+
         // 2. Parse tokens into an AST
         const ast = this.parser.parse(tokens);
-        
+
         // 3. Clear cache for each selection
         this.nodeCache = new WeakMap();
-        
+
         // 4. Convert your node to XPathNode
         const xpathNode = this.convertToXPathNode(contextNode);
-        
+
         // 5. Create context and evaluate
         const context = createContext(xpathNode);
         const result = ast.evaluate(context);
-        
+
         // 6. Convert results back to your node type
         return this.convertResult(result);
     }
@@ -235,10 +236,10 @@ private convertToXPathNode(node: YourNodeType): XPathNode {
     this.nodeCache.set(node, xpathNode);
 
     // NOW convert children and attributes
-    xpathNode.childNodes = elementChildren.map(child => 
+    xpathNode.childNodes = elementChildren.map(child =>
         this.convertToXPathNode(child)
     );
-    xpathNode.attributes = attributes.map(attr => 
+    xpathNode.attributes = attributes.map(attr =>
         this.convertToXPathNode(attr)
     );
 
@@ -253,7 +254,7 @@ Map your node types to standard DOM node types:
 ```typescript
 private getNodeType(node: YourNodeType): number {
     if (node.nodeType !== undefined) return node.nodeType;
-    
+
     // Map node names to standard node types
     switch (node.nodeName?.toLowerCase()) {
         case '#text':
@@ -279,11 +280,11 @@ private convertResult(result: any): YourNodeType[] {
     if (Array.isArray(result)) {
         return result.map(node => this.convertFromXPathNode(node));
     }
-    
+
     if (result && typeof result === 'object' && 'nodeType' in result) {
         return [this.convertFromXPathNode(result)];
     }
-    
+
     return [];
 }
 
@@ -294,13 +295,13 @@ private convertFromXPathNode(xpathNode: XPathNode): YourNodeType {
         localName: xpathNode.localName,
         namespaceUri: xpathNode.namespaceUri,
         nodeValue: xpathNode.textContent,
-        parent: xpathNode.parentNode ? 
+        parent: xpathNode.parentNode ?
             this.convertFromXPathNode(xpathNode.parentNode) : undefined,
         children: xpathNode.childNodes ?
-            Array.from(xpathNode.childNodes).map(child => 
+            Array.from(xpathNode.childNodes).map(child =>
                 this.convertFromXPathNode(child)) : undefined,
         attributes: xpathNode.attributes ?
-            Array.from(xpathNode.attributes).map(attr => 
+            Array.from(xpathNode.attributes).map(attr =>
                 this.convertFromXPathNode(attr)) : undefined,
         nextSibling: xpathNode.nextSibling ?
             this.convertFromXPathNode(xpathNode.nextSibling) : undefined,
@@ -333,7 +334,8 @@ const firstTitle = selector.select('//book[1]/title', documentNode);
 4. **Null Safety**: Handle null/undefined values when converting between node types
 5. **Performance**: Clear the cache between selections to avoid stale references
 
-For a complete working example, see the [XPathSelector implementation in xslt-processor](https://github.com/DesignLiquido/xslt-processor/blob/main/src/xpath/selector.ts). 
+For a complete working example, see the [XPathSelector implementation in xslt-processor](https://github.com/DesignLiquido/xslt-processor/blob/main/src/xpath/selector.ts).
+
 ## XSLT Extensions API
 
 This library provides a pure **XPath 1.0** implementation. However, it also includes a clean integration API for XSLT-specific functions, allowing the `xslt-processor` package (or any other XSLT implementation) to extend XPath with XSLT 1.0 functions like `document()`, `key()`, `format-number()`, `generate-id()`, and others.
@@ -360,46 +362,46 @@ Here's how to use XSLT extensions (typically done by the `xslt-processor` packag
 
 ```typescript
 import {
-  XPath10Parser,
-  XPathLexer,
-  XSLTExtensions,
-  XSLTFunctionMetadata,
-  getExtensionFunctionNames,
-  XPathContext
+    XPath10Parser,
+    XPathLexer,
+    XSLTExtensions,
+    XSLTFunctionMetadata,
+    getExtensionFunctionNames,
+    XPathContext,
 } from '@designliquido/xpath';
 
 // Define XSLT extension functions
 const xsltFunctions: XSLTFunctionMetadata[] = [
-  {
-    name: 'generate-id',
-    minArgs: 0,
-    maxArgs: 1,
-    implementation: (context: XPathContext, nodeSet?: any[]) => {
-      const node = nodeSet?.[0] || context.node;
-      return `id-${generateUniqueId(node)}`;
+    {
+        name: 'generate-id',
+        minArgs: 0,
+        maxArgs: 1,
+        implementation: (context: XPathContext, nodeSet?: any[]) => {
+            const node = nodeSet?.[0] || context.node;
+            return `id-${generateUniqueId(node)}`;
+        },
+        description: 'Generate unique identifier for a node',
     },
-    description: 'Generate unique identifier for a node'
-  },
-  {
-    name: 'system-property',
-    minArgs: 1,
-    maxArgs: 1,
-    implementation: (context: XPathContext, propertyName: string) => {
-      const properties = {
-        'xsl:version': '1.0',
-        'xsl:vendor': 'Design Liquido XPath',
-        'xsl:vendor-url': 'https://github.com/designliquido/xpath'
-      };
-      return properties[String(propertyName)] || '';
+    {
+        name: 'system-property',
+        minArgs: 1,
+        maxArgs: 1,
+        implementation: (context: XPathContext, propertyName: string) => {
+            const properties = {
+                'xsl:version': '1.0',
+                'xsl:vendor': 'Design Liquido XPath',
+                'xsl:vendor-url': 'https://github.com/designliquido/xpath',
+            };
+            return properties[String(propertyName)] || '';
+        },
+        description: 'Query XSLT processor properties',
     },
-    description: 'Query XSLT processor properties'
-  }
 ];
 
 // Create extensions bundle
 const extensions: XSLTExtensions = {
-  functions: xsltFunctions,
-  version: '1.0'
+    functions: xsltFunctions,
+    version: '1.0',
 };
 
 // Create parser with extensions (XPath 1.0 for XSLT 1.0 compatibility)
@@ -410,16 +412,16 @@ const lexer = new XPathLexer('1.0');
 lexer.registerFunctions(getExtensionFunctionNames(extensions));
 
 // Parse expression
-const tokens = lexer.scan("generate-id()");
+const tokens = lexer.scan('generate-id()');
 const expression = parser.parse(tokens);
 
 // Create context with extension functions
 const context: XPathContext = {
-  node: rootNode,
-  functions: {
-    'generate-id': xsltFunctions[0].implementation,
-    'system-property': xsltFunctions[1].implementation
-  }
+    node: rootNode,
+    functions: {
+        'generate-id': xsltFunctions[0].implementation,
+        'system-property': xsltFunctions[1].implementation,
+    },
 };
 
 // Evaluate
@@ -431,13 +433,11 @@ const result = expression.evaluate(context);
 XSLT extension functions receive the evaluation context as their first parameter:
 
 ```typescript
-type XSLTExtensionFunction = (
-  context: XPathContext,
-  ...args: any[]
-) => any;
+type XSLTExtensionFunction = (context: XPathContext, ...args: any[]) => any;
 ```
 
 This allows extension functions to access:
+
 - `context.node` - current context node
 - `context.position` - position in node-set (1-based)
 - `context.size` - size of current node-set
@@ -450,7 +450,7 @@ This allows extension functions to access:
 // Validate extensions bundle for errors
 const errors = validateExtensions(extensions);
 if (errors.length > 0) {
-  console.error('Extension validation errors:', errors);
+    console.error('Extension validation errors:', errors);
 }
 
 // Extract function names for lexer registration
@@ -482,29 +482,29 @@ XSLT functions may require additional context data beyond standard XPath context
 
 ```typescript
 const context: XPathContext = {
-  node: rootNode,
-  functions: {
-    'generate-id': generateIdImpl,
-    'key': keyImpl,
-    'format-number': formatNumberImpl
-  },
-  // XSLT-specific context extensions
-  xsltVersion: '1.0',
-  // For key() function
-  keys: {
-    'employee-id': { match: 'employee', use: '@id' }
-  },
-  // For document() function
-  documentLoader: (uri: string) => loadXmlDocument(uri),
-  // For format-number() function
-  decimalFormats: {
-    'euro': { decimalSeparator: ',', groupingSeparator: '.' }
-  },
-  // For system-property() function
-  systemProperties: {
-    'xsl:version': '1.0',
-    'xsl:vendor': 'Design Liquido'
-  }
+    node: rootNode,
+    functions: {
+        'generate-id': generateIdImpl,
+        key: keyImpl,
+        'format-number': formatNumberImpl,
+    },
+    // XSLT-specific context extensions
+    xsltVersion: '1.0',
+    // For key() function
+    keys: {
+        'employee-id': { match: 'employee', use: '@id' },
+    },
+    // For document() function
+    documentLoader: (uri: string) => loadXmlDocument(uri),
+    // For format-number() function
+    decimalFormats: {
+        euro: { decimalSeparator: ',', groupingSeparator: '.' },
+    },
+    // For system-property() function
+    systemProperties: {
+        'xsl:version': '1.0',
+        'xsl:vendor': 'Design Liquido',
+    },
 };
 ```
 
@@ -530,7 +530,7 @@ Prior versions used abstract or unversioned parser/lexer classes. The new API us
 ```typescript
 // OLD (deprecated):
 import { XPathBaseParser } from '@designliquido/xpath';
-const parser = new XPathBaseParser();  // Error: XPathBaseParser is abstract
+const parser = new XPathBaseParser(); // Error: XPathBaseParser is abstract
 
 // NEW (recommended):
 import { XPath10Parser } from '@designliquido/xpath';
@@ -546,11 +546,11 @@ const parser = createXPathParser('1.0');
 ```typescript
 // OLD (may have defaulted to 2.0):
 import { XPathLexer } from '@designliquido/xpath';
-const lexer = new XPathLexer();  // Was defaulting to '2.0'
+const lexer = new XPathLexer(); // Was defaulting to '2.0'
 
 // NEW (explicit version, defaults to 1.0):
 import { XPathLexer } from '@designliquido/xpath';
-const lexer = new XPathLexer('1.0');  // Explicit XPath 1.0
+const lexer = new XPathLexer('1.0'); // Explicit XPath 1.0
 
 // Or with options object:
 const lexer = new XPathLexer({ version: '1.0' });
@@ -564,7 +564,7 @@ If your code relied on the old default and uses XPath 2.0 features, update your 
 
 ```typescript
 // If you were using XPath 2.0 features with the old default:
-const lexer = new XPathLexer();  // OLD: defaulted to 2.0
+const lexer = new XPathLexer(); // OLD: defaulted to 2.0
 
 // Update to explicit 2.0:
 const lexer = new XPathLexer('2.0');
@@ -572,12 +572,12 @@ const lexer = new XPathLexer('2.0');
 
 #### Quick Reference
 
-| Old API | New API |
-|---------|---------|
-| `new XPathBaseParser()` | `new XPath10Parser()` or `createXPathParser('1.0')` |
+| Old API                                   | New API                                             |
+| ----------------------------------------- | --------------------------------------------------- |
+| `new XPathBaseParser()`                   | `new XPath10Parser()` or `createXPathParser('1.0')` |
 | `new XPathBaseParser({ version: '2.0' })` | `new XPath20Parser()` or `createXPathParser('2.0')` |
-| `new XPathLexer()` (was 2.0) | `new XPathLexer('1.0')` (now 1.0) |
-| `new XPathLexer('2.0')` | `new XPathLexer('2.0')` (unchanged) |
+| `new XPathLexer()` (was 2.0)              | `new XPathLexer('1.0')` (now 1.0)                   |
+| `new XPathLexer('2.0')`                   | `new XPathLexer('2.0')` (unchanged)                 |
 
 #### Compatibility Alias
 
@@ -585,7 +585,7 @@ For gradual migration, `XPathParser` is available as an alias for `XPath10Parser
 
 ```typescript
 import { XPathParser } from '@designliquido/xpath';
-const parser = new XPathParser();  // Same as new XPath10Parser()
+const parser = new XPathParser(); // Same as new XPath10Parser()
 ```
 
 This alias is deprecated and will be removed in a future major version. Prefer using `XPath10Parser` directly.

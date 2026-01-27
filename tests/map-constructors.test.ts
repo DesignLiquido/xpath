@@ -16,19 +16,23 @@ describe('XPath 3.1 Map Constructors', () => {
         it('should recognize map as reserved word in 3.1', () => {
             const lexer = new XPathLexer('3.1');
             const tokens = lexer.scan('map { }');
-            expect(tokens.some(t => t.type === 'RESERVED_WORD' && t.lexeme === 'map')).toBe(true);
+            expect(tokens.some((t) => t.type === 'RESERVED_WORD' && t.lexeme === 'map')).toBe(true);
         });
 
         it('should recognize array as reserved word in 3.1', () => {
             const lexer = new XPathLexer('3.1');
             const tokens = lexer.scan('array { }');
-            expect(tokens.some(t => t.type === 'RESERVED_WORD' && t.lexeme === 'array')).toBe(true);
+            expect(tokens.some((t) => t.type === 'RESERVED_WORD' && t.lexeme === 'array')).toBe(
+                true
+            );
         });
 
         it('should not recognize map as reserved word in 3.0', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('map');
-            expect(tokens.some(t => t.type === 'RESERVED_WORD' && t.lexeme === 'map')).toBe(false);
+            expect(tokens.some((t) => t.type === 'RESERVED_WORD' && t.lexeme === 'map')).toBe(
+                false
+            );
         });
     });
 
@@ -97,10 +101,10 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result).toBeDefined();
             expect(result.__isMap).toBe(true);
-            expect(Object.keys(result).filter(k => k !== '__isMap').length).toBe(0);
+            expect(Object.keys(result).filter((k) => k !== '__isMap').length).toBe(0);
         });
     });
 
@@ -111,7 +115,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "name": "Alice" }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.name).toBe('Alice');
         });
@@ -122,7 +126,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { 42: "answer" }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result['42']).toBe('answer');
         });
@@ -133,7 +137,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "x": 10, "y": 20, "z": 30 }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.x).toBe(10);
             expect(result.y).toBe(20);
@@ -146,7 +150,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "sum": 1 + 2, "product": 3 * 4 }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.sum).toBe(3);
             expect(result.product).toBe(12);
@@ -160,7 +164,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "key": "first", "key": "second", "key": "third" }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.key).toBe('third');
         });
@@ -171,7 +175,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { 1: "one", 1: "uno" }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result['1']).toBe('uno');
         });
@@ -184,7 +188,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "person": map { "name": "Bob", "age": 25 } }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.person.__isMap).toBe(true);
             expect(result.person.name).toBe('Bob');
@@ -197,7 +201,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "a": map { "b": map { "c": "deep" } } }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.a.__isMap).toBe(true);
             expect(result.a.b.__isMap).toBe(true);
@@ -207,10 +211,12 @@ describe('XPath 3.1 Map Constructors', () => {
         it('should evaluate map with mixed nested and simple entries', () => {
             const lexer = new XPathLexer('3.1');
             const parser = new XPath31Parser();
-            const tokens = lexer.scan('map { "name": "Test", "data": map { "x": 1, "y": 2 }, "count": 5 }');
+            const tokens = lexer.scan(
+                'map { "name": "Test", "data": map { "x": 1, "y": 2 }, "count": 5 }'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.name).toBe('Test');
             expect(result.data.__isMap).toBe(true);
@@ -227,7 +233,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "numbers": (1, 2, 3) }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(Array.isArray(result.numbers)).toBe(true);
             expect(result.numbers).toEqual([1, 2, 3]);
@@ -239,7 +245,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "empty": () }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(Array.isArray(result.empty)).toBe(true);
             expect(result.empty.length).toBe(0);
@@ -253,7 +259,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('let $name := "Charlie" return map { "person": $name }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.person).toBe('Charlie');
         });
@@ -264,7 +270,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('let $m := map { "x": 5, "y": 10 } return $m');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.x).toBe(5);
             expect(result.y).toBe(10);
@@ -278,7 +284,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { 2 + 3: "five" }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result['5']).toBe('five');
         });
@@ -289,7 +295,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { true(): "yes", false(): "no" }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result['true']).toBe('yes');
             expect(result['false']).toBe('no');
@@ -300,10 +306,12 @@ describe('XPath 3.1 Map Constructors', () => {
         it('should handle map with special characters in string keys', () => {
             const lexer = new XPathLexer('3.1');
             const parser = new XPath31Parser();
-            const tokens = lexer.scan('map { "with-dash": 1, "with_underscore": 2, "with.dot": 3 }');
+            const tokens = lexer.scan(
+                'map { "with-dash": 1, "with_underscore": 2, "with.dot": 3 }'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result['with-dash']).toBe(1);
             expect(result['with_underscore']).toBe(2);
@@ -316,7 +324,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('map { "": "empty key" }');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result['']).toBe('empty key');
         });
@@ -328,7 +336,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan(`map { "${longKey}": "value" }`);
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result[longKey]).toBe('value');
         });
@@ -341,7 +349,7 @@ describe('XPath 3.1 Map Constructors', () => {
             const tokens = lexer.scan('for $m in (map { "x": 1 }, map { "x": 2 }) return $m');
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(Array.isArray(result)).toBe(true);
             expect(result.length).toBe(2);
             expect(result[0].__isMap).toBe(true);
@@ -353,10 +361,12 @@ describe('XPath 3.1 Map Constructors', () => {
         it('should use map in conditional expression', () => {
             const lexer = new XPathLexer('3.1');
             const parser = new XPath31Parser();
-            const tokens = lexer.scan('if (true()) then map { "result": "yes" } else map { "result": "no" }');
+            const tokens = lexer.scan(
+                'if (true()) then map { "result": "yes" } else map { "result": "no" }'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext) as any;
-            
+
             expect(result.__isMap).toBe(true);
             expect(result.result).toBe('yes');
         });

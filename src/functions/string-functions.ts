@@ -146,10 +146,10 @@ export function normalizeUnicode(arg: XPathResult, form?: XPathResult): string {
 
     // Map XPath normalization forms to JavaScript forms
     const formMap: Record<string, 'NFC' | 'NFD' | 'NFKC' | 'NFKD'> = {
-        'NFC': 'NFC',
-        'NFD': 'NFD',
-        'NFKC': 'NFKC',
-        'NFKD': 'NFKD',
+        NFC: 'NFC',
+        NFD: 'NFD',
+        NFKC: 'NFKC',
+        NFKD: 'NFKD',
         'FULLY-NORMALIZED': 'NFC', // Approximate with NFC
     };
 
@@ -173,13 +173,15 @@ export function codepointsToString(arg: XPathResult): string {
     const chars: string[] = [];
     for (const cp of codepoints) {
         const codepoint = Number(cp);
-        if (!Number.isInteger(codepoint) || codepoint < 0 || codepoint > 0x10FFFF) {
+        if (!Number.isInteger(codepoint) || codepoint < 0 || codepoint > 0x10ffff) {
             throw new Error(`FOCH0001: Invalid codepoint: ${cp}`);
         }
         // Check for invalid XML characters
-        if (codepoint === 0 ||
-            (codepoint >= 0xD800 && codepoint <= 0xDFFF) ||
-            (codepoint >= 0xFFFE && codepoint <= 0xFFFF)) {
+        if (
+            codepoint === 0 ||
+            (codepoint >= 0xd800 && codepoint <= 0xdfff) ||
+            (codepoint >= 0xfffe && codepoint <= 0xffff)
+        ) {
             throw new Error(`FOCH0001: Codepoint not valid in XML: ${codepoint}`);
         }
         chars.push(String.fromCodePoint(codepoint));
@@ -218,12 +220,18 @@ export function compare(
     collation?: XPathResult
 ): number | null {
     // Empty sequence handling
-    if (comparand1 === null || comparand1 === undefined ||
-        (Array.isArray(comparand1) && comparand1.length === 0)) {
+    if (
+        comparand1 === null ||
+        comparand1 === undefined ||
+        (Array.isArray(comparand1) && comparand1.length === 0)
+    ) {
         return null;
     }
-    if (comparand2 === null || comparand2 === undefined ||
-        (Array.isArray(comparand2) && comparand2.length === 0)) {
+    if (
+        comparand2 === null ||
+        comparand2 === undefined ||
+        (Array.isArray(comparand2) && comparand2.length === 0)
+    ) {
         return null;
     }
 
@@ -255,7 +263,7 @@ export function stringJoin(arg1: XPathResult, arg2: XPathResult): string {
     if (arg1 === null || arg1 === undefined) return '';
     if (!Array.isArray(arg1)) return toString(arg1);
 
-    return arg1.map(item => toString(item)).join(separator);
+    return arg1.map((item) => toString(item)).join(separator);
 }
 
 // ============================================================================
@@ -322,7 +330,7 @@ function createRegex(pattern: string, flags: string): RegExp {
     if (extended) {
         processedPattern = pattern
             .replace(/#.*$/gm, '') // Remove comments
-            .replace(/\s+/g, '');  // Remove whitespace
+            .replace(/\s+/g, ''); // Remove whitespace
     }
 
     // Handle dot-all mode
@@ -342,6 +350,6 @@ function convertReplacementString(replacement: string): string {
     // JavaScript uses $& for whole match, $1-$9 for groups
     return replacement
         .replace(/\$0/g, '$&')
-        .replace(/\\\$/g, '$$$$')  // Escape \$ to $$
-        .replace(/\\\\/g, '\\');   // Unescape \\
+        .replace(/\\\$/g, '$$$$') // Escape \$ to $$
+        .replace(/\\\\/g, '\\'); // Unescape \\
 }

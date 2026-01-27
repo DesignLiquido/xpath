@@ -4,10 +4,10 @@ import { XPathPredicate } from './predicate-expression';
 
 /**
  * Represents a filter expression in XPath 2.0.
- * 
+ *
  * A filter expression is a primary expression followed by one or more predicates.
  * The predicates are evaluated against each item in the result of the primary expression.
- * 
+ *
  * Syntax: PrimaryExpr Predicate*
  * Examples:
  *   - (1 to 10)[. > 5]          Filter with boolean predicate
@@ -33,7 +33,7 @@ export class XPathFilterExpression extends XPathExpression {
 
     /**
      * Evaluate the filter expression.
-     * 
+     *
      * Steps:
      * 1. Evaluate the primary expression to get a sequence
      * 2. For each predicate:
@@ -41,7 +41,7 @@ export class XPathFilterExpression extends XPathExpression {
      *    b. Evaluate predicate for each item
      *    c. Keep items where predicate test succeeds
      * 3. Return the filtered result
-     * 
+     *
      * @param context The evaluation context
      * @returns The filtered sequence
      */
@@ -64,13 +64,13 @@ export class XPathFilterExpression extends XPathExpression {
 
     /**
      * Apply a single predicate to filter the result sequence.
-     * 
+     *
      * For each item in the sequence:
      * - Set position and size in context
      * - Evaluate the predicate
      * - Test if the predicate matches
      * - Keep the item if it matches
-     * 
+     *
      * @param items The sequence to filter
      * @param predicateExpr The predicate expression
      * @param context The evaluation context
@@ -89,7 +89,7 @@ export class XPathFilterExpression extends XPathExpression {
             const itemContext: XPathContext = {
                 ...context,
                 node: item?.nodeType !== undefined ? item : context.node,
-                position: i + 1,  // XPath uses 1-based indexing
+                position: i + 1, // XPath uses 1-based indexing
                 size: items.length,
             };
 
@@ -104,11 +104,11 @@ export class XPathFilterExpression extends XPathExpression {
 
     /**
      * Test if a predicate expression matches in the given context.
-     * 
+     *
      * A predicate matches if:
      * - It evaluates to a number equal to the context position (numeric predicate)
      * - It evaluates to true (boolean predicate)
-     * 
+     *
      * @param predicateExpr The predicate expression
      * @param context The evaluation context with position/size
      * @returns True if the predicate matches
@@ -127,7 +127,7 @@ export class XPathFilterExpression extends XPathExpression {
 
     /**
      * Convert a value to boolean using XPath rules.
-     * 
+     *
      * XPath boolean conversion rules:
      * - boolean: use as-is
      * - number: 0 or NaN is false, otherwise true
@@ -135,7 +135,7 @@ export class XPathFilterExpression extends XPathExpression {
      * - array/sequence: non-empty is true, empty is false
      * - object/node: true
      * - null/undefined: false
-     * 
+     *
      * @param value The value to convert
      * @returns The boolean result
      */
@@ -161,10 +161,10 @@ export class XPathFilterExpression extends XPathExpression {
 
 /**
  * Helper class for combining a filter expression with a subsequent location path.
- * 
+ *
  * This represents expressions like: (primary-expr)[predicates]/steps
  * The filter expression is evaluated first, then the location path is applied to each result.
- * 
+ *
  * @internal
  */
 export class FilteredPathExpression extends XPathExpression {
@@ -187,7 +187,7 @@ export class FilteredPathExpression extends XPathExpression {
     /**
      * Evaluate by first evaluating the filter expression,
      * then applying the path expression to each result.
-     * 
+     *
      * @param context The evaluation context
      * @returns The combined result
      */

@@ -1,0 +1,9 @@
+# Ignore build outputs and coverage
+coverage/
+dist/
+build/
+node_modules/
+# Generated docs
+docs/
+# Reports
+lcov.info

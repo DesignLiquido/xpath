@@ -15,10 +15,10 @@
  * Reference: https://www.w3.org/TR/xpath-31/#id-lookup
  */
 
-import { XPathExpression } from "./expression";
-import { XPathContext } from "../context";
-import { isXPathArray, XPathArray } from "./array-constructor-expression";
-import { isXPathMap, XPathMap } from "./map-constructor-expression";
+import { XPathExpression } from './expression';
+import { XPathContext } from '../context';
+import { isXPathArray, XPathArray } from './array-constructor-expression';
+import { isXPathMap, XPathMap } from './map-constructor-expression';
 
 /**
  * Key specifier types for lookup operations.
@@ -27,7 +27,7 @@ export enum KeySpecifierType {
     NCNAME = 'NCNAME',
     INTEGER_LITERAL = 'INTEGER_LITERAL',
     PARENTHESIZED_EXPR = 'PARENTHESIZED_EXPR',
-    WILDCARD = 'WILDCARD'
+    WILDCARD = 'WILDCARD',
 }
 
 /**
@@ -92,15 +92,19 @@ export class XPathLookupExpression implements XPathExpression {
             case KeySpecifierType.WILDCARD:
                 // Return all values in the map, excluding internal properties
                 return Object.keys(map)
-                    .filter(key => !key.startsWith('__'))
-                    .map(key => map[key]);
+                    .filter((key) => !key.startsWith('__'))
+                    .map((key) => map[key]);
 
             default:
                 throw new Error('FOAY0001: Invalid key specifier for map lookup');
         }
     }
 
-    private lookupInArray(array: XPathArray, keySpecifier: KeySpecifier, context: XPathContext): any {
+    private lookupInArray(
+        array: XPathArray,
+        keySpecifier: KeySpecifier,
+        context: XPathContext
+    ): any {
         switch (keySpecifier.type) {
             case KeySpecifierType.INTEGER_LITERAL:
                 const position = keySpecifier.value as number;

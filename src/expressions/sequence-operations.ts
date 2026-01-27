@@ -22,8 +22,8 @@ import { isXPathNode, getNodeId, flattenSequence } from './sequence-construction
  * Internal node representation with metadata
  */
 interface NodeItem {
-  value: any;
-  id: string;
+    value: any;
+    id: string;
 }
 
 /**
@@ -42,66 +42,66 @@ interface NodeItem {
  *   //* | //@* → all elements and attributes
  */
 export class UnionExpression extends XPathExpression {
-  constructor(
-    private operand1: XPathExpression,
-    private operand2: XPathExpression,
-    private operator: 'union' | '|' = 'union'
-  ) {
-    super();
-  }
-
-  evaluate(context: XPathContext): any {
-    const result1 = flattenSequence(this.operand1.evaluate(context));
-    const result2 = flattenSequence(this.operand2.evaluate(context));
-
-    // Validate that operands are nodes
-    if (!result1.every(isXPathNode) || !result2.every(isXPathNode)) {
-      throw new Error('union operator requires sequences of nodes');
+    constructor(
+        private operand1: XPathExpression,
+        private operand2: XPathExpression,
+        private operator: 'union' | '|' = 'union'
+    ) {
+        super();
     }
 
-    // Combine and deduplicate
-    const combined = this.deduplicateNodes([...result1, ...result2]);
+    evaluate(context: XPathContext): any {
+        const result1 = flattenSequence(this.operand1.evaluate(context));
+        const result2 = flattenSequence(this.operand2.evaluate(context));
 
-    // Sort in document order
-    return this.sortInDocumentOrder(combined);
-  }
+        // Validate that operands are nodes
+        if (!result1.every(isXPathNode) || !result2.every(isXPathNode)) {
+            throw new Error('union operator requires sequences of nodes');
+        }
 
-  private deduplicateNodes(nodes: any[]): any[] {
-    const seen = new Set<string>();
-    const result: any[] = [];
+        // Combine and deduplicate
+        const combined = this.deduplicateNodes([...result1, ...result2]);
 
-    for (const node of nodes) {
-      const id = this.getNodeIdentifier(node);
-      if (!seen.has(id)) {
-        seen.add(id);
-        result.push(node);
-      }
+        // Sort in document order
+        return this.sortInDocumentOrder(combined);
     }
 
-    return result;
-  }
+    private deduplicateNodes(nodes: any[]): any[] {
+        const seen = new Set<string>();
+        const result: any[] = [];
 
-  private getNodeIdentifier(node: any): string {
-    // For testing purposes, use the node reference if available
-    if (node.__id) {
-      return node.__id;
+        for (const node of nodes) {
+            const id = this.getNodeIdentifier(node);
+            if (!seen.has(id)) {
+                seen.add(id);
+                result.push(node);
+            }
+        }
+
+        return result;
     }
-    if (node === node) {
-      // For DOM-like nodes, use their unique position
-      return `${node.nodeType}:${node.nodeName || node.localName}`;
+
+    private getNodeIdentifier(node: any): string {
+        // For testing purposes, use the node reference if available
+        if (node.__id) {
+            return node.__id;
+        }
+        if (node === node) {
+            // For DOM-like nodes, use their unique position
+            return `${node.nodeType}:${node.nodeName || node.localName}`;
+        }
+        return getNodeId(node);
     }
-    return getNodeId(node);
-  }
 
-  private sortInDocumentOrder(nodes: any[]): any[] {
-    // For now, maintain insertion order
-    // Full implementation would sort by document order using tree position
-    return nodes;
-  }
+    private sortInDocumentOrder(nodes: any[]): any[] {
+        // For now, maintain insertion order
+        // Full implementation would sort by document order using tree position
+        return nodes;
+    }
 
-  toString(): string {
-    return `${this.operand1.toString()} ${this.operator} ${this.operand2.toString()}`;
-  }
+    toString(): string {
+        return `${this.operand1.toString()} ${this.operator} ${this.operand2.toString()}`;
+    }
 }
 
 /**
@@ -118,70 +118,70 @@ export class UnionExpression extends XPathExpression {
  *   //book intersect //book[@isbn] → books that have isbn attribute
  */
 export class IntersectExpression extends XPathExpression {
-  constructor(
-    private operand1: XPathExpression,
-    private operand2: XPathExpression
-  ) {
-    super();
-  }
-
-  evaluate(context: XPathContext): any {
-    const result1 = flattenSequence(this.operand1.evaluate(context));
-    const result2 = flattenSequence(this.operand2.evaluate(context));
-
-    // Validate that operands are nodes
-    if (!result1.every(isXPathNode) || !result2.every(isXPathNode)) {
-      throw new Error('intersect operator requires sequences of nodes');
+    constructor(
+        private operand1: XPathExpression,
+        private operand2: XPathExpression
+    ) {
+        super();
     }
 
-    // Find intersection
-    const intersection = this.findIntersection(result1, result2);
+    evaluate(context: XPathContext): any {
+        const result1 = flattenSequence(this.operand1.evaluate(context));
+        const result2 = flattenSequence(this.operand2.evaluate(context));
 
-    // Remove duplicates and sort in document order
-    return this.sortInDocumentOrder(this.deduplicateNodes(intersection));
-  }
+        // Validate that operands are nodes
+        if (!result1.every(isXPathNode) || !result2.every(isXPathNode)) {
+            throw new Error('intersect operator requires sequences of nodes');
+        }
 
-  private findIntersection(seq1: any[], seq2: any[]): any[] {
-    // Create a set of identifiers from seq2 for fast lookup
-    const id2Set = new Set<string>();
-    for (const node of seq2) {
-      id2Set.add(this.getNodeIdentifier(node));
+        // Find intersection
+        const intersection = this.findIntersection(result1, result2);
+
+        // Remove duplicates and sort in document order
+        return this.sortInDocumentOrder(this.deduplicateNodes(intersection));
     }
 
-    // Return nodes from seq1 that are in seq2
-    return seq1.filter(node => id2Set.has(this.getNodeIdentifier(node)));
-  }
+    private findIntersection(seq1: any[], seq2: any[]): any[] {
+        // Create a set of identifiers from seq2 for fast lookup
+        const id2Set = new Set<string>();
+        for (const node of seq2) {
+            id2Set.add(this.getNodeIdentifier(node));
+        }
 
-  private getNodeIdentifier(node: any): string {
-    if (node.__id) {
-      return node.__id;
-    }
-    return getNodeId(node);
-  }
-
-  private deduplicateNodes(nodes: any[]): any[] {
-    const seen = new Set<string>();
-    const result: any[] = [];
-
-    for (const node of nodes) {
-      const id = this.getNodeIdentifier(node);
-      if (!seen.has(id)) {
-        seen.add(id);
-        result.push(node);
-      }
+        // Return nodes from seq1 that are in seq2
+        return seq1.filter((node) => id2Set.has(this.getNodeIdentifier(node)));
     }
 
-    return result;
-  }
+    private getNodeIdentifier(node: any): string {
+        if (node.__id) {
+            return node.__id;
+        }
+        return getNodeId(node);
+    }
 
-  private sortInDocumentOrder(nodes: any[]): any[] {
-    // For now, maintain insertion order
-    return nodes;
-  }
+    private deduplicateNodes(nodes: any[]): any[] {
+        const seen = new Set<string>();
+        const result: any[] = [];
 
-  toString(): string {
-    return `${this.operand1.toString()} intersect ${this.operand2.toString()}`;
-  }
+        for (const node of nodes) {
+            const id = this.getNodeIdentifier(node);
+            if (!seen.has(id)) {
+                seen.add(id);
+                result.push(node);
+            }
+        }
+
+        return result;
+    }
+
+    private sortInDocumentOrder(nodes: any[]): any[] {
+        // For now, maintain insertion order
+        return nodes;
+    }
+
+    toString(): string {
+        return `${this.operand1.toString()} intersect ${this.operand2.toString()}`;
+    }
 }
 
 /**
@@ -199,70 +199,70 @@ export class IntersectExpression extends XPathExpression {
  *   //book except //book[@out-of-print] → books that are in print
  */
 export class ExceptExpression extends XPathExpression {
-  constructor(
-    private operand1: XPathExpression,
-    private operand2: XPathExpression
-  ) {
-    super();
-  }
-
-  evaluate(context: XPathContext): any {
-    const result1 = flattenSequence(this.operand1.evaluate(context));
-    const result2 = flattenSequence(this.operand2.evaluate(context));
-
-    // Validate that operands are nodes
-    if (!result1.every(isXPathNode) || !result2.every(isXPathNode)) {
-      throw new Error('except operator requires sequences of nodes');
+    constructor(
+        private operand1: XPathExpression,
+        private operand2: XPathExpression
+    ) {
+        super();
     }
 
-    // Find difference
-    const difference = this.findDifference(result1, result2);
+    evaluate(context: XPathContext): any {
+        const result1 = flattenSequence(this.operand1.evaluate(context));
+        const result2 = flattenSequence(this.operand2.evaluate(context));
 
-    // Remove duplicates and sort in document order
-    return this.sortInDocumentOrder(this.deduplicateNodes(difference));
-  }
+        // Validate that operands are nodes
+        if (!result1.every(isXPathNode) || !result2.every(isXPathNode)) {
+            throw new Error('except operator requires sequences of nodes');
+        }
 
-  private findDifference(seq1: any[], seq2: any[]): any[] {
-    // Create a set of identifiers from seq2
-    const id2Set = new Set<string>();
-    for (const node of seq2) {
-      id2Set.add(this.getNodeIdentifier(node));
+        // Find difference
+        const difference = this.findDifference(result1, result2);
+
+        // Remove duplicates and sort in document order
+        return this.sortInDocumentOrder(this.deduplicateNodes(difference));
     }
 
-    // Return nodes from seq1 that are not in seq2
-    return seq1.filter(node => !id2Set.has(this.getNodeIdentifier(node)));
-  }
+    private findDifference(seq1: any[], seq2: any[]): any[] {
+        // Create a set of identifiers from seq2
+        const id2Set = new Set<string>();
+        for (const node of seq2) {
+            id2Set.add(this.getNodeIdentifier(node));
+        }
 
-  private getNodeIdentifier(node: any): string {
-    if (node.__id) {
-      return node.__id;
-    }
-    return getNodeId(node);
-  }
-
-  private deduplicateNodes(nodes: any[]): any[] {
-    const seen = new Set<string>();
-    const result: any[] = [];
-
-    for (const node of nodes) {
-      const id = this.getNodeIdentifier(node);
-      if (!seen.has(id)) {
-        seen.add(id);
-        result.push(node);
-      }
+        // Return nodes from seq1 that are not in seq2
+        return seq1.filter((node) => !id2Set.has(this.getNodeIdentifier(node)));
     }
 
-    return result;
-  }
+    private getNodeIdentifier(node: any): string {
+        if (node.__id) {
+            return node.__id;
+        }
+        return getNodeId(node);
+    }
 
-  private sortInDocumentOrder(nodes: any[]): any[] {
-    // For now, maintain insertion order
-    return nodes;
-  }
+    private deduplicateNodes(nodes: any[]): any[] {
+        const seen = new Set<string>();
+        const result: any[] = [];
 
-  toString(): string {
-    return `${this.operand1.toString()} except ${this.operand2.toString()}`;
-  }
+        for (const node of nodes) {
+            const id = this.getNodeIdentifier(node);
+            if (!seen.has(id)) {
+                seen.add(id);
+                result.push(node);
+            }
+        }
+
+        return result;
+    }
+
+    private sortInDocumentOrder(nodes: any[]): any[] {
+        // For now, maintain insertion order
+        return nodes;
+    }
+
+    toString(): string {
+        return `${this.operand1.toString()} except ${this.operand2.toString()}`;
+    }
 }
 
 /**
@@ -270,16 +270,16 @@ export class ExceptExpression extends XPathExpression {
  * Used for validating operands to sequence operators
  */
 export function isValidNodeSequence(value: any): boolean {
-  if (value === undefined || value === null) {
-    return true; // Empty sequence is valid
-  }
+    if (value === undefined || value === null) {
+        return true; // Empty sequence is valid
+    }
 
-  if (!Array.isArray(value)) {
-    value = [value];
-  }
+    if (!Array.isArray(value)) {
+        value = [value];
+    }
 
-  // All items must be nodes
-  return value.every(item => isXPathNode(item));
+    // All items must be nodes
+    return value.every((item) => isXPathNode(item));
 }
 
 /**
@@ -287,18 +287,18 @@ export function isValidNodeSequence(value: any): boolean {
  * Returns a new sequence with only the first occurrence of each node
  */
 export function deduplicateNodeSequence(nodes: any[]): any[] {
-  const seen = new Set<string>();
-  const result: any[] = [];
+    const seen = new Set<string>();
+    const result: any[] = [];
 
-  for (const node of nodes) {
-    const id = isXPathNode(node) && node.__id ? node.__id : String(node);
-    if (!seen.has(id)) {
-      seen.add(id);
-      result.push(node);
+    for (const node of nodes) {
+        const id = isXPathNode(node) && node.__id ? node.__id : String(node);
+        if (!seen.has(id)) {
+            seen.add(id);
+            result.push(node);
+        }
     }
-  }
 
-  return result;
+    return result;
 }
 
 /**
@@ -306,10 +306,10 @@ export function deduplicateNodeSequence(nodes: any[]): any[] {
  * Full implementation would use document position information
  */
 export function sortNodesInDocumentOrder(nodes: any[]): any[] {
-  // For now, return as-is
-  // Full implementation would:
-  // 1. Get document position for each node
-  // 2. Sort by position
-  // 3. Return sorted sequence
-  return nodes;
+    // For now, return as-is
+    // Full implementation would:
+    // 1. Get document position for each node
+    // 2. Sort by position
+    // 3. Return sorted sequence
+    return nodes;
 }

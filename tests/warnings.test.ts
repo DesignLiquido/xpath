@@ -293,7 +293,9 @@ describe('Warning System', () => {
             it('should return codes for deprecation category', () => {
                 const codes = getWarningCodesByCategory('deprecation');
                 expect(codes).toContain('XPWD0001');
-                expect(codes.every(code => WARNING_CODES[code].category === 'deprecation')).toBe(true);
+                expect(codes.every((code) => WARNING_CODES[code].category === 'deprecation')).toBe(
+                    true
+                );
             });
 
             it('should return codes for compatibility category', () => {
@@ -365,7 +367,7 @@ describe('Parser Warning Integration', () => {
 
         expect(collector.hasWarnings()).toBe(true);
         const warnings = collector.getWarnings();
-        expect(warnings.some(w => w.code === 'XPWD0001')).toBe(true);
+        expect(warnings.some((w) => w.code === 'XPWD0001')).toBe(true);
     });
 
     it('should emit compatibility mode warning when using XPath 2.0 with compatibility', () => {
@@ -381,7 +383,7 @@ describe('Parser Warning Integration', () => {
 
         expect(collector.hasWarnings()).toBe(true);
         const warnings = collector.getWarnings();
-        expect(warnings.some(w => w.code === 'XPWC0001')).toBe(true);
+        expect(warnings.some((w) => w.code === 'XPWC0001')).toBe(true);
     });
 
     it('should not emit compatibility warning for XPath 1.0', () => {
@@ -396,7 +398,7 @@ describe('Parser Warning Integration', () => {
         parser.parse(tokens);
 
         const warnings = collector.getWarnings();
-        expect(warnings.every(w => w.code !== 'XPWC0001')).toBe(true);
+        expect(warnings.every((w) => w.code !== 'XPWC0001')).toBe(true);
     });
 
     it('should allow suppressing specific warnings', () => {
@@ -413,7 +415,7 @@ describe('Parser Warning Integration', () => {
         parser.parse(tokens);
 
         const warnings = collector.getWarnings();
-        expect(warnings.every(w => w.code !== 'XPWD0001')).toBe(true);
+        expect(warnings.every((w) => w.code !== 'XPWD0001')).toBe(true);
     });
 
     it('should make warning collector accessible via getWarningCollector', () => {

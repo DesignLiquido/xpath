@@ -17,7 +17,11 @@ export class XPathQuantifiedExpression extends XPathExpression {
     bindings: XPathQuantifiedBinding[];
     satisfiesExpr: XPathExpression;
 
-    constructor(quantifier: Quantifier, bindings: XPathQuantifiedBinding[], satisfiesExpr: XPathExpression) {
+    constructor(
+        quantifier: Quantifier,
+        bindings: XPathQuantifiedBinding[],
+        satisfiesExpr: XPathExpression
+    ) {
         super();
         this.quantifier = quantifier;
         this.bindings = bindings;

@@ -100,7 +100,7 @@ describe('json-to-xml Function', () => {
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
             const personElement = root.childNodes[0];
-            
+
             expect(personElement.nodeName).toBe('person');
             expect(personElement.childNodes.length).toBe(2);
         });
@@ -120,19 +120,19 @@ describe('json-to-xml Function', () => {
 
     describe('Array conversion', () => {
         it('should convert simple array', () => {
-            const result = evaluate('json-to-xml(\'[1,2,3]\')', {});
+            const result = evaluate("json-to-xml('[1,2,3]')", {});
             expect(Array.isArray(result)).toBe(true);
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.nodeName).toBe('root');
             expect(root.childNodes.length).toBe(3);
-            
+
             root.childNodes.forEach((item: any) => {
                 expect(item.nodeName).toBe('item');
             });
-            
+
             expect(root.childNodes[0].textContent).toBe('1');
             expect(root.childNodes[1].textContent).toBe('2');
             expect(root.childNodes[2].textContent).toBe('3');
@@ -144,7 +144,7 @@ describe('json-to-xml Function', () => {
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.childNodes.length).toBe(2);
             root.childNodes.forEach((item: any) => {
                 expect(item.nodeName).toBe('item');
@@ -154,12 +154,12 @@ describe('json-to-xml Function', () => {
         });
 
         it('should convert empty array', () => {
-            const result = evaluate('json-to-xml(\'[]\')', {});
+            const result = evaluate("json-to-xml('[]')", {});
             expect(Array.isArray(result)).toBe(true);
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.nodeName).toBe('root');
             expect(root.childNodes).toHaveLength(0);
         });
@@ -173,7 +173,7 @@ describe('json-to-xml Function', () => {
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
             const itemsElement = root.childNodes[0];
-            
+
             expect(itemsElement.nodeName).toBe('items');
             expect(itemsElement.childNodes.length).toBe(3);
         });
@@ -182,17 +182,17 @@ describe('json-to-xml Function', () => {
             const json = JSON.stringify({
                 users: [
                     { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' }
+                    { id: 2, name: 'Bob' },
                 ],
-                count: 2
+                count: 2,
             });
-            
+
             const result = evaluate(`json-to-xml('${json}')`, {});
             expect(Array.isArray(result)).toBe(true);
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.childNodes.length).toBe(2);
             const usersElement = root.childNodes.find((n: any) => n.nodeName === 'users');
             expect(usersElement).toBeDefined();
@@ -208,7 +208,7 @@ describe('json-to-xml Function', () => {
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
             const element = root.childNodes[0];
-            
+
             // Should start with underscore or letter
             expect(/^[a-zA-Z_]/.test(element.nodeName)).toBe(true);
         });
@@ -297,7 +297,7 @@ describe('json-to-xml Function', () => {
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             // Check ownerDocument reference is set
             expect(root.ownerDocument).toBe(doc);
         });
@@ -310,7 +310,7 @@ describe('json-to-xml Function', () => {
             const doc = nodeSet[0];
             const textElement = doc.childNodes[0].childNodes[0];
             const textNode = textElement.childNodes[0];
-            
+
             expect(textNode.nodeType).toBe(NodeType.TEXT_NODE);
             expect(textNode.nodeName).toBe('#text');
             expect(textNode.textContent).toBe('hello');
@@ -322,7 +322,7 @@ describe('json-to-xml Function', () => {
             const doc = nodeSet[0];
             const numElement = doc.childNodes[0].childNodes[0];
             const textNode = numElement.childNodes[0];
-            
+
             expect(textNode.nodeType).toBe(NodeType.TEXT_NODE);
             expect(textNode.textContent).toBe('123');
         });
@@ -332,7 +332,7 @@ describe('json-to-xml Function', () => {
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.textContent).toBe('text');
         });
     });
@@ -342,12 +342,12 @@ describe('json-to-xml Function', () => {
             const result = evaluate('json-to-xml(\'{"root":{"child":"value"}}\')', {});
             const nodeSet = result as any[];
             const doc = nodeSet[0];
-            
+
             // Verify structure for navigation
             const root = doc.childNodes[0];
             const rootElement = root.childNodes[0];
             const childElement = rootElement.childNodes[0];
-            
+
             expect(root.nodeName).toBe('root');
             expect(rootElement.nodeName).toBe('root');
             expect(childElement.nodeName).toBe('child');
@@ -359,13 +359,13 @@ describe('json-to-xml Function', () => {
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             // Set up sibling relationships
             for (let i = 0; i < root.childNodes.length - 1; i++) {
                 root.childNodes[i].nextSibling = root.childNodes[i + 1];
                 root.childNodes[i + 1].previousSibling = root.childNodes[i];
             }
-            
+
             expect(root.childNodes.length).toBe(3);
             expect(root.childNodes[0].nodeName).toBe('a');
             expect(root.childNodes[1].nodeName).toBe('b');
@@ -377,11 +377,11 @@ describe('json-to-xml Function', () => {
         it('should handle deeply nested structures', () => {
             const deep = { a: { b: { c: { d: { e: 'value' } } } } };
             const json = JSON.stringify(deep);
-            
+
             const result = evaluate(`json-to-xml('${json}')`, {});
             expect(Array.isArray(result)).toBe(true);
             const nodeSet = result as any[];
-            
+
             let current = nodeSet[0].childNodes[0];
             while (current && current.childNodes && current.childNodes.length > 0) {
                 expect(current.nodeName).toBeDefined();
@@ -394,12 +394,12 @@ describe('json-to-xml Function', () => {
         it('should handle large arrays', () => {
             const arr = Array.from({ length: 100 }, (_, i) => i);
             const json = JSON.stringify(arr);
-            
+
             const result = evaluate(`json-to-xml('${json}')`, {});
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.childNodes.length).toBe(100);
         });
 
@@ -408,7 +408,7 @@ describe('json-to-xml Function', () => {
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.childNodes.length).toBe(4);
             expect(root.childNodes[0].textContent).toBe('1');
             expect(root.childNodes[1].textContent).toBe('two');
@@ -417,7 +417,10 @@ describe('json-to-xml Function', () => {
         });
 
         it('should handle special JSON strings', () => {
-            const result = evaluate('json-to-xml(\'{"escaped":"line1\\nline2","quote":"\\\"quoted\\\""}\')', {});
+            const result = evaluate(
+                'json-to-xml(\'{"escaped":"line1\\nline2","quote":"\\\"quoted\\\""}\')',
+                {}
+            );
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
@@ -429,7 +432,7 @@ describe('json-to-xml Function', () => {
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
-            
+
             expect(root.childNodes.length).toBe(3);
             // Numeric keys should be sanitized
             root.childNodes.forEach((node: any) => {
@@ -445,7 +448,7 @@ describe('json-to-xml Function', () => {
             const doc = nodeSet[0];
             const root = doc.childNodes[0];
             const elem = root.childNodes[0];
-            
+
             expect(root.nodeType).toBe(NodeType.ELEMENT_NODE);
             expect(elem.nodeType).toBe(NodeType.ELEMENT_NODE);
         });
@@ -456,7 +459,7 @@ describe('json-to-xml Function', () => {
             const doc = nodeSet[0];
             const elem = doc.childNodes[0].childNodes[0];
             const textNode = elem.childNodes[0];
-            
+
             expect(textNode.nodeType).toBe(NodeType.TEXT_NODE);
         });
 
@@ -465,7 +468,7 @@ describe('json-to-xml Function', () => {
             const nodeSet = result as any[];
             const doc = nodeSet[0];
             const elem = doc.childNodes[0].childNodes[0];
-            
+
             expect(elem.localName).toBe(elem.nodeName);
         });
     });

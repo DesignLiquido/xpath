@@ -65,7 +65,7 @@ export class XPathInlineFunctionExpression extends XPathExpression {
 
         // Create the function implementation
         const self = this;
-        const implementation = function(...args: any[]): XPathResult {
+        const implementation = function (...args: any[]): XPathResult {
             // Create a new context with closure variables and parameter bindings
             const variables: Record<string, any> = { ...closureVariables };
 
@@ -97,7 +97,7 @@ export class XPathInlineFunctionExpression extends XPathExpression {
 
     toString(): string {
         const paramsStr = this.params
-            .map(p => {
+            .map((p) => {
                 let s = `$${p.name}`;
                 if (p.type) s += ` as ${p.type}`;
                 return s;

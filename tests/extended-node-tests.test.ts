@@ -1,6 +1,6 @@
 /**
  * Tests for XPath 2.0 Extended Node Tests (Phase 5.1)
- * 
+ *
  * Tests the enhanced KindTest syntax:
  * - element(name) - element with specific name
  * - element(name, type) - element with name and type constraint

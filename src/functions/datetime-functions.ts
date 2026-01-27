@@ -45,7 +45,7 @@ export function currentTime(context: XPathContext): string {
  * Returns the value of the implicit timezone property from the dynamic context.
  */
 export function implicitTimezone(context: XPathContext): string {
-    const offset = normalizeTimezone(context.implicitTimezone, -(new Date().getTimezoneOffset()));
+    const offset = normalizeTimezone(context.implicitTimezone, -new Date().getTimezoneOffset());
     return formatTimezoneAsDuration(offset);
 }
 
@@ -294,7 +294,10 @@ export function adjustDateTimeToTimezone(
     let targetOffset: number;
     if (timezone === undefined) {
         // Use implicit timezone from context
-        const normalized = normalizeTimezone(context?.implicitTimezone, -(new Date().getTimezoneOffset()));
+        const normalized = normalizeTimezone(
+            context?.implicitTimezone,
+            -new Date().getTimezoneOffset()
+        );
         targetOffset = normalized ?? 0;
     } else if (timezone === null || (Array.isArray(timezone) && timezone.length === 0)) {
         // Remove timezone - return without timezone component
@@ -323,7 +326,10 @@ export function adjustDateToTimezone(
     const result = adjustDateTimeToTimezone(arg, timezone, context);
     if (!result) return null;
     // Extract just the date part
-    return result.substring(0, 10) + (result.includes('+') || result.includes('Z') ? result.slice(-6) : '');
+    return (
+        result.substring(0, 10) +
+        (result.includes('+') || result.includes('Z') ? result.slice(-6) : '')
+    );
 }
 
 /**
@@ -374,7 +380,9 @@ function parseDateTime(value: XPathResult): Date | null {
     if (!isNaN(dt.getTime())) return dt;
 
     // Try XPath dateTime format: YYYY-MM-DDTHH:MM:SS.sss(+|-)HH:MM
-    const match = str.match(/^(-?\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(?:Z|([+-]\d{2}:\d{2}))?$/);
+    const match = str.match(
+        /^(-?\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(?:Z|([+-]\d{2}:\d{2}))?$/
+    );
     if (match) {
         const [, year, month, day, hours, minutes, seconds, ms, tz] = match;
         const date = new Date(
@@ -414,7 +422,9 @@ function parseDuration(value: XPathResult): DurationComponents | null {
     if (!str) return null;
 
     // Duration format: -?P(nY)?(nM)?(nD)?(T(nH)?(nM)?(nS)?)?
-    const match = str.match(/^(-)?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/);
+    const match = str.match(
+        /^(-)?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/
+    );
     if (!match) return null;
 
     return {
@@ -440,7 +450,11 @@ function parseDurationToMinutes(duration: string): number {
     return sign * (hours * 60 + minutes + seconds / 60);
 }
 
-function formatDateTime(dt: Date, timezoneOffset?: number, includeTimezone: boolean = true): string {
+function formatDateTime(
+    dt: Date,
+    timezoneOffset?: number,
+    includeTimezone: boolean = true
+): string {
     const year = dt.getUTCFullYear();
     const month = String(dt.getUTCMonth() + 1).padStart(2, '0');
     const day = String(dt.getUTCDate()).padStart(2, '0');

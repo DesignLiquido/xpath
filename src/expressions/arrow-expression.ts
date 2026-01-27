@@ -49,9 +49,7 @@ export class XPathArrowExpression extends XPathExpression {
     }
 
     toString(): string {
-        const argsStr = this.args.length > 0
-            ? this.args.map(a => a.toString()).join(', ')
-            : '';
+        const argsStr = this.args.length > 0 ? this.args.map((a) => a.toString()).join(', ') : '';
         return `${this.input} => ${this.functionName}(${argsStr})`;
     }
 }

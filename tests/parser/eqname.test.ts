@@ -13,19 +13,23 @@ describe('XPath 3.0 EQNames', () => {
         it('should tokenize simple EQName', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('Q{http://example.com}foo');
-            expect(tokens.some(t => t.type === 'EQNAME' && t.lexeme === 'Q{http://example.com}foo')).toBe(true);
+            expect(
+                tokens.some((t) => t.type === 'EQNAME' && t.lexeme === 'Q{http://example.com}foo')
+            ).toBe(true);
         });
 
         it('should tokenize EQName with empty URI', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('Q{}localname');
-            expect(tokens.some(t => t.type === 'EQNAME' && t.lexeme === 'Q{}localname')).toBe(true);
+            expect(tokens.some((t) => t.type === 'EQNAME' && t.lexeme === 'Q{}localname')).toBe(
+                true
+            );
         });
 
         it('should tokenize EQName in function call', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('Q{http://www.w3.org/2005/xpath-functions}concat("a", "b")');
-            const eqnameToken = tokens.find(t => t.type === 'EQNAME');
+            const eqnameToken = tokens.find((t) => t.type === 'EQNAME');
             expect(eqnameToken).toBeDefined();
             expect(eqnameToken?.lexeme).toBe('Q{http://www.w3.org/2005/xpath-functions}concat');
         });
@@ -33,7 +37,11 @@ describe('XPath 3.0 EQNames', () => {
         it('should tokenize EQName with hyphenated local name', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('Q{http://example.com}my-function');
-            expect(tokens.some(t => t.type === 'EQNAME' && t.lexeme === 'Q{http://example.com}my-function')).toBe(true);
+            expect(
+                tokens.some(
+                    (t) => t.type === 'EQNAME' && t.lexeme === 'Q{http://example.com}my-function'
+                )
+            ).toBe(true);
         });
 
         it('should handle Q not followed by brace as identifier', () => {
@@ -48,7 +56,9 @@ describe('XPath 3.0 EQNames', () => {
         it('should parse EQName function call', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('Q{http://www.w3.org/2005/xpath-functions}concat("hello", " ", "world")');
+            const tokens = lexer.scan(
+                'Q{http://www.w3.org/2005/xpath-functions}concat("hello", " ", "world")'
+            );
             const expr = parser.parse(tokens);
             expect(expr).toBeDefined();
         });
@@ -57,7 +67,9 @@ describe('XPath 3.0 EQNames', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
             // Built-in functions might not be resolved by EQName yet, but it should parse
-            const tokens = lexer.scan('Q{http://www.w3.org/2005/xpath-functions}upper-case("test")');
+            const tokens = lexer.scan(
+                'Q{http://www.w3.org/2005/xpath-functions}upper-case("test")'
+            );
             const expr = parser.parse(tokens);
             expect(expr).toBeDefined();
         });
@@ -93,7 +105,9 @@ describe('XPath 3.0 EQNames', () => {
         it('should use EQName function reference with apply', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('apply(Q{http://www.w3.org/2005/xpath-functions}concat#3, ("a", "b", "c"))');
+            const tokens = lexer.scan(
+                'apply(Q{http://www.w3.org/2005/xpath-functions}concat#3, ("a", "b", "c"))'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe('abc');
@@ -114,7 +128,9 @@ describe('XPath 3.0 EQNames', () => {
         it('should parse EQName in arrow operator', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('"hello" => Q{http://www.w3.org/2005/xpath-functions}upper-case()');
+            const tokens = lexer.scan(
+                '"hello" => Q{http://www.w3.org/2005/xpath-functions}upper-case()'
+            );
             const expr = parser.parse(tokens);
             expect(expr).toBeDefined();
         });
@@ -122,7 +138,9 @@ describe('XPath 3.0 EQNames', () => {
         it('should chain EQName functions with arrow', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('"hello" => Q{http://www.w3.org/2005/xpath-functions}upper-case() => Q{http://www.w3.org/2005/xpath-functions}substring(1, 3)');
+            const tokens = lexer.scan(
+                '"hello" => Q{http://www.w3.org/2005/xpath-functions}upper-case() => Q{http://www.w3.org/2005/xpath-functions}substring(1, 3)'
+            );
             const expr = parser.parse(tokens);
             expect(expr).toBeDefined();
         });
@@ -132,7 +150,9 @@ describe('XPath 3.0 EQNames', () => {
         it('should parse standard fn namespace EQName', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('Q{http://www.w3.org/2005/xpath-functions}string-length("test")');
+            const tokens = lexer.scan(
+                'Q{http://www.w3.org/2005/xpath-functions}string-length("test")'
+            );
             const expr = parser.parse(tokens);
             expect(expr).toBeDefined();
         });
@@ -150,7 +170,9 @@ describe('XPath 3.0 EQNames', () => {
         it('should use EQName in let expression', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('let $f := Q{http://www.w3.org/2005/xpath-functions}upper-case#1 return $f("hello")');
+            const tokens = lexer.scan(
+                'let $f := Q{http://www.w3.org/2005/xpath-functions}upper-case#1 return $f("hello")'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe('HELLO');
@@ -159,7 +181,9 @@ describe('XPath 3.0 EQNames', () => {
         it('should use EQName with for-each', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('for-each(("a", "b", "c"), Q{http://www.w3.org/2005/xpath-functions}upper-case#1)');
+            const tokens = lexer.scan(
+                'for-each(("a", "b", "c"), Q{http://www.w3.org/2005/xpath-functions}upper-case#1)'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toEqual(['A', 'B', 'C']);

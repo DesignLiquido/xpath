@@ -54,7 +54,7 @@ export class XPathUnionExpression extends XPathExpression {
             if (typeof a.compareDocumentPosition === 'function') {
                 const position = a.compareDocumentPosition(b);
                 if (position & 4) return -1; // b follows a
-                if (position & 2) return 1;  // a follows b
+                if (position & 2) return 1; // a follows b
             }
 
             return 0;

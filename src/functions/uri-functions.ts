@@ -10,11 +10,15 @@ import { XPathContext, XPathResult } from '../context';
  * fn:resolve-uri($relative as xs:string?) as xs:anyURI?
  * fn:resolve-uri($relative as xs:string?, $base as xs:string) as xs:anyURI?
  */
-export function resolveUri(relative: XPathResult, base?: XPathResult, context?: XPathContext): string | null {
+export function resolveUri(
+    relative: XPathResult,
+    base?: XPathResult,
+    context?: XPathContext
+): string | null {
     const rel = toString(relative);
     if (rel === '') return null;
 
-    const baseUri = base !== undefined ? toString(base) : context?.baseUri ?? '';
+    const baseUri = base !== undefined ? toString(base) : (context?.baseUri ?? '');
 
     try {
         if (baseUri) {
@@ -31,8 +35,10 @@ export function resolveUri(relative: XPathResult, base?: XPathResult, context?: 
  */
 export function encodeForUri(uriPart: XPathResult): string {
     const str = toString(uriPart);
-    return encodeURIComponent(str)
-        .replace(/[!'()*]/g, ch => '%' + ch.charCodeAt(0).toString(16).toUpperCase());
+    return encodeURIComponent(str).replace(
+        /[!'()*]/g,
+        (ch) => '%' + ch.charCodeAt(0).toString(16).toUpperCase()
+    );
 }
 
 /**

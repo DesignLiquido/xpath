@@ -17,13 +17,22 @@ export type AxisType =
     | 'self-and-siblings'; // Custom axis for XSLT template matching
 
 export interface NodeTest {
-    type: 'name' | 'node-type' | 'wildcard' | 'processing-instruction' | 'element' | 'attribute' | 'schema-element' | 'schema-attribute' | 'document-node';
+    type:
+        | 'name'
+        | 'node-type'
+        | 'wildcard'
+        | 'processing-instruction'
+        | 'element'
+        | 'attribute'
+        | 'schema-element'
+        | 'schema-attribute'
+        | 'document-node';
     name?: string;
     nodeType?: 'node' | 'text' | 'comment' | 'processing-instruction';
-    elementType?: string;  // Type constraint for element/attribute tests
-    isWildcardName?: boolean;  // Indicates wildcard in element(*, type) or attribute(*, type)
-    target?: string;  // For processing-instruction(target)
-    elementTest?: NodeTest;  // For document-node(element(...))
+    elementType?: string; // Type constraint for element/attribute tests
+    isWildcardName?: boolean; // Indicates wildcard in element(*, type) or attribute(*, type)
+    target?: string; // For processing-instruction(target)
+    elementTest?: NodeTest; // For document-node(element(...))
 }
 
 export class XPathStep extends XPathExpression {
@@ -59,7 +68,7 @@ export class XPathStep extends XPathExpression {
         let candidates = this.getNodesByAxis(node, context);
 
         // Filter by node test (pass context for namespace resolution)
-        candidates = candidates.filter(n => this.matchesNodeTest(n, context));
+        candidates = candidates.filter((n) => this.matchesNodeTest(n, context));
 
         // Apply predicates
         candidates = this.applyPredicates(candidates, context);
@@ -276,7 +285,7 @@ export class XPathStep extends XPathExpression {
                 const value = attr.nodeValue ?? attr.textContent ?? '';
 
                 if (name === 'xmlns') {
-                    if (!("" in namespaces)) {
+                    if (!('' in namespaces)) {
                         namespaces[''] = value;
                     }
                 } else if (name.startsWith('xmlns:')) {
@@ -330,7 +339,8 @@ export class XPathStep extends XPathExpression {
                 const nsUri = context?.namespaces?.[prefix];
                 if (!nsUri) return false;
 
-                const nodeLocalName = node.localName || (node.nodeName && this.extractLocalName(node.nodeName));
+                const nodeLocalName =
+                    node.localName || (node.nodeName && this.extractLocalName(node.nodeName));
                 const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
                 return nodeLocalName === localName && nodeNsUri === nsUri;
             }
@@ -345,10 +355,12 @@ export class XPathStep extends XPathExpression {
                 if (test.name && test.name.endsWith(':*')) {
                     const prefix = test.name.slice(0, -2);
                     const nsUri = context?.namespaces?.[prefix];
-                    if (!nsUri) return false;  // Unknown prefix - no match
+                    if (!nsUri) return false; // Unknown prefix - no match
 
                     const nodeNsUri = node.namespaceURI || node.namespaceUri || '';
-                    return (nodeType === 1 || nodeType === 2 || nodeType === 13) && nodeNsUri === nsUri;
+                    return (
+                        (nodeType === 1 || nodeType === 2 || nodeType === 13) && nodeNsUri === nsUri
+                    );
                 }
                 // Regular wildcard - matches any element (nodeType 1), attribute (nodeType 2), or namespace node (nodeType 13)
                 return nodeType === 1 || nodeType === 2 || nodeType === 13;
@@ -376,7 +388,9 @@ export class XPathStep extends XPathExpression {
                 if (nodeType !== 9) return false;
                 if (!test.elementTest) return true;
 
-                const root = node.documentElement || (Array.from(node.childNodes || []).find((n: any) => n.nodeType === 1));
+                const root =
+                    node.documentElement ||
+                    Array.from(node.childNodes || []).find((n: any) => n.nodeType === 1);
                 if (!root) return false;
 
                 return this.matchesNodeTest(root, context, test.elementTest);

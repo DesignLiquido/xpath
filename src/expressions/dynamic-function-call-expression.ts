@@ -63,7 +63,7 @@ export class XPathDynamicFunctionCall extends XPathExpression {
             }
 
             // Evaluate arguments
-            const evaluatedArgs = this.args.map(arg => arg.evaluate(context));
+            const evaluatedArgs = this.args.map((arg) => arg.evaluate(context));
 
             // Invoke the function
             return funcItem.implementation(...evaluatedArgs);
@@ -72,7 +72,7 @@ export class XPathDynamicFunctionCall extends XPathExpression {
         // Also check if it's a native JavaScript function (for compatibility)
         if (typeof funcValue === 'function') {
             // Evaluate arguments
-            const evaluatedArgs = this.args.map(arg => arg.evaluate(context));
+            const evaluatedArgs = this.args.map((arg) => arg.evaluate(context));
             return funcValue(...evaluatedArgs);
         }
 
@@ -80,7 +80,7 @@ export class XPathDynamicFunctionCall extends XPathExpression {
     }
 
     toString(): string {
-        const argsStr = this.args.map(a => a.toString()).join(', ');
+        const argsStr = this.args.map((a) => a.toString()).join(', ');
         return `${this.functionExpr}(${argsStr})`;
     }
 }

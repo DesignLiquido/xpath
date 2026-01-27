@@ -1,6 +1,6 @@
 /**
  * XSLT Extension Function specification for integration with xslt-processor.
- * 
+ *
  * This file defines the interface and types for XSLT 1.0 extension functions.
  * The actual implementations live in the xslt-processor package.
  */
@@ -12,14 +12,11 @@ import { WarningConfiguration, WarningCollector } from './warnings';
 
 /**
  * Signature for an XSLT extension function.
- * 
+ *
  * Extension functions receive arguments that have already been evaluated
  * by the XPath parser and must return a valid XPath result type.
  */
-export type XSLTExtensionFunction = (
-    context: XPathContext,
-    ...args: any[]
-) => any;
+export type XSLTExtensionFunction = (context: XPathContext, ...args: any[]) => any;
 
 /**
  * Metadata for an XSLT extension function.
@@ -54,7 +51,7 @@ export interface XSLTFunctionMetadata {
 
 /**
  * XSLT Extensions bundle that can be passed to the XPath parser.
- * 
+ *
  * This interface allows the xslt-processor package to provide XSLT-specific
  * functions while keeping the xpath library pure XPath 1.0.
  */
@@ -229,5 +226,5 @@ export function validateExtensions(extensions: XSLTExtensions): string[] {
  * Useful for registering extension functions with the lexer.
  */
 export function getExtensionFunctionNames(extensions: XSLTExtensions): string[] {
-    return extensions.functions.map(f => f.name);
+    return extensions.functions.map((f) => f.name);
 }

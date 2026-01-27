@@ -79,8 +79,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'Implicit conversion of node-sets to strings using the first node is deprecated. ' +
             'In XPath 2.0, this requires explicit conversion using fn:string() or data().',
-        migration:
-            'Use fn:string($nodeset) or fn:data($nodeset) for explicit conversion.',
+        migration: 'Use fn:string($nodeset) or fn:data($nodeset) for explicit conversion.',
         specReference: 'XPath 2.0 Appendix I.2',
     },
 
@@ -95,8 +94,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'XPath 1.0 compatibility mode is enabled. Some XPath 2.0 type safety features ' +
             'are relaxed to maintain backward compatibility.',
-        migration:
-            'Consider migrating to XPath 2.0 semantics for improved type safety.',
+        migration: 'Consider migrating to XPath 2.0 semantics for improved type safety.',
         specReference: 'XPath 2.0 Section 3.6',
     },
 
@@ -108,8 +106,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'String comparisons in XPath 2.0 are performed using Unicode codepoint collation ' +
             'by default, which may produce different results than XPath 1.0.',
-        migration:
-            'Use explicit collation specification if locale-specific comparison is needed.',
+        migration: 'Use explicit collation specification if locale-specific comparison is needed.',
         specReference: 'XPath 2.0 Appendix I.4',
     },
 
@@ -121,8 +118,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'In XPath 2.0, operations on empty sequences may return empty sequences instead ' +
             'of NaN or false as in XPath 1.0.',
-        migration:
-            'Use explicit empty sequence handling with fn:empty() or default values.',
+        migration: 'Use explicit empty sequence handling with fn:empty() or default values.',
         specReference: 'XPath 2.0 Appendix I.3',
     },
 
@@ -161,8 +157,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'Numeric value is being promoted in the type hierarchy (integer → decimal → ' +
             'float → double). This may result in precision loss.',
-        migration:
-            'Consider using explicit casting if precision is important.',
+        migration: 'Consider using explicit casting if precision is important.',
         specReference: 'XPath 2.0 Appendix B.1',
     },
 
@@ -177,8 +172,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'In XPath 2.0, arithmetic operations with empty sequences return empty sequences, ' +
             'not NaN as in XPath 1.0.',
-        migration:
-            'Handle empty sequences explicitly before arithmetic operations.',
+        migration: 'Handle empty sequences explicitly before arithmetic operations.',
         specReference: 'XPath 2.0 Appendix I.3',
     },
 
@@ -190,8 +184,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'In XPath 2.0, value comparisons (eq, ne, etc.) with empty sequences return ' +
             'empty sequences, not false.',
-        migration:
-            'Use fn:empty() or fn:exists() to check for empty sequences before comparison.',
+        migration: 'Use fn:empty() or fn:exists() to check for empty sequences before comparison.',
         specReference: 'XPath 2.0 Appendix I.3',
     },
 
@@ -203,8 +196,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'A sequence with multiple items is being used where a single item is expected. ' +
             'In XPath 2.0, this may raise a type error.',
-        migration:
-            'Use predicates or fn:head() to select a single item.',
+        migration: 'Use predicates or fn:head() to select a single item.',
         specReference: 'XPath 2.0 Section 2.4.4',
     },
 
@@ -216,8 +208,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'The string value of typed nodes in XPath 2.0 may differ from XPath 1.0 when ' +
             'schema type information is present.',
-        migration:
-            'Use fn:string() for consistent string conversion.',
+        migration: 'Use fn:string() for consistent string conversion.',
         specReference: 'XPath 2.0 Appendix I.1',
     },
 
@@ -232,8 +223,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'Using descendant or descendant-or-self axis on large documents may impact ' +
             'performance. Consider using more specific path expressions.',
-        migration:
-            'Use more specific paths or indexes if available.',
+        migration: 'Use more specific paths or indexes if available.',
     },
 
     XPWP0002: {
@@ -244,8 +234,7 @@ export const WARNING_CODES: Record<string, WarningCodeMetadata> = {
         description:
             'General comparisons (=, !=, etc.) on sequences perform existential quantification, ' +
             'which may be slower than value comparisons on single items.',
-        migration:
-            'Use value comparisons (eq, ne, etc.) when comparing single values.',
+        migration: 'Use value comparisons (eq, ne, etc.) when comparing single values.',
         specReference: 'XPath 2.0 Section 3.5.2',
     },
 };
@@ -308,7 +297,7 @@ export const DEFAULT_WARNING_CONFIG: Required<WarningConfiguration> = {
     minSeverity: 'info',
     suppressCategories: [],
     suppressCodes: [],
-    handler: () => { },
+    handler: () => {},
     logToConsole: false,
     maxWarnings: 100,
     emitOnce: true,
@@ -407,8 +396,12 @@ export class WarningCollector {
 
         // Log to console if enabled
         if (this.config.logToConsole) {
-            const prefix = warning.severity === 'deprecation' ? '[DEPRECATED]' :
-                warning.severity === 'warning' ? '[WARNING]' : '[INFO]';
+            const prefix =
+                warning.severity === 'deprecation'
+                    ? '[DEPRECATED]'
+                    : warning.severity === 'warning'
+                      ? '[WARNING]'
+                      : '[INFO]';
             // eslint-disable-next-line no-console
             console.warn(`${prefix} ${warning.code}: ${warning.message}`);
         }
@@ -425,14 +418,14 @@ export class WarningCollector {
      * Get warnings filtered by severity
      */
     getWarningsBySeverity(severity: WarningSeverity): XPathWarning[] {
-        return this.warnings.filter(w => w.severity === severity);
+        return this.warnings.filter((w) => w.severity === severity);
     }
 
     /**
      * Get warnings filtered by category
      */
     getWarningsByCategory(category: WarningCategory): XPathWarning[] {
-        return this.warnings.filter(w => w.category === category);
+        return this.warnings.filter((w) => w.category === category);
     }
 
     /**
@@ -466,7 +459,9 @@ export class WarningCollector {
         }
 
         const lines: string[] = [];
-        lines.push(`XPath Warnings Report (${this.warnings.length} warning${this.warnings.length === 1 ? '' : 's'}):`);
+        lines.push(
+            `XPath Warnings Report (${this.warnings.length} warning${this.warnings.length === 1 ? '' : 's'}):`
+        );
         lines.push('');
 
         // Group by category

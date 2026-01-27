@@ -1,6 +1,6 @@
 /**
  * XPath 3.0 Sequence Functions
- * 
+ *
  * Implements additional sequence manipulation functions for XPath 3.0:
  * https://www.w3.org/TR/xpath-functions-30/#sequence
  */
@@ -15,21 +15,21 @@ import { head as seqHead, tail as seqTail } from './sequence-functions';
  * Most deeply nested nodes (descendants take precedence over ancestors).
  */
 export function innermost(context: XPathContext, nodes: any): XPathResult {
-    const nodeList = Array.isArray(nodes) ? nodes : (nodes ? [nodes] : []);
-    
+    const nodeList = Array.isArray(nodes) ? nodes : nodes ? [nodes] : [];
+
     if (nodeList.length === 0) {
         return [];
     }
 
     // For each node, check if any ancestor is in the set
-    return nodeList.filter(node => {
+    return nodeList.filter((node) => {
         // Skip non-nodes
         if (!isNode(node)) {
             return false;
         }
-        
+
         // Check if any other node in the list is an ancestor
-        return !nodeList.some(otherNode => {
+        return !nodeList.some((otherNode) => {
             if (!isNode(otherNode) || node === otherNode) {
                 return false;
             }
@@ -45,21 +45,21 @@ export function innermost(context: XPathContext, nodes: any): XPathResult {
  * Least deeply nested nodes (ancestors take precedence over descendants).
  */
 export function outermost(context: XPathContext, nodes: any): XPathResult {
-    const nodeList = Array.isArray(nodes) ? nodes : (nodes ? [nodes] : []);
-    
+    const nodeList = Array.isArray(nodes) ? nodes : nodes ? [nodes] : [];
+
     if (nodeList.length === 0) {
         return [];
     }
 
     // For each node, check if any descendant is in the set
-    return nodeList.filter(node => {
+    return nodeList.filter((node) => {
         // Skip non-nodes
         if (!isNode(node)) {
             return false;
         }
-        
+
         // Check if any other node in the list is a descendant
-        return !nodeList.some(otherNode => {
+        return !nodeList.some((otherNode) => {
             if (!isNode(otherNode) || node === otherNode) {
                 return false;
             }
@@ -72,13 +72,13 @@ export function outermost(context: XPathContext, nodes: any): XPathResult {
 /**
  * fn:sort($input as item()*, $collation as xs:string?, $key as function(item()) as xs:anyAtomicType*) as item()*
  * Sorts a sequence with optional collation and key function.
- * 
+ *
  * For now, we implement the basic version without collation support.
  * Key function version will be added when needed.
  */
 export function sort(context: XPathContext, input: any, collation?: any, keyFn?: any): XPathResult {
-    const items = Array.isArray(input) ? input : (input ? [input] : []);
-    
+    const items = Array.isArray(input) ? input : input ? [input] : [];
+
     if (items.length <= 1) {
         return input;
     }
@@ -101,17 +101,19 @@ export function sort(context: XPathContext, input: any, collation?: any, keyFn?:
         });
     }
 
-    return indexed.map(x => x.item);
+    return indexed.map((x) => x.item);
 }
 
 /**
  * Helper: Check if value is a node
  */
 function isNode(value: any): boolean {
-    return value !== null && 
-           value !== undefined && 
-           typeof value === 'object' && 
-           ('nodeType' in value || 'localName' in value);
+    return (
+        value !== null &&
+        value !== undefined &&
+        typeof value === 'object' &&
+        ('nodeType' in value || 'localName' in value)
+    );
 }
 
 /**

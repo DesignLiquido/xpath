@@ -1,6 +1,6 @@
 /**
  * XPath 3.0 String Functions (Additional)
- * 
+ *
  * Implements additional string manipulation functions for XPath 3.0:
  * https://www.w3.org/TR/xpath-functions-30/#string-functions
  */
@@ -10,12 +10,17 @@ import { XPathContext, XPathResult } from '../context';
 /**
  * fn:analyze-string($input as xs:string?, $pattern as xs:string) as element()*
  * fn:analyze-string($input as xs:string?, $pattern as xs:string, $flags as xs:string) as element()*
- * 
+ *
  * Analyzes a string using a regular expression and returns a sequence of elements.
  * For now, we return a simplified result as building proper XML elements requires more infrastructure.
  * Basic implementation: Returns array of match and non-match objects.
  */
-export function analyzeString(context: XPathContext, input: any, pattern: any, flags?: any): XPathResult {
+export function analyzeString(
+    context: XPathContext,
+    input: any,
+    pattern: any,
+    flags?: any
+): XPathResult {
     const str = input === null || input === undefined ? '' : String(input);
     const pat = String(pattern);
     const flgs = flags ? String(flags) : '';
@@ -46,7 +51,7 @@ export function analyzeString(context: XPathContext, input: any, pattern: any, f
             result.push({
                 type: 'match',
                 value: match[0],
-                groups: match.slice(1).map(g => g || ''),
+                groups: match.slice(1).map((g) => g || ''),
             });
 
             lastIndex = regex.lastIndex;
@@ -78,11 +83,16 @@ export function analyzeString(context: XPathContext, input: any, pattern: any, f
 /**
  * fn:format-integer($value as xs:integer?, $picture as xs:string) as xs:string
  * fn:format-integer($value as xs:integer?, $picture as xs:string, $lang as xs:string?) as xs:string
- * 
+ *
  * Formats an integer according to a picture string.
  * Simplified implementation supporting basic patterns like "1", "01", "a", "A", etc.
  */
-export function formatInteger(context: XPathContext, value: any, picture: any, lang?: any): XPathResult {
+export function formatInteger(
+    context: XPathContext,
+    value: any,
+    picture: any,
+    lang?: any
+): XPathResult {
     // Handle null/undefined input
     if (value === null || value === undefined) {
         return '';
@@ -119,7 +129,7 @@ export function formatInteger(context: XPathContext, value: any, picture: any, l
         return toWords(absValue);
     } else if (pic === 'W') {
         // Capitalized words
-        return toWords(absValue).replace(/^\w/, c => c.toUpperCase());
+        return toWords(absValue).replace(/^\w/, (c) => c.toUpperCase());
     }
 
     // Default: treat as numeric with padding
@@ -136,11 +146,16 @@ export function formatInteger(context: XPathContext, value: any, picture: any, l
 /**
  * fn:format-number($value as xs:number?, $picture as xs:string) as xs:string
  * fn:format-number($value as xs:number?, $picture as xs:string, $format-name as xs:string?) as xs:string
- * 
+ *
  * Formats a number according to a picture string.
  * Simplified implementation supporting basic decimal formats.
  */
-export function formatNumber(context: XPathContext, value: any, picture: any, formatName?: any): XPathResult {
+export function formatNumber(
+    context: XPathContext,
+    value: any,
+    picture: any,
+    formatName?: any
+): XPathResult {
     // Handle null/undefined input
     if (value === null || value === undefined) {
         return 'NaN';
@@ -246,18 +261,7 @@ function toWords(num: number): string {
     if (num === 0) return 'zero';
     if (num < 0) return 'negative ' + toWords(-num);
 
-    const ones = [
-        '',
-        'one',
-        'two',
-        'three',
-        'four',
-        'five',
-        'six',
-        'seven',
-        'eight',
-        'nine',
-    ];
+    const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
     const teens = [
         'ten',
         'eleven',
@@ -270,7 +274,18 @@ function toWords(num: number): string {
         'eighteen',
         'nineteen',
     ];
-    const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    const tens = [
+        '',
+        '',
+        'twenty',
+        'thirty',
+        'forty',
+        'fifty',
+        'sixty',
+        'seventy',
+        'eighty',
+        'ninety',
+    ];
     const scales = ['', 'thousand', 'million', 'billion', 'trillion'];
 
     let result = '';
@@ -279,7 +294,11 @@ function toWords(num: number): string {
     while (num > 0) {
         const chunk = num % 1000;
         if (chunk !== 0) {
-            result = convertHundreds(chunk, ones, teens, tens) + (scales[scaleIndex] ? ' ' + scales[scaleIndex] : '') + (result ? ' ' : '') + result;
+            result =
+                convertHundreds(chunk, ones, teens, tens) +
+                (scales[scaleIndex] ? ' ' + scales[scaleIndex] : '') +
+                (result ? ' ' : '') +
+                result;
         }
         num = Math.floor(num / 1000);
         scaleIndex++;

@@ -7,7 +7,12 @@
  */
 
 import { SequenceType } from './types/sequence-type';
-import { DEFAULT_FUNCTION_NAMESPACE, DEFAULT_COLLATION, RESERVED_FUNCTION_NAMES, XS_NAMESPACE } from './constants';
+import {
+    DEFAULT_FUNCTION_NAMESPACE,
+    DEFAULT_COLLATION,
+    RESERVED_FUNCTION_NAMES,
+    XS_NAMESPACE,
+} from './constants';
 
 // Re-export constants from unified constants.ts
 export { DEFAULT_FUNCTION_NAMESPACE, DEFAULT_COLLATION, RESERVED_FUNCTION_NAMES };
@@ -64,7 +69,10 @@ const validateFunctionSignature = (signature: FunctionSignature): string[] => {
     return errors;
 };
 
-const ensureDefaultCollationPresent = (collations: string[], defaultCollation: string): string[] => {
+const ensureDefaultCollationPresent = (
+    collations: string[],
+    defaultCollation: string
+): string[] => {
     const set = new Set(collations);
     if (!set.has(defaultCollation)) {
         collations.push(defaultCollation);
@@ -125,7 +133,11 @@ export function registerFunctionSignature(
     };
 }
 
-export function registerVariableType(context: XPathStaticContext, name: string, type: SequenceType): void {
+export function registerVariableType(
+    context: XPathStaticContext,
+    name: string,
+    type: SequenceType
+): void {
     context.variableTypes[name] = type;
 }
 
@@ -133,7 +145,9 @@ export function validateStaticContext(context: XPathStaticContext): string[] {
     const errors: string[] = [];
 
     if (!context.collations.includes(context.defaultCollation)) {
-        errors.push(`Default collation ${context.defaultCollation} is not in the in-scope collations`);
+        errors.push(
+            `Default collation ${context.defaultCollation} is not in the in-scope collations`
+        );
     }
 
     for (const signature of Object.values(context.functionSignatures)) {

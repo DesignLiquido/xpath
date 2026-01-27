@@ -27,49 +27,51 @@ describe('XPath 3.0 Parser', () => {
         it('should tokenize simple map operator (!)', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('$items ! name()');
-            expect(tokens.some(t => t.type === 'SIMPLE_MAP')).toBe(true);
+            expect(tokens.some((t) => t.type === 'SIMPLE_MAP')).toBe(true);
         });
 
         it('should tokenize string concatenation (||)', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('"a" || "b"');
-            expect(tokens.some(t => t.type === 'CONCAT')).toBe(true);
+            expect(tokens.some((t) => t.type === 'CONCAT')).toBe(true);
         });
 
         it('should tokenize hash for function references (#)', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('upper-case#1');
-            expect(tokens.some(t => t.type === 'HASH')).toBe(true);
+            expect(tokens.some((t) => t.type === 'HASH')).toBe(true);
         });
 
         it('should tokenize fat arrow (=>)', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('$x => upper-case()');
-            expect(tokens.some(t => t.type === 'FAT_ARROW')).toBe(true);
+            expect(tokens.some((t) => t.type === 'FAT_ARROW')).toBe(true);
         });
 
         it('should tokenize assignment (:=)', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('let $x := 1');
-            expect(tokens.some(t => t.type === 'ASSIGNMENT')).toBe(true);
+            expect(tokens.some((t) => t.type === 'ASSIGNMENT')).toBe(true);
         });
 
         it('should recognize let as reserved word in 3.0', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('let $x := 1');
-            expect(tokens.some(t => t.type === 'RESERVED_WORD' && t.lexeme === 'let')).toBe(true);
+            expect(tokens.some((t) => t.type === 'RESERVED_WORD' && t.lexeme === 'let')).toBe(true);
         });
 
         it('should recognize function as reserved word in 3.0', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('function($x) { $x }');
-            expect(tokens.some(t => t.type === 'RESERVED_WORD' && t.lexeme === 'function')).toBe(true);
+            expect(tokens.some((t) => t.type === 'RESERVED_WORD' && t.lexeme === 'function')).toBe(
+                true
+            );
         });
 
         it('should still tokenize != correctly', () => {
             const lexer = new XPathLexer('3.0');
             const tokens = lexer.scan('1 != 2');
-            expect(tokens.some(t => t.type === 'NOT_EQUALS')).toBe(true);
+            expect(tokens.some((t) => t.type === 'NOT_EQUALS')).toBe(true);
         });
     });
 
@@ -305,7 +307,9 @@ describe('XPath 3.0 Parser', () => {
         it('should capture closure variables', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('let $multiplier := 3, $multiply := function($x) { $x * $multiplier } return $multiply(5)');
+            const tokens = lexer.scan(
+                'let $multiplier := 3, $multiply := function($x) { $x * $multiplier } return $multiply(5)'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe(15);
@@ -316,7 +320,9 @@ describe('XPath 3.0 Parser', () => {
         it('should combine let with string concat', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('let $greeting := "Hello", $name := "World" return $greeting || " " || $name || "!"');
+            const tokens = lexer.scan(
+                'let $greeting := "Hello", $name := "World" return $greeting || " " || $name || "!"'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe('Hello World!');

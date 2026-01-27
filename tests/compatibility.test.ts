@@ -86,7 +86,7 @@ describe('XPath 1.0 Compatibility Mode (Phase 8.1)', () => {
             expect(toNumber1_0([])).toBe(NaN);
         });
 
-        it('should convert array to first item\'s number', () => {
+        it("should convert array to first item's number", () => {
             expect(toNumber1_0([42])).toBe(42);
             expect(toNumber1_0(['123'])).toBe(123);
             expect(toNumber1_0([true])).toBe(1);
@@ -141,7 +141,7 @@ describe('XPath 1.0 Compatibility Mode (Phase 8.1)', () => {
             expect(toString1_0([])).toBe('');
         });
 
-        it('should convert array to first item\'s string', () => {
+        it("should convert array to first item's string", () => {
             expect(toString1_0([42])).toBe('42');
             expect(toString1_0(['hello'])).toBe('hello');
         });
@@ -216,9 +216,7 @@ describe('XPath 1.0 Compatibility Mode (Phase 8.1)', () => {
                     {
                         nodeType: 1,
                         nodeName: 'sub',
-                        childNodes: [
-                            { nodeType: 3, nodeName: '#text', nodeValue: 'Middle' },
-                        ],
+                        childNodes: [{ nodeType: 3, nodeName: '#text', nodeValue: 'Middle' }],
                     },
                     { nodeType: 3, nodeName: '#text', nodeValue: 'End' },
                 ],
@@ -489,9 +487,7 @@ describe('XPath 1.0 Compatibility Mode (Phase 8.1)', () => {
                             {
                                 nodeType: 1,
                                 nodeName: 'level2',
-                                childNodes: [
-                                    { nodeType: 3, nodeName: '#text', nodeValue: 'deep' },
-                                ],
+                                childNodes: [{ nodeType: 3, nodeName: '#text', nodeValue: 'deep' }],
                             },
                         ],
                     },

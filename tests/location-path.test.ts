@@ -25,7 +25,9 @@ describe('Location Path and Step Expression Evaluation', () => {
             previousSibling: null,
             localName: nodeName,
             textContent: '',
-            getChildNodes() { return this.childNodes; }
+            getChildNodes() {
+                return this.childNodes;
+            },
         };
     }
 

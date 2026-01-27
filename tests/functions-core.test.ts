@@ -62,7 +62,7 @@ const sampleElement = {
         { name: 'xml:lang', value: 'en-US' },
     ],
     getAttribute(name: string) {
-        const attr = (this.attributes as any[]).find(a => a.name === name);
+        const attr = (this.attributes as any[]).find((a) => a.name === name);
         return attr ? attr.value : null;
     },
     childNodes: [],
@@ -126,7 +126,9 @@ describe('Core function smoke tests (Phase 9.1)', () => {
         expect(resolveQName('ns:elem', sampleElement)).toBe('{http://example.com/ns}ns:elem');
         expect(prefixFromQName('ns:elem')).toBe('ns');
         expect(localNameFromQName('ns:elem')).toBe('elem');
-        expect(namespaceUriFromQName('{http://example.com/ns}ns:elem')).toBe('http://example.com/ns');
+        expect(namespaceUriFromQName('{http://example.com/ns}ns:elem')).toBe(
+            'http://example.com/ns'
+        );
         expect(inScopePrefixes(sampleElement)).toContain('ns');
     });
 
@@ -134,8 +136,7 @@ describe('Core function smoke tests (Phase 9.1)', () => {
         expect(resolveUri('path', undefined, context)).toBe('http://example.com/base/path');
         expect(encodeForUri('a b')).toBe('a%20b');
         expect(iriToUri('https://exámple.com/ñ')).toBe('https://ex%C3%A1mple.com/%C3%B1');
-        expect(escapeHtmlUri("https://example.com/a b"))
-            .toBe('https://example.com/a%20b');
+        expect(escapeHtmlUri('https://example.com/a b')).toBe('https://example.com/a%20b');
     });
 
     it('Boolean functions', () => {

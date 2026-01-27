@@ -70,7 +70,7 @@ export function filter(context: XPathContext, seq: any, predicate: any): XPathRe
     const items = Array.isArray(seq) ? seq : [seq];
 
     // Filter items based on predicate
-    const results = items.filter(item => {
+    const results = items.filter((item) => {
         const result = funcItem.implementation(item);
         // Convert result to boolean
         return Boolean(result);

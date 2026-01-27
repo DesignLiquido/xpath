@@ -1,32 +1,29 @@
-import { XPathLexer, XPathToken } from "../src/lexer";
+import { XPathLexer, XPathToken } from '../src/lexer';
 
-describe("Lexer", () => {
+describe('Lexer', () => {
     // Default lexer uses XPath 1.0
     const lexer = new XPathLexer();
 
-    it("trivial (select all attributes)", () => {
-        const expression = "@*";
+    it('trivial (select all attributes)', () => {
+        const expression = '@*';
         const tokens = lexer.scan(expression);
-        expect(tokens).toEqual([
-            new XPathToken("AT", "@"),
-            new XPathToken("ASTERISK", "*"),
-        ]);
+        expect(tokens).toEqual([new XPathToken('AT', '@'), new XPathToken('ASTERISK', '*')]);
     });
 
-    it("defaults to XPath 1.0 version", () => {
+    it('defaults to XPath 1.0 version', () => {
         expect(lexer.getVersion()).toBe('1.0');
     });
 });
 
-describe("Lexer version handling", () => {
-    it("accepts version string in constructor", () => {
+describe('Lexer version handling', () => {
+    it('accepts version string in constructor', () => {
         const lexer10 = new XPathLexer('1.0');
         const lexer20 = new XPathLexer('2.0');
         expect(lexer10.getVersion()).toBe('1.0');
         expect(lexer20.getVersion()).toBe('2.0');
     });
 
-    it("accepts options object in constructor", () => {
+    it('accepts options object in constructor', () => {
         const lexer = new XPathLexer({ version: '2.0' });
         expect(lexer.getVersion()).toBe('2.0');
     });

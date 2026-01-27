@@ -1,8 +1,25 @@
-import { XPathCastableExpression, XPathConditionalExpression, XPathExpression, XPathForExpression, XPathInstanceOfExpression, XPathQuantifiedExpression, XPathTreatExpression, XPathUnionExpression } from "../expressions";
-import { XPathToken } from "../lexer/token";
-import { ITEM_TYPE, OccurrenceIndicator, SequenceType, createAtomicSequenceType, createEmptySequenceType, createItemSequenceType, getAtomicType } from "../types";
-import { XPathBaseParserOptions } from "../xslt-extensions";
-import { XPathBaseParser } from "./base-parser";
+import {
+    XPathCastableExpression,
+    XPathConditionalExpression,
+    XPathExpression,
+    XPathForExpression,
+    XPathInstanceOfExpression,
+    XPathQuantifiedExpression,
+    XPathTreatExpression,
+    XPathUnionExpression,
+} from '../expressions';
+import { XPathToken } from '../lexer/token';
+import {
+    ITEM_TYPE,
+    OccurrenceIndicator,
+    SequenceType,
+    createAtomicSequenceType,
+    createEmptySequenceType,
+    createItemSequenceType,
+    getAtomicType,
+} from '../types';
+import { XPathBaseParserOptions } from '../xslt-extensions';
+import { XPathBaseParser } from './base-parser';
 
 export class XPath20Parser extends XPathBaseParser {
     constructor(options?: XPathBaseParserOptions) {
@@ -104,14 +121,20 @@ export class XPath20Parser extends XPathBaseParser {
     }
 
     private parseQuantifiedExpr(): XPathExpression {
-        const quantifier = this.consumeReservedWordOneOf(['some', 'every'], "Expected 'some' or 'every' at start of quantified expression") as 'some' | 'every';
+        const quantifier = this.consumeReservedWordOneOf(
+            ['some', 'every'],
+            "Expected 'some' or 'every' at start of quantified expression"
+        ) as 'some' | 'every';
 
         const bindings: { variable: string; expression: XPathExpression }[] = [];
         do {
             bindings.push(this.parseForBinding());
         } while (this.match('COMMA'));
 
-        this.consumeReservedWord('satisfies', "Expected 'satisfies' after quantified expression bindings");
+        this.consumeReservedWord(
+            'satisfies',
+            "Expected 'satisfies' after quantified expression bindings"
+        );
         const satisfiesExpr = this.parseExpr();
 
         return new XPathQuantifiedExpression(quantifier, bindings, satisfiesExpr);
@@ -177,7 +200,9 @@ export class XPath20Parser extends XPathBaseParser {
     private parseQName(): string {
         const first = this.consumeNameToken('Expected type name in SequenceType');
         if (this.match('COLON')) {
-            const local = this.consumeNameToken('Expected local name after : in SequenceType').lexeme;
+            const local = this.consumeNameToken(
+                'Expected local name after : in SequenceType'
+            ).lexeme;
             return `${first.lexeme}:${local}`;
         }
         return first.lexeme;
@@ -198,7 +223,14 @@ export class XPath20Parser extends XPathBaseParser {
     private isNameToken(): boolean {
         if (this.isAtEnd()) return false;
         const type = this.peek().type;
-        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'NODE_TYPE' || type === 'OPERATOR' || type === 'LOCATION' || type === 'RESERVED_WORD';
+        return (
+            type === 'IDENTIFIER' ||
+            type === 'FUNCTION' ||
+            type === 'NODE_TYPE' ||
+            type === 'OPERATOR' ||
+            type === 'LOCATION' ||
+            type === 'RESERVED_WORD'
+        );
     }
 
     private checkName(name: string): boolean {

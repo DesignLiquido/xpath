@@ -112,8 +112,6 @@ describe('Filter Expression Evaluation', () => {
             expect((result as any[]).length).toBe(0);
         });
 
-
-
         it('should handle multiple predicates', () => {
             const root = createNode('root');
             const book1 = createNode('book', 1, 'Good');
@@ -210,7 +208,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = [createNode('item'), createNode('item'), createNode('item')];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             // Simple function call predicate
             const ast = parse('item[position() > 0]');
@@ -226,9 +224,14 @@ describe('Filter Expression Evaluation', () => {
     describe('Filter Expression - Context Position and Size', () => {
         it('should properly track position in context', () => {
             const root = createNode('root');
-            const items = [createNode('item'), createNode('item'), createNode('item'), createNode('item')];
+            const items = [
+                createNode('item'),
+                createNode('item'),
+                createNode('item'),
+                createNode('item'),
+            ];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[position() = 2]');
             const context: XPathContext = { node: root };
@@ -242,7 +245,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = [createNode('item'), createNode('item'), createNode('item')];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[position() = last()]');
             const context: XPathContext = { node: root };
@@ -254,9 +257,15 @@ describe('Filter Expression Evaluation', () => {
 
         it('should handle predicates based on relative position', () => {
             const root = createNode('root');
-            const items = [createNode('item'), createNode('item'), createNode('item'), createNode('item'), createNode('item')];
+            const items = [
+                createNode('item'),
+                createNode('item'),
+                createNode('item'),
+                createNode('item'),
+                createNode('item'),
+            ];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[position() < last()]');
             const context: XPathContext = { node: root };
@@ -267,9 +276,11 @@ describe('Filter Expression Evaluation', () => {
 
         it('should handle position arithmetic', () => {
             const root = createNode('root');
-            const items = Array.from({ length: 10 }, (_, i) => createNode('item', 1, `Item ${i + 1}`));
+            const items = Array.from({ length: 10 }, (_, i) =>
+                createNode('item', 1, `Item ${i + 1}`)
+            );
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[position() > 5]');
             const context: XPathContext = { node: root };
@@ -286,7 +297,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = [createNode('item'), createNode('item'), createNode('item')];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[2]');
             const context: XPathContext = { node: root };
@@ -300,7 +311,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = [createNode('item'), createNode('item'), createNode('item')];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[position() > 1]');
             const context: XPathContext = { node: root };
@@ -315,7 +326,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = [createNode('item'), createNode('item'), createNode('item')];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[1]');
             const context: XPathContext = { node: root };
@@ -329,7 +340,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = [createNode('item'), createNode('item'), createNode('item')];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[last()]');
             const context: XPathContext = { node: root };
@@ -343,7 +354,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = [createNode('item'), createNode('item'), createNode('item')];
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             const ast = parse('item[position() != 2]');
             const context: XPathContext = { node: root };
@@ -358,7 +369,7 @@ describe('Filter Expression Evaluation', () => {
             const root = createNode('root');
             const items = Array.from({ length: 5 }, (_, i) => createNode('item', 1, String(i + 1)));
             root.childNodes = items;
-            items.forEach(item => item.parentNode = root);
+            items.forEach((item) => (item.parentNode = root));
 
             // Filter for items at odd positions greater than position 2
             const ast = parse('item[position() > 2 and position() mod 2 = 1]');
@@ -366,8 +377,8 @@ describe('Filter Expression Evaluation', () => {
             const result = ast.evaluate(context);
 
             expect((result as any[]).length).toBe(2);
-            expect(result[0]).toBe(items[2]);  // position 3
-            expect(result[1]).toBe(items[4]);  // position 5
+            expect(result[0]).toBe(items[2]); // position 3
+            expect(result[1]).toBe(items[4]); // position 5
         });
     });
 });

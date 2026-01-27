@@ -31,42 +31,40 @@ import { XPathContext } from '../context';
  *   $x, $y, $z → concatenated sequence of all three variables
  */
 export class CommaExpression extends XPathExpression {
-  constructor(
-    private operands: XPathExpression[]
-  ) {
-    super();
-    if (operands.length < 2) {
-      throw new Error('CommaExpression requires at least 2 operands');
-    }
-  }
-
-  evaluate(context: XPathContext): any {
-    // Concatenate all operand results into a single sequence
-    const result: any[] = [];
-
-    for (const operand of this.operands) {
-      const value = operand.evaluate(context);
-
-      // Flatten sequences
-      if (Array.isArray(value)) {
-        result.push(...value);
-      } else if (value !== undefined && value !== null) {
-        result.push(value);
-      }
-      // null/undefined are not added to the sequence
+    constructor(private operands: XPathExpression[]) {
+        super();
+        if (operands.length < 2) {
+            throw new Error('CommaExpression requires at least 2 operands');
+        }
     }
 
-    // Return the flattened sequence
-    return result.length > 0 ? result : [];
-  }
+    evaluate(context: XPathContext): any {
+        // Concatenate all operand results into a single sequence
+        const result: any[] = [];
 
-  getOperands(): XPathExpression[] {
-    return this.operands;
-  }
+        for (const operand of this.operands) {
+            const value = operand.evaluate(context);
 
-  toString(): string {
-    return this.operands.map(op => op.toString()).join(', ');
-  }
+            // Flatten sequences
+            if (Array.isArray(value)) {
+                result.push(...value);
+            } else if (value !== undefined && value !== null) {
+                result.push(value);
+            }
+            // null/undefined are not added to the sequence
+        }
+
+        // Return the flattened sequence
+        return result.length > 0 ? result : [];
+    }
+
+    getOperands(): XPathExpression[] {
+        return this.operands;
+    }
+
+    toString(): string {
+        return this.operands.map((op) => op.toString()).join(', ');
+    }
 }
 
 /**
@@ -84,72 +82,70 @@ export class CommaExpression extends XPathExpression {
  *   -2 to 2 → (-2, -1, 0, 1, 2)
  */
 export class RangeExpression extends XPathExpression {
-  constructor(
-    private startExpr: XPathExpression,
-    private endExpr: XPathExpression
-  ) {
-    super();
-  }
-
-  evaluate(context: XPathContext): any {
-    // Evaluate both operands
-    const startValue = this.startExpr.evaluate(context);
-    const endValue = this.endExpr.evaluate(context);
-
-    // Convert to single values (atomization)
-    let start: number;
-    let end: number;
-
-    try {
-      // Handle arrays/sequences - take first item
-      const startItem = Array.isArray(startValue) ? startValue[0] : startValue;
-      const endItem = Array.isArray(endValue) ? endValue[0] : endValue;
-
-      start = this.toInteger(startItem);
-      end = this.toInteger(endItem);
-    } catch (e) {
-      throw new Error(
-        `Range expression operands must be integers: ${String(e)}`
-      );
+    constructor(
+        private startExpr: XPathExpression,
+        private endExpr: XPathExpression
+    ) {
+        super();
     }
 
-    // Create the range
-    if (start > end) {
-      return []; // Empty sequence
+    evaluate(context: XPathContext): any {
+        // Evaluate both operands
+        const startValue = this.startExpr.evaluate(context);
+        const endValue = this.endExpr.evaluate(context);
+
+        // Convert to single values (atomization)
+        let start: number;
+        let end: number;
+
+        try {
+            // Handle arrays/sequences - take first item
+            const startItem = Array.isArray(startValue) ? startValue[0] : startValue;
+            const endItem = Array.isArray(endValue) ? endValue[0] : endValue;
+
+            start = this.toInteger(startItem);
+            end = this.toInteger(endItem);
+        } catch (e) {
+            throw new Error(`Range expression operands must be integers: ${String(e)}`);
+        }
+
+        // Create the range
+        if (start > end) {
+            return []; // Empty sequence
+        }
+
+        const result: number[] = [];
+        for (let i = start; i <= end; i++) {
+            result.push(i);
+        }
+
+        return result;
     }
 
-    const result: number[] = [];
-    for (let i = start; i <= end; i++) {
-      result.push(i);
+    private toInteger(value: any): number {
+        if (typeof value === 'number') {
+            // Truncate to integer
+            return Math.trunc(value);
+        }
+
+        if (typeof value === 'string') {
+            const num = parseInt(value, 10);
+            if (isNaN(num)) {
+                throw new Error(`Cannot convert "${value}" to integer`);
+            }
+            return num;
+        }
+
+        if (typeof value === 'boolean') {
+            return value ? 1 : 0;
+        }
+
+        throw new Error(`Cannot convert ${typeof value} to integer`);
     }
 
-    return result;
-  }
-
-  private toInteger(value: any): number {
-    if (typeof value === 'number') {
-      // Truncate to integer
-      return Math.trunc(value);
+    toString(): string {
+        return `${this.startExpr.toString()} to ${this.endExpr.toString()}`;
     }
-
-    if (typeof value === 'string') {
-      const num = parseInt(value, 10);
-      if (isNaN(num)) {
-        throw new Error(`Cannot convert "${value}" to integer`);
-      }
-      return num;
-    }
-
-    if (typeof value === 'boolean') {
-      return value ? 1 : 0;
-    }
-
-    throw new Error(`Cannot convert ${typeof value} to integer`);
-  }
-
-  toString(): string {
-    return `${this.startExpr.toString()} to ${this.endExpr.toString()}`;
-  }
 }
 
 /**
@@ -164,14 +160,14 @@ export class RangeExpression extends XPathExpression {
  *   empty-sequence() → ()
  */
 export class EmptySequenceExpression extends XPathExpression {
-  evaluate(context: XPathContext): any {
-    // Return empty array representing the empty sequence
-    return [];
-  }
+    evaluate(context: XPathContext): any {
+        // Return empty array representing the empty sequence
+        return [];
+    }
 
-  toString(): string {
-    return 'empty-sequence()';
-  }
+    toString(): string {
+        return 'empty-sequence()';
+    }
 }
 
 /**
@@ -187,23 +183,21 @@ export class EmptySequenceExpression extends XPathExpression {
  *   (1, 2), (3, 4) → (1, 2, 3, 4)
  */
 export class ParenthesizedExpression extends XPathExpression {
-  constructor(
-    private operand: XPathExpression
-  ) {
-    super();
-  }
+    constructor(private operand: XPathExpression) {
+        super();
+    }
 
-  evaluate(context: XPathContext): any {
-    return this.operand.evaluate(context);
-  }
+    evaluate(context: XPathContext): any {
+        return this.operand.evaluate(context);
+    }
 
-  getOperand(): XPathExpression {
-    return this.operand;
-  }
+    getOperand(): XPathExpression {
+        return this.operand;
+    }
 
-  toString(): string {
-    return `(${this.operand.toString()})`;
-  }
+    toString(): string {
+        return `(${this.operand.toString()})`;
+    }
 }
 
 /**
@@ -211,53 +205,53 @@ export class ParenthesizedExpression extends XPathExpression {
  * Used internally for sequence operations
  */
 export interface Sequence {
-  /**
-   * The items in the sequence
-   */
-  items: any[];
+    /**
+     * The items in the sequence
+     */
+    items: any[];
 
-  /**
-   * Check if sequence is empty
-   */
-  isEmpty(): boolean;
+    /**
+     * Check if sequence is empty
+     */
+    isEmpty(): boolean;
 
-  /**
-   * Get first item, or undefined if empty
-   */
-  first(): any | undefined;
+    /**
+     * Get first item, or undefined if empty
+     */
+    first(): any | undefined;
 
-  /**
-   * Get last item, or undefined if empty
-   */
-  last(): any | undefined;
+    /**
+     * Get last item, or undefined if empty
+     */
+    last(): any | undefined;
 
-  /**
-   * Get length of sequence
-   */
-  length(): number;
+    /**
+     * Get length of sequence
+     */
+    length(): number;
 }
 
 /**
  * Helper function to create a sequence from any value
  */
 export function createSequence(value: any): Sequence {
-  let items: any[];
+    let items: any[];
 
-  if (value === undefined || value === null) {
-    items = [];
-  } else if (Array.isArray(value)) {
-    items = value;
-  } else {
-    items = [value];
-  }
+    if (value === undefined || value === null) {
+        items = [];
+    } else if (Array.isArray(value)) {
+        items = value;
+    } else {
+        items = [value];
+    }
 
-  return {
-    items,
-    isEmpty: () => items.length === 0,
-    first: () => items[0],
-    last: () => items[items.length - 1],
-    length: () => items.length
-  };
+    return {
+        items,
+        isEmpty: () => items.length === 0,
+        first: () => items[0],
+        last: () => items[items.length - 1],
+        length: () => items.length,
+    };
 }
 
 /**
@@ -265,32 +259,32 @@ export function createSequence(value: any): Sequence {
  * XPath 2.0 sequences are always flat (no nested arrays)
  */
 export function flattenSequence(value: any): any[] {
-  if (value === undefined || value === null) {
-    return [];
-  }
+    if (value === undefined || value === null) {
+        return [];
+    }
 
-  if (Array.isArray(value)) {
-    return value;
-  }
+    if (Array.isArray(value)) {
+        return value;
+    }
 
-  return [value];
+    return [value];
 }
 
 /**
  * Helper function to concatenate sequences
  */
 export function concatenateSequences(...sequences: any[]): any[] {
-  const result: any[] = [];
+    const result: any[] = [];
 
-  for (const seq of sequences) {
-    if (Array.isArray(seq)) {
-      result.push(...seq);
-    } else if (seq !== undefined && seq !== null) {
-      result.push(seq);
+    for (const seq of sequences) {
+        if (Array.isArray(seq)) {
+            result.push(...seq);
+        } else if (seq !== undefined && seq !== null) {
+            result.push(seq);
+        }
     }
-  }
 
-  return result;
+    return result;
 }
 
 /**
@@ -298,16 +292,16 @@ export function concatenateSequences(...sequences: any[]): any[] {
  * Used for node operations (union, intersect, except)
  */
 export function isXPathNode(value: any): boolean {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
+    if (!value || typeof value !== 'object') {
+        return false;
+    }
 
-  // Check for node-like properties
-  return (
-    typeof value.nodeType === 'string' ||
-    typeof value.nodeName === 'string' ||
-    typeof value.textContent === 'string'
-  );
+    // Check for node-like properties
+    return (
+        typeof value.nodeType === 'string' ||
+        typeof value.nodeName === 'string' ||
+        typeof value.textContent === 'string'
+    );
 }
 
 /**
@@ -315,10 +309,10 @@ export function isXPathNode(value: any): boolean {
  * Used for deduplication in union/intersect/except
  */
 export function getNodeId(node: any): string {
-  if (!isXPathNode(node)) {
-    return String(node);
-  }
+    if (!isXPathNode(node)) {
+        return String(node);
+    }
 
-  // Use nodeType + nodeName + position for unique identification
-  return `${node.nodeType}:${node.nodeName || node.localName || ''}:${node.__id || ''}`;
+    // Use nodeType + nodeName + position for unique identification
+    return `${node.nodeType}:${node.nodeName || node.localName || ''}:${node.__id || ''}`;
 }

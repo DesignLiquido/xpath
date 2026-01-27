@@ -1,6 +1,6 @@
 /**
  * XPath version support and configuration.
- * 
+ *
  * This module defines version-specific behavior and prepares for future XPath 2.0/3.0 support.
  */
 
@@ -30,27 +30,27 @@ export interface XPathVersionConfig {
         /**
          * XPath 2.0+ features
          */
-        sequences?: boolean;           // Sequences instead of node-sets
-        typeSystem?: boolean;          // Explicit type system (xs:string, xs:integer, etc.)
-        ifThenElse?: boolean;          // if-then-else expressions
-        forExpressions?: boolean;      // for/let/return (FLWOR)
+        sequences?: boolean; // Sequences instead of node-sets
+        typeSystem?: boolean; // Explicit type system (xs:string, xs:integer, etc.)
+        ifThenElse?: boolean; // if-then-else expressions
+        forExpressions?: boolean; // for/let/return (FLWOR)
         quantifiedExpressions?: boolean; // some/every expressions
-        rangeExpressions?: boolean;    // 1 to 10
-        
+        rangeExpressions?: boolean; // 1 to 10
+
         /**
          * XPath 3.0+ features
          */
         higherOrderFunctions?: boolean; // Functions as first-class values
-        mapSupport?: boolean;          // Map data type
-        arraySupport?: boolean;        // Array data type
-        arrowOperator?: boolean;       // => operator
-        stringTemplates?: boolean;     // String templates
+        mapSupport?: boolean; // Map data type
+        arraySupport?: boolean; // Array data type
+        arrowOperator?: boolean; // => operator
+        stringTemplates?: boolean; // String templates
 
         /**
          * XPath 3.1+ features
          */
         mapArrayConstructors?: boolean; // map{} and array{} constructors
-        jsonSupport?: boolean;         // JSON parsing functions
+        jsonSupport?: boolean; // JSON parsing functions
     };
 
     /**
@@ -67,7 +67,7 @@ export const XPATH_VERSION_CONFIGS: Record<XPathVersion, XPathVersionConfig> = {
     '1.0': {
         version: '1.0',
         features: {},
-        backwardCompatible: true
+        backwardCompatible: true,
     },
     '2.0': {
         version: '2.0',
@@ -77,9 +77,9 @@ export const XPATH_VERSION_CONFIGS: Record<XPathVersion, XPathVersionConfig> = {
             ifThenElse: true,
             forExpressions: true,
             quantifiedExpressions: true,
-            rangeExpressions: true
+            rangeExpressions: true,
         },
-        backwardCompatible: true
+        backwardCompatible: true,
     },
     '3.0': {
         version: '3.0',
@@ -94,9 +94,9 @@ export const XPATH_VERSION_CONFIGS: Record<XPathVersion, XPathVersionConfig> = {
             mapSupport: true,
             arraySupport: true,
             arrowOperator: true,
-            stringTemplates: true
+            stringTemplates: true,
         },
-        backwardCompatible: true
+        backwardCompatible: true,
     },
     '3.1': {
         version: '3.1',
@@ -113,10 +113,10 @@ export const XPATH_VERSION_CONFIGS: Record<XPathVersion, XPathVersionConfig> = {
             arrowOperator: true,
             stringTemplates: true,
             mapArrayConstructors: true,
-            jsonSupport: true
+            jsonSupport: true,
         },
-        backwardCompatible: true
-    }
+        backwardCompatible: true,
+    },
 };
 
 /**
@@ -159,7 +159,7 @@ export interface XPathType {
     /**
      * Cardinality indicator
      * - 'one': exactly one
-     * - 'zero-or-one': ? 
+     * - 'zero-or-one': ?
      * - 'zero-or-more': *
      * - 'one-or-more': +
      */
@@ -189,11 +189,11 @@ export function toSequence(value: any): XPathSequence {
     if (isSequence(value)) {
         return value;
     }
-    
+
     if (Array.isArray(value)) {
         return { items: value };
     }
-    
+
     // Single item becomes sequence of length 1
     return { items: [value] };
 }
@@ -203,17 +203,17 @@ export function toSequence(value: any): XPathSequence {
  */
 export function fromSequence(sequence: XPathSequence): any {
     const items = sequence.items;
-    
+
     // Empty sequence -> empty array for node-sets, undefined otherwise
     if (items.length === 0) {
         return [];
     }
-    
+
     // Single item -> unwrap
     if (items.length === 1) {
         return items[0];
     }
-    
+
     // Multiple items -> return array
     return items;
 }

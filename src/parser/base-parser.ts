@@ -30,11 +30,7 @@ import {
     unresolvedNameReference,
     functionSignatureMismatch,
 } from '../errors';
-import {
-    WarningCollector,
-    createWarningCollector,
-    createNoOpWarningCollector,
-} from '../warnings';
+import { WarningCollector, createWarningCollector, createNoOpWarningCollector } from '../warnings';
 
 /**
  * Recursive descent parser shared by XPath 1.0+ implementations.
@@ -114,14 +110,17 @@ export abstract class XPathBaseParser {
     /**
      * Enforce the supported XPath versions for a concrete parser.
      */
-    protected ensureVersionSupport(supportedVersions: XPathVersion[], defaultVersion: XPathVersion): void {
+    protected ensureVersionSupport(
+        supportedVersions: XPathVersion[],
+        defaultVersion: XPathVersion
+    ): void {
         const resolvedVersion = this.options.version ?? defaultVersion;
         this.options.version = resolvedVersion;
 
         if (this.options.strict !== false && !supportedVersions.includes(resolvedVersion)) {
             throw new Error(
                 `XPath version ${resolvedVersion} is not supported by ${this.constructor.name}. ` +
-                `Supported versions: ${supportedVersions.join(', ')}`
+                    `Supported versions: ${supportedVersions.join(', ')}`
             );
         }
     }
@@ -138,13 +137,15 @@ export abstract class XPathBaseParser {
         this.current = 0;
 
         // Emit compatibility mode warning if using XPath 2.0+ with compatibility mode
-        if (this.options.xpath10CompatibilityMode &&
+        if (
+            this.options.xpath10CompatibilityMode &&
             this.options.version &&
-            this.options.version !== '1.0') {
+            this.options.version !== '1.0'
+        ) {
             this.warningCollector.emit(
                 'XPWC0001',
                 `XPath ${this.options.version} with compatibility mode`,
-                tokens.map(t => t.lexeme).join('')
+                tokens.map((t) => t.lexeme).join('')
             );
         }
 
@@ -254,7 +255,9 @@ export abstract class XPathBaseParser {
     protected parseRelationalExpr(): XPathExpression {
         let left = this.parseAdditiveExpr();
 
-        while (this.match('LESS_THAN', 'GREATER_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN_OR_EQUAL')) {
+        while (
+            this.match('LESS_THAN', 'GREATER_THAN', 'LESS_THAN_OR_EQUAL', 'GREATER_THAN_OR_EQUAL')
+        ) {
             const operator = this.previous().lexeme;
             const right = this.parseAdditiveExpr();
             left = new XPathBinaryExpression(left, right, operator);
@@ -282,7 +285,10 @@ export abstract class XPathBaseParser {
             if (this.match('ASTERISK')) {
                 const right = this.parseUnaryExpr();
                 left = new XPathArithmeticExpression(left, right, '*');
-            } else if (this.check('OPERATOR') && (this.peek().lexeme === 'div' || this.peek().lexeme === 'mod')) {
+            } else if (
+                this.check('OPERATOR') &&
+                (this.peek().lexeme === 'div' || this.peek().lexeme === 'mod')
+            ) {
                 const operator = this.advance().lexeme as ArithmeticOperator;
                 const right = this.parseUnaryExpr();
                 left = new XPathArithmeticExpression(left, right, operator);
@@ -337,7 +343,9 @@ export abstract class XPathBaseParser {
 
             if (isDescendant) {
                 // Insert descendant-or-self::node() step
-                steps.unshift(new XPathStep('descendant-or-self', { type: 'node-type', nodeType: 'node' }));
+                steps.unshift(
+                    new XPathStep('descendant-or-self', { type: 'node-type', nodeType: 'node' })
+                );
             }
 
             // Create a composite expression: evaluate filter expr, then apply location path to each result
@@ -366,7 +374,10 @@ export abstract class XPathBaseParser {
             'comment',
             'processing-instruction',
         ];
-        if ((token.type === 'IDENTIFIER' || token.type === 'NODE_TYPE') && next?.type === 'OPEN_PAREN') {
+        if (
+            (token.type === 'IDENTIFIER' || token.type === 'NODE_TYPE') &&
+            next?.type === 'OPEN_PAREN'
+        ) {
             if (nodeTestNames.includes(token.lexeme.toLowerCase())) {
                 return true;
             }
@@ -417,7 +428,9 @@ export abstract class XPathBaseParser {
             absolute = true;
 
             // '//' is shorthand for '/descendant-or-self::node()/'
-            steps.push(new XPathStep('descendant-or-self', { type: 'node-type', nodeType: 'node' }));
+            steps.push(
+                new XPathStep('descendant-or-self', { type: 'node-type', nodeType: 'node' })
+            );
             steps.push(...this.parseRelativeLocationPath());
         } else {
             // Relative location path
@@ -437,7 +450,9 @@ export abstract class XPathBaseParser {
 
             if (isDescendant) {
                 // '//' is shorthand for '/descendant-or-self::node()/'
-                steps.push(new XPathStep('descendant-or-self', { type: 'node-type', nodeType: 'node' }));
+                steps.push(
+                    new XPathStep('descendant-or-self', { type: 'node-type', nodeType: 'node' })
+                );
             }
 
             steps.push(this.parseStep());
@@ -494,7 +509,13 @@ export abstract class XPathBaseParser {
         }
 
         // Check for element/attribute/document-node/schema-element/schema-attribute/processing-instruction followed by '('
-        if (this.check('NODE_TYPE') || this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') || this.check('OPERATOR')) {
+        if (
+            this.check('NODE_TYPE') ||
+            this.check('IDENTIFIER') ||
+            this.check('LOCATION') ||
+            this.check('FUNCTION') ||
+            this.check('OPERATOR')
+        ) {
             const next = this.peekNext();
             if (next && next.type === 'OPEN_PAREN') {
                 const testName = this.advance().lexeme.toLowerCase();
@@ -530,16 +551,31 @@ export abstract class XPathBaseParser {
                 }
 
                 // Handle node(), text(), comment(), processing-instruction()
-                if (testName === 'node' || testName === 'text' || testName === 'comment' || testName === 'processing-instruction') {
+                if (
+                    testName === 'node' ||
+                    testName === 'text' ||
+                    testName === 'comment' ||
+                    testName === 'processing-instruction'
+                ) {
                     // processing-instruction can have an optional literal argument
                     if (testName === 'processing-instruction' && this.check('STRING')) {
                         const target = this.advance().lexeme;
-                        this.consume('CLOSE_PAREN', "Expected ')' after processing-instruction target");
+                        this.consume(
+                            'CLOSE_PAREN',
+                            "Expected ')' after processing-instruction target"
+                        );
                         return { type: 'processing-instruction', target };
                     }
 
                     this.consume('CLOSE_PAREN', "Expected ')' after node type");
-                    return { type: 'node-type', nodeType: testName as 'node' | 'text' | 'comment' | 'processing-instruction' };
+                    return {
+                        type: 'node-type',
+                        nodeType: testName as
+                            | 'node'
+                            | 'text'
+                            | 'comment'
+                            | 'processing-instruction',
+                    };
                 }
             }
             // Fall through to name test if not followed by '('
@@ -548,8 +584,13 @@ export abstract class XPathBaseParser {
         // Name test - can be IDENTIFIER, LOCATION (axis names), FUNCTION (function names), NODE_TYPE,
         // or OPERATOR (div, mod, and, or can be element names too)
         // All of these can be used as element names in XPath
-        if (this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') ||
-            this.check('NODE_TYPE') || this.check('OPERATOR')) {
+        if (
+            this.check('IDENTIFIER') ||
+            this.check('LOCATION') ||
+            this.check('FUNCTION') ||
+            this.check('NODE_TYPE') ||
+            this.check('OPERATOR')
+        ) {
             const name = this.advance().lexeme;
 
             // Check for namespace prefix
@@ -559,8 +600,13 @@ export abstract class XPathBaseParser {
                     return { type: 'wildcard', name: `${name}:*` };
                 }
                 // Local name can also be any of these token types
-                if (this.check('IDENTIFIER') || this.check('LOCATION') || this.check('FUNCTION') ||
-                    this.check('NODE_TYPE') || this.check('OPERATOR')) {
+                if (
+                    this.check('IDENTIFIER') ||
+                    this.check('LOCATION') ||
+                    this.check('FUNCTION') ||
+                    this.check('NODE_TYPE') ||
+                    this.check('OPERATOR')
+                ) {
                     const localName = this.advance().lexeme;
                     return { type: 'name', name: `${name}:${localName}` };
                 }
@@ -641,7 +687,9 @@ export abstract class XPathBaseParser {
             return this.parseFunctionCall();
         }
 
-        throw grammarViolation(`Unexpected token in primary expression: ${this.peek()?.lexeme ?? 'EOF'}`);
+        throw grammarViolation(
+            `Unexpected token in primary expression: ${this.peek()?.lexeme ?? 'EOF'}`
+        );
     }
 
     protected parseFunctionCall(): XPathExpression {
@@ -710,7 +758,11 @@ export abstract class XPathBaseParser {
         if (this.isFunctionNameToken(first.type) && second?.type === 'COLON') {
             const local = this.tokens[this.current + 2];
             const afterLocal = this.tokens[this.current + 3];
-            if (local && this.isFunctionNameToken(local.type) && afterLocal?.type === 'OPEN_PAREN') {
+            if (
+                local &&
+                this.isFunctionNameToken(local.type) &&
+                afterLocal?.type === 'OPEN_PAREN'
+            ) {
                 return true;
             }
         }
@@ -725,18 +777,30 @@ export abstract class XPathBaseParser {
         this.warningCollector.emit(
             'XPWD0001',
             'namespace:: axis',
-            this.tokens.map(t => t.lexeme).join('')
+            this.tokens.map((t) => t.lexeme).join('')
         );
     }
 
     private isFunctionNameToken(type: TokenType | undefined): boolean {
         // NODE_TYPE tokens (node, text, comment, processing-instruction) are reserved for node tests, not functions
-        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'OPERATOR' || type === 'LOCATION' || type === 'EQNAME';
+        return (
+            type === 'IDENTIFIER' ||
+            type === 'FUNCTION' ||
+            type === 'OPERATOR' ||
+            type === 'LOCATION' ||
+            type === 'EQNAME'
+        );
     }
 
     private isNcNameToken(type: TokenType | undefined): boolean {
         // Allow any token kinds that can represent NCName parts (prefix/local), including node-type tokens for QNames
-        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'OPERATOR' || type === 'LOCATION' || type === 'NODE_TYPE';
+        return (
+            type === 'IDENTIFIER' ||
+            type === 'FUNCTION' ||
+            type === 'OPERATOR' ||
+            type === 'LOCATION' ||
+            type === 'NODE_TYPE'
+        );
     }
 
     private parseNameOrWildcard(): string {
@@ -747,13 +811,25 @@ export abstract class XPathBaseParser {
         if (this.check('EQNAME')) {
             return this.advance().lexeme;
         }
-        if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION') || this.check('OPERATOR')) {
+        if (
+            this.check('IDENTIFIER') ||
+            this.check('NODE_TYPE') ||
+            this.check('FUNCTION') ||
+            this.check('LOCATION') ||
+            this.check('OPERATOR')
+        ) {
             name = this.advance().lexeme;
             if (this.match('COLON')) {
                 if (this.match('ASTERISK')) {
                     return `${name}:*`;
                 }
-                if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION') || this.check('OPERATOR')) {
+                if (
+                    this.check('IDENTIFIER') ||
+                    this.check('NODE_TYPE') ||
+                    this.check('FUNCTION') ||
+                    this.check('LOCATION') ||
+                    this.check('OPERATOR')
+                ) {
                     name += ':' + this.advance().lexeme;
                 }
             }
@@ -771,7 +847,12 @@ export abstract class XPathBaseParser {
         let elementType: string | undefined;
 
         if (this.match('COMMA')) {
-            if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION')) {
+            if (
+                this.check('IDENTIFIER') ||
+                this.check('NODE_TYPE') ||
+                this.check('FUNCTION') ||
+                this.check('LOCATION')
+            ) {
                 elementType = this.parseNameOrWildcard();
             }
         }
@@ -781,7 +862,7 @@ export abstract class XPathBaseParser {
             type: 'element',
             name: name === '*' ? undefined : name,
             elementType,
-            isWildcardName: name === '*'
+            isWildcardName: name === '*',
         };
     }
 
@@ -795,7 +876,12 @@ export abstract class XPathBaseParser {
         let elementType: string | undefined;
 
         if (this.match('COMMA')) {
-            if (this.check('IDENTIFIER') || this.check('NODE_TYPE') || this.check('FUNCTION') || this.check('LOCATION')) {
+            if (
+                this.check('IDENTIFIER') ||
+                this.check('NODE_TYPE') ||
+                this.check('FUNCTION') ||
+                this.check('LOCATION')
+            ) {
                 elementType = this.parseNameOrWildcard();
             }
         }
@@ -805,7 +891,7 @@ export abstract class XPathBaseParser {
             type: 'attribute',
             name: name === '*' ? undefined : name,
             elementType,
-            isWildcardName: name === '*'
+            isWildcardName: name === '*',
         };
     }
 
@@ -820,7 +906,7 @@ export abstract class XPathBaseParser {
         this.consume('CLOSE_PAREN', "Expected ')' after document-node test");
         return {
             type: 'document-node',
-            elementTest
+            elementTest,
         };
     }
 }

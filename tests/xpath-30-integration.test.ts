@@ -1,6 +1,6 @@
 /**
  * XPath 3.0 Integration Tests
- * 
+ *
  * Tests combining multiple XPath 3.0 features in realistic scenarios.
  * This suite demonstrates the integration of:
  * - Let expressions with complex bindings
@@ -21,7 +21,7 @@ describe('XPath 3.0 Integration Tests', () => {
         position: 1,
         size: 1,
         variables: {},
-        functions: {}
+        functions: {},
     };
 
     const parseExpression = (xpath: string) => {
@@ -46,7 +46,8 @@ describe('XPath 3.0 Integration Tests', () => {
         });
 
         test('let with nested expressions', () => {
-            const xpath = 'let $base := 10, $double := $base * 2, $result := $double + 5 return $result';
+            const xpath =
+                'let $base := 10, $double := $base * 2, $result := $double + 5 return $result';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe(25); // (10 * 2) + 5
@@ -60,7 +61,8 @@ describe('XPath 3.0 Integration Tests', () => {
         });
 
         test('let with conditional binding', () => {
-            const xpath = 'let $x := 5, $type := if ($x > 3) then "large" else "small" return $type';
+            const xpath =
+                'let $x := 5, $type := if ($x > 3) then "large" else "small" return $type';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe('large');
@@ -80,10 +82,10 @@ describe('XPath 3.0 Integration Tests', () => {
                 ...sampleContext,
                 variables: {
                     first: 'John',
-                    last: 'Doe'
-                }
+                    last: 'Doe',
+                },
             };
-            
+
             const xpath = '$first || " " || $last';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(context);
@@ -109,8 +111,8 @@ describe('XPath 3.0 Integration Tests', () => {
                 ...sampleContext,
                 variables: {
                     name: 'User',
-                    action: 'logged in'
-                }
+                    action: 'logged in',
+                },
             };
 
             const xpath = '"Event: " || $name || " " || $action';
@@ -141,8 +143,8 @@ describe('XPath 3.0 Integration Tests', () => {
             const context: XPathContext = {
                 ...sampleContext,
                 variables: {
-                    values: [1, 2, 3]
-                }
+                    values: [1, 2, 3],
+                },
             };
 
             const xpath = '$values ! ("Value: " || xs:string(.))';
@@ -160,10 +162,10 @@ describe('XPath 3.0 Integration Tests', () => {
             const context: XPathContext = {
                 ...sampleContext,
                 variables: {
-                    data: [2, 3, 4]
-                }
+                    data: [2, 3, 4],
+                },
             };
-            
+
             const xpath = '$data ! (. * 2) ! (. + 1)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(context);
@@ -214,7 +216,8 @@ describe('XPath 3.0 Integration Tests', () => {
         });
 
         test('multiple lets with string concatenation', () => {
-            const xpath = 'let $first := "John", $last := "Doe", $fullName := $first || " " || $last return $fullName';
+            const xpath =
+                'let $first := "John", $last := "Doe", $fullName := $first || " " || $last return $fullName';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe('John Doe');
@@ -229,14 +232,16 @@ describe('XPath 3.0 Integration Tests', () => {
         });
 
         test('combined features with conditional', () => {
-            const xpath = 'let $x := 5 return if ($x > 3) then ("Value is " || "large") else ("Value is " || "small")';
+            const xpath =
+                'let $x := 5 return if ($x > 3) then ("Value is " || "large") else ("Value is " || "small")';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe('Value is large');
         });
 
         test('sequential lets with arrow and simple map', () => {
-            const xpath = 'let $nums := (1, 2, 3), $doubled := $nums ! (. * 2) return $doubled => sum()';
+            const xpath =
+                'let $nums := (1, 2, 3), $doubled := $nums ! (. * 2) return $doubled => sum()';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(result).toBe(12); // 2+4+6
@@ -258,9 +263,9 @@ describe('XPath 3.0 Integration Tests', () => {
             const result = expr.evaluate(sampleContext);
             expect(Array.isArray(result)).toBe(true);
             if (Array.isArray(result)) {
-                expect(result[0]).toBeCloseTo(2, 5);      // sqrt(4) = 2
-                expect(result[1]).toBeCloseTo(2.828, 2);  // sqrt(8) ≈ 2.83
-                expect(result[4]).toBeCloseTo(4.472, 2);  // sqrt(20) ≈ 4.47
+                expect(result[0]).toBeCloseTo(2, 5); // sqrt(4) = 2
+                expect(result[1]).toBeCloseTo(2.828, 2); // sqrt(8) ≈ 2.83
+                expect(result[4]).toBeCloseTo(4.472, 2); // sqrt(20) ≈ 4.47
             }
         });
     });
@@ -282,7 +287,8 @@ describe('XPath 3.0 Integration Tests', () => {
         });
 
         test('sort with string concatenation in result', () => {
-            const xpath = 'let $items := ("charlie", "alice", "bob"), $sorted := sort($items) return $sorted ! ("Item: " || .)';
+            const xpath =
+                'let $items := ("charlie", "alice", "bob"), $sorted := sort($items) return $sorted ! ("Item: " || .)';
             const expr = parseExpression(xpath);
             const result = expr.evaluate(sampleContext);
             expect(Array.isArray(result)).toBe(true);

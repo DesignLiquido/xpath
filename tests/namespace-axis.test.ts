@@ -57,7 +57,7 @@ describe('Namespace axis (feature-flagged)', () => {
         const context: XPathContext = { node: element, position: 1, size: 1 };
         const result = ast.evaluate(context) as any[];
 
-        const prefixes = result.map(n => n.localName || n.nodeName);
+        const prefixes = result.map((n) => n.localName || n.nodeName);
         expect(prefixes).toEqual(expect.arrayContaining(['foo', 'xml']));
     });
 

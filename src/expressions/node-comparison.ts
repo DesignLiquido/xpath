@@ -33,213 +33,217 @@ export type NodeComparisonOperator = 'is' | '<<' | '>>';
  *   $a >> $b → true if $a comes after $b in document
  */
 export class NodeComparisonExpression extends XPathExpression {
-  constructor(
-    private left: XPathExpression,
-    private operator: NodeComparisonOperator,
-    private right: XPathExpression
-  ) {
-    super();
-  }
-
-  evaluate(context: XPathContext): boolean {
-    // Evaluate both operands
-    const leftValue = this.left.evaluate(context);
-    const rightValue = this.right.evaluate(context);
-
-    // Extract single nodes from sequences
-    const leftNode = this.extractNode(leftValue);
-    const rightNode = this.extractNode(rightValue);
-
-    // Both must be nodes
-    if (!this.isNode(leftNode) || !this.isNode(rightNode)) {
-      throw new Error('Node comparison requires node operands');
+    constructor(
+        private left: XPathExpression,
+        private operator: NodeComparisonOperator,
+        private right: XPathExpression
+    ) {
+        super();
     }
 
-    // Perform comparison based on operator
-    switch (this.operator) {
-      case 'is':
-        return this.isIdentical(leftNode, rightNode);
-      case '<<':
-        return this.isDocumentOrderBefore(leftNode, rightNode);
-      case '>>':
-        return this.isDocumentOrderAfter(leftNode, rightNode);
-      default:
-        throw new Error(`Unknown node comparison operator: ${this.operator}`);
-    }
-  }
+    evaluate(context: XPathContext): boolean {
+        // Evaluate both operands
+        const leftValue = this.left.evaluate(context);
+        const rightValue = this.right.evaluate(context);
 
-  /**
-   * Extract single node from a value
-   */
-  private extractNode(value: any): any {
-    if (value === undefined || value === null) {
-      return undefined;
+        // Extract single nodes from sequences
+        const leftNode = this.extractNode(leftValue);
+        const rightNode = this.extractNode(rightValue);
+
+        // Both must be nodes
+        if (!this.isNode(leftNode) || !this.isNode(rightNode)) {
+            throw new Error('Node comparison requires node operands');
+        }
+
+        // Perform comparison based on operator
+        switch (this.operator) {
+            case 'is':
+                return this.isIdentical(leftNode, rightNode);
+            case '<<':
+                return this.isDocumentOrderBefore(leftNode, rightNode);
+            case '>>':
+                return this.isDocumentOrderAfter(leftNode, rightNode);
+            default:
+                throw new Error(`Unknown node comparison operator: ${this.operator}`);
+        }
     }
 
-    // Single node
-    if (this.isNode(value)) {
-      return value;
-    }
+    /**
+     * Extract single node from a value
+     */
+    private extractNode(value: any): any {
+        if (value === undefined || value === null) {
+            return undefined;
+        }
 
-    // Array of nodes
-    if (Array.isArray(value)) {
-      if (value.length === 0) {
+        // Single node
+        if (this.isNode(value)) {
+            return value;
+        }
+
+        // Array of nodes
+        if (Array.isArray(value)) {
+            if (value.length === 0) {
+                return undefined;
+            }
+            if (value.length === 1) {
+                return value[0];
+            }
+            // Multiple nodes - use first
+            return value[0];
+        }
+
         return undefined;
-      }
-      if (value.length === 1) {
-        return value[0];
-      }
-      // Multiple nodes - use first
-      return value[0];
     }
 
-    return undefined;
-  }
+    /**
+     * Check if two nodes are identical (same object)
+     */
+    private isIdentical(left: any, right: any): boolean {
+        // If both have __id, use that
+        if (left.__id !== undefined && right.__id !== undefined) {
+            return left.__id === right.__id;
+        }
 
-  /**
-   * Check if two nodes are identical (same object)
-   */
-  private isIdentical(left: any, right: any): boolean {
-    // If both have __id, use that
-    if (left.__id !== undefined && right.__id !== undefined) {
-      return left.__id === right.__id;
+        // Otherwise use object identity
+        return left === right;
     }
 
-    // Otherwise use object identity
-    return left === right;
-  }
+    /**
+     * Check if left node comes before right node in document order
+     */
+    private isDocumentOrderBefore(left: any, right: any): boolean {
+        // Try to determine document order
+        const leftPos = this.getDocumentPosition(left);
+        const rightPos = this.getDocumentPosition(right);
 
-  /**
-   * Check if left node comes before right node in document order
-   */
-  private isDocumentOrderBefore(left: any, right: any): boolean {
-    // Try to determine document order
-    const leftPos = this.getDocumentPosition(left);
-    const rightPos = this.getDocumentPosition(right);
+        if (leftPos !== -1 && rightPos !== -1) {
+            return leftPos < rightPos;
+        }
 
-    if (leftPos !== -1 && rightPos !== -1) {
-      return leftPos < rightPos;
+        // Fallback: use depth-first traversal comparison
+        return this.compareDocumentOrder(left, right) < 0;
     }
 
-    // Fallback: use depth-first traversal comparison
-    return this.compareDocumentOrder(left, right) < 0;
-  }
+    /**
+     * Check if left node comes after right node in document order
+     */
+    private isDocumentOrderAfter(left: any, right: any): boolean {
+        // Try to determine document order
+        const leftPos = this.getDocumentPosition(left);
+        const rightPos = this.getDocumentPosition(right);
 
-  /**
-   * Check if left node comes after right node in document order
-   */
-  private isDocumentOrderAfter(left: any, right: any): boolean {
-    // Try to determine document order
-    const leftPos = this.getDocumentPosition(left);
-    const rightPos = this.getDocumentPosition(right);
+        if (leftPos !== -1 && rightPos !== -1) {
+            return leftPos > rightPos;
+        }
 
-    if (leftPos !== -1 && rightPos !== -1) {
-      return leftPos > rightPos;
+        // Fallback: use depth-first traversal comparison
+        return this.compareDocumentOrder(left, right) > 0;
     }
 
-    // Fallback: use depth-first traversal comparison
-    return this.compareDocumentOrder(left, right) > 0;
-  }
-
-  /**
-   * Get document position if available (optional optimization)
-   */
-  private getDocumentPosition(node: any): number {
-    if (node.__documentPosition !== undefined) {
-      return node.__documentPosition;
-    }
-    return -1; // Not available
-  }
-
-  /**
-   * Compare nodes by walking up to ancestors and comparing positions
-   * Returns: -1 if left before right, 0 if same, 1 if left after right
-   */
-  private compareDocumentOrder(left: any, right: any): number {
-    // If same node, they're not in document order relative to each other
-    if (left === right) {
-      return 0;
+    /**
+     * Get document position if available (optional optimization)
+     */
+    private getDocumentPosition(node: any): number {
+        if (node.__documentPosition !== undefined) {
+            return node.__documentPosition;
+        }
+        return -1; // Not available
     }
 
-    // Get ancestors for both nodes
-    const leftAncestors = this.getAncestors(left);
-    const rightAncestors = this.getAncestors(right);
+    /**
+     * Compare nodes by walking up to ancestors and comparing positions
+     * Returns: -1 if left before right, 0 if same, 1 if left after right
+     */
+    private compareDocumentOrder(left: any, right: any): number {
+        // If same node, they're not in document order relative to each other
+        if (left === right) {
+            return 0;
+        }
 
-    // Find common ancestor
-    let i = 0;
-    while (i < leftAncestors.length && i < rightAncestors.length && leftAncestors[i] === rightAncestors[i]) {
-      i++;
+        // Get ancestors for both nodes
+        const leftAncestors = this.getAncestors(left);
+        const rightAncestors = this.getAncestors(right);
+
+        // Find common ancestor
+        let i = 0;
+        while (
+            i < leftAncestors.length &&
+            i < rightAncestors.length &&
+            leftAncestors[i] === rightAncestors[i]
+        ) {
+            i++;
+        }
+
+        // If one is ancestor of the other
+        if (i === leftAncestors.length) {
+            // left is ancestor of right (comes before)
+            return -1;
+        }
+        if (i === rightAncestors.length) {
+            // right is ancestor of left (left comes after)
+            return 1;
+        }
+
+        // Compare children of common ancestor
+        const leftChild = leftAncestors[i];
+        const rightChild = rightAncestors[i];
+
+        const leftPosition = this.getChildPosition(leftChild);
+        const rightPosition = this.getChildPosition(rightChild);
+
+        if (leftPosition < rightPosition) {
+            return -1;
+        } else if (leftPosition > rightPosition) {
+            return 1;
+        }
+
+        return 0;
     }
 
-    // If one is ancestor of the other
-    if (i === leftAncestors.length) {
-      // left is ancestor of right (comes before)
-      return -1;
-    }
-    if (i === rightAncestors.length) {
-      // right is ancestor of left (left comes after)
-      return 1;
-    }
+    /**
+     * Get ancestors of a node (from root to node)
+     */
+    private getAncestors(node: any): any[] {
+        const ancestors: any[] = [node];
+        let current = node;
 
-    // Compare children of common ancestor
-    const leftChild = leftAncestors[i];
-    const rightChild = rightAncestors[i];
+        while (current && current.parentNode) {
+            current = current.parentNode;
+            ancestors.unshift(current);
+        }
 
-    const leftPosition = this.getChildPosition(leftChild);
-    const rightPosition = this.getChildPosition(rightChild);
-
-    if (leftPosition < rightPosition) {
-      return -1;
-    } else if (leftPosition > rightPosition) {
-      return 1;
+        return ancestors;
     }
 
-    return 0;
-  }
+    /**
+     * Get position of a node among its siblings
+     */
+    private getChildPosition(node: any): number {
+        if (!node.parentNode) {
+            return 0;
+        }
 
-  /**
-   * Get ancestors of a node (from root to node)
-   */
-  private getAncestors(node: any): any[] {
-    const ancestors: any[] = [node];
-    let current = node;
+        const parent = node.parentNode;
+        const children = parent.childNodes || [];
 
-    while (current && current.parentNode) {
-      current = current.parentNode;
-      ancestors.unshift(current);
+        for (let i = 0; i < children.length; i++) {
+            if (children[i] === node) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
-    return ancestors;
-  }
-
-  /**
-   * Get position of a node among its siblings
-   */
-  private getChildPosition(node: any): number {
-    if (!node.parentNode) {
-      return 0;
+    /**
+     * Check if value is a node
+     */
+    private isNode(value: any): boolean {
+        return value && typeof value === 'object' && ('nodeType' in value || 'nodeName' in value);
     }
 
-    const parent = node.parentNode;
-    const children = parent.childNodes || [];
-
-    for (let i = 0; i < children.length; i++) {
-      if (children[i] === node) {
-        return i;
-      }
+    toString(): string {
+        return `${this.left.toString()} ${this.operator} ${this.right.toString()}`;
     }
-
-    return -1;
-  }
-
-  /**
-   * Check if value is a node
-   */
-  private isNode(value: any): boolean {
-    return value && typeof value === 'object' && ('nodeType' in value || 'nodeName' in value);
-  }
-
-  toString(): string {
-    return `${this.left.toString()} ${this.operator} ${this.right.toString()}`;
-  }
 }

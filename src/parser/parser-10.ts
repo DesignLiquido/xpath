@@ -1,5 +1,5 @@
-import { XPathBaseParserOptions } from "../xslt-extensions";
-import { XPathBaseParser } from "./base-parser";
+import { XPathBaseParserOptions } from '../xslt-extensions';
+import { XPathBaseParser } from './base-parser';
 
 export class XPath10Parser extends XPathBaseParser {
     constructor(options?: XPathBaseParserOptions) {

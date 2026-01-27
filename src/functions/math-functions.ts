@@ -1,9 +1,9 @@
 /**
  * XPath 3.0 Math Functions
- * 
+ *
  * Implements functions from the math namespace:
  * http://www.w3.org/2005/xpath-functions/math
- * 
+ *
  * Reference: https://www.w3.org/TR/xpath-functions-30/#math-functions
  */
 

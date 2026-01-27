@@ -358,7 +358,7 @@ describe('Parser', () => {
         });
 
         it('should parse substring-before() function', () => {
-            const ast = parse("substring-before($str, $c)");
+            const ast = parse('substring-before($str, $c)');
             expect(ast).toBeInstanceOf(XPathFunctionCall);
             expect((ast as XPathFunctionCall).name).toBe('substring-before');
         });
@@ -746,7 +746,9 @@ describe('Parser', () => {
         });
 
         it("should parse concat(substring-before(@image,'marker'),'icon',substring-after(@image,'marker'))", () => {
-            const ast = parse("concat(substring-before(@image,'marker'),'icon',substring-after(@image,'marker'))");
+            const ast = parse(
+                "concat(substring-before(@image,'marker'),'icon',substring-after(@image,'marker'))"
+            );
             expect(ast).toBeInstanceOf(XPathFunctionCall);
         });
 
@@ -792,22 +794,22 @@ describe('Parser', () => {
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse segment/@time", () => {
+        it('should parse segment/@time', () => {
             const ast = parse('segments/@time');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse info/distance", () => {
+        it('should parse info/distance', () => {
             const ast = parse('info/distance');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse info/distance and info/phone and $near-point", () => {
+        it('should parse info/distance and info/phone and $near-point', () => {
             const ast = parse('info/distance and info/phone and $near-point');
             expect(ast).toBeInstanceOf(XPathLogicalExpression);
         });
 
-        it("should parse info/distance or info/phone", () => {
+        it('should parse info/distance or info/phone', () => {
             const ast = parse('info/distance or info/phone');
             expect(ast).toBeInstanceOf(XPathLogicalExpression);
         });
@@ -817,32 +819,34 @@ describe('Parser', () => {
             expect(ast).toBeInstanceOf(XPathFunctionCall);
         });
 
-        it("should parse reviews/@positive div (reviews/@positive + reviews/@negative) * (5)", () => {
-            const ast = parse('reviews/@positive div (reviews/@positive + reviews/@negative) * (5)');
+        it('should parse reviews/@positive div (reviews/@positive + reviews/@negative) * (5)', () => {
+            const ast = parse(
+                'reviews/@positive div (reviews/@positive + reviews/@negative) * (5)'
+            );
             expect(ast).toBeInstanceOf(XPathArithmeticExpression);
         });
 
-        it("should parse @meters > 16093", () => {
+        it('should parse @meters > 16093', () => {
             const ast = parse('@meters > 16093');
             expect(ast).toBeInstanceOf(XPathBinaryExpression);
         });
 
-        it("should parse position() != last()", () => {
+        it('should parse position() != last()', () => {
             const ast = parse('position() != last()');
             expect(ast).toBeInstanceOf(XPathBinaryExpression);
         });
 
-        it("should parse position() != 1", () => {
+        it('should parse position() != 1', () => {
             const ast = parse('position() != 1');
             expect(ast).toBeInstanceOf(XPathBinaryExpression);
         });
 
-        it("should parse not(../@page)", () => {
+        it('should parse not(../@page)', () => {
             const ast = parse('not(../@page)');
             expect(ast).toBeInstanceOf(XPathFunctionCall);
         });
 
-        it("should parse not(structured/source)", () => {
+        it('should parse not(structured/source)', () => {
             const ast = parse('not(structured/source)');
             expect(ast).toBeInstanceOf(XPathFunctionCall);
         });
@@ -852,62 +856,62 @@ describe('Parser', () => {
             expect(ast).toBeInstanceOf(XPathBinaryExpression);
         });
 
-        it("should parse structured/@total - $details", () => {
+        it('should parse structured/@total - $details', () => {
             const ast = parse('structured/@total - $details');
             expect(ast).toBeInstanceOf(XPathArithmeticExpression);
         });
 
-        it("should parse page/ads", () => {
+        it('should parse page/ads', () => {
             const ast = parse('page/ads');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse $address=string(/page/user/defaultlocation)", () => {
+        it('should parse $address=string(/page/user/defaultlocation)', () => {
             const ast = parse('$address=string(/page/user/defaultlocation)');
             expect(ast).toBeInstanceOf(XPathBinaryExpression);
         });
 
-        it("should parse substring($address, 1, $linewidth - 3)", () => {
+        it('should parse substring($address, 1, $linewidth - 3)', () => {
             const ast = parse('substring($address, 1, $linewidth - 3)');
             expect(ast).toBeInstanceOf(XPathFunctionCall);
         });
 
-        it("should parse matches function", () => {
+        it('should parse matches function', () => {
             const ast = parse("matches('ajaxslt', 'xsl')");
             expect(ast).toBeInstanceOf(XPathFunctionCall);
         });
 
-        it("should parse following::element", () => {
+        it('should parse following::element', () => {
             const ast = parse('following::element');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse preceding::element", () => {
+        it('should parse preceding::element', () => {
             const ast = parse('preceding::element');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse child::chapter/descendant::para", () => {
+        it('should parse child::chapter/descendant::para', () => {
             const ast = parse('child::chapter/descendant::para');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse child::*/child::para", () => {
+        it('should parse child::*/child::para', () => {
             const ast = parse('child::*/child::para');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse self::para", () => {
+        it('should parse self::para', () => {
             const ast = parse('self::para');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse /descendant::olist/child::item", () => {
+        it('should parse /descendant::olist/child::item', () => {
             const ast = parse('/descendant::olist/child::item');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });
 
-        it("should parse /descendant::figure[position()=42]", () => {
+        it('should parse /descendant::figure[position()=42]', () => {
             const ast = parse('/descendant::figure[position()=42]');
             expect(ast).toBeInstanceOf(XPathLocationPath);
         });

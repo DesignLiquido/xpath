@@ -19,10 +19,10 @@ import { getAtomicType } from './index';
  * Lower types promote to higher types in numeric operations
  */
 export enum NumericTypeHierarchy {
-  INTEGER = 0,
-  DECIMAL = 1,
-  FLOAT = 2,
-  DOUBLE = 3
+    INTEGER = 0,
+    DECIMAL = 1,
+    FLOAT = 2,
+    DOUBLE = 3,
 }
 
 /**
@@ -30,40 +30,40 @@ export enum NumericTypeHierarchy {
  * Returns -1 if the type is not in the numeric hierarchy
  */
 export function getNumericHierarchyLevel(type: AtomicType): NumericTypeHierarchy | -1 {
-  const name = type.name;
+    const name = type.name;
 
-  // All integer-derived types are at INTEGER level
-  if (
-    name === 'integer' ||
-    name === 'long' ||
-    name === 'int' ||
-    name === 'short' ||
-    name === 'byte' ||
-    name === 'nonPositiveInteger' ||
-    name === 'negativeInteger' ||
-    name === 'nonNegativeInteger' ||
-    name === 'positiveInteger' ||
-    name === 'unsignedLong' ||
-    name === 'unsignedInt' ||
-    name === 'unsignedShort' ||
-    name === 'unsignedByte'
-  ) {
-    return NumericTypeHierarchy.INTEGER;
-  }
+    // All integer-derived types are at INTEGER level
+    if (
+        name === 'integer' ||
+        name === 'long' ||
+        name === 'int' ||
+        name === 'short' ||
+        name === 'byte' ||
+        name === 'nonPositiveInteger' ||
+        name === 'negativeInteger' ||
+        name === 'nonNegativeInteger' ||
+        name === 'positiveInteger' ||
+        name === 'unsignedLong' ||
+        name === 'unsignedInt' ||
+        name === 'unsignedShort' ||
+        name === 'unsignedByte'
+    ) {
+        return NumericTypeHierarchy.INTEGER;
+    }
 
-  if (name === 'decimal') {
-    return NumericTypeHierarchy.DECIMAL;
-  }
+    if (name === 'decimal') {
+        return NumericTypeHierarchy.DECIMAL;
+    }
 
-  if (name === 'float') {
-    return NumericTypeHierarchy.FLOAT;
-  }
+    if (name === 'float') {
+        return NumericTypeHierarchy.FLOAT;
+    }
 
-  if (name === 'double') {
-    return NumericTypeHierarchy.DOUBLE;
-  }
+    if (name === 'double') {
+        return NumericTypeHierarchy.DOUBLE;
+    }
 
-  return -1;
+    return -1;
 }
 
 /**
@@ -75,15 +75,15 @@ export function getNumericHierarchyLevel(type: AtomicType): NumericTypeHierarchy
  * @returns true if fromType can be promoted to toType
  */
 export function canPromoteNumeric(fromType: AtomicType, toType: AtomicType): boolean {
-  const fromLevel = getNumericHierarchyLevel(fromType);
-  const toLevel = getNumericHierarchyLevel(toType);
+    const fromLevel = getNumericHierarchyLevel(fromType);
+    const toLevel = getNumericHierarchyLevel(toType);
 
-  if (fromLevel === -1 || toLevel === -1) {
-    return false;
-  }
+    if (fromLevel === -1 || toLevel === -1) {
+        return false;
+    }
 
-  // Can always promote to the same level or higher
-  return fromLevel <= toLevel;
+    // Can always promote to the same level or higher
+    return fromLevel <= toLevel;
 }
 
 /**
@@ -96,36 +96,28 @@ export function canPromoteNumeric(fromType: AtomicType, toType: AtomicType): boo
  * @returns The promoted value (or the original value if types match)
  * @throws Error if promotion is not allowed
  */
-export function promoteNumericValue(
-  value: any,
-  fromType: string,
-  toType: string
-): any {
-  // If same type, no promotion needed
-  if (fromType === toType) {
+export function promoteNumericValue(value: any, fromType: string, toType: string): any {
+    // If same type, no promotion needed
+    if (fromType === toType) {
+        return value;
+    }
+
+    // Get the actual type objects
+    const sourceType = getAtomicType(fromType);
+    const targetType = getAtomicType(toType);
+
+    if (!sourceType || !targetType) {
+        throw new Error(`Cannot promote unknown types: ${fromType} to ${toType}`);
+    }
+
+    // Check if promotion is allowed
+    if (!canPromoteNumeric(sourceType, targetType)) {
+        throw new Error(`Cannot promote numeric type ${fromType} to ${toType}`);
+    }
+
+    // Numeric values are already in JavaScript number format
+    // The value itself doesn't change, just the semantic type interpretation
     return value;
-  }
-
-  // Get the actual type objects
-  const sourceType = getAtomicType(fromType);
-  const targetType = getAtomicType(toType);
-
-  if (!sourceType || !targetType) {
-    throw new Error(
-      `Cannot promote unknown types: ${fromType} to ${toType}`
-    );
-  }
-
-  // Check if promotion is allowed
-  if (!canPromoteNumeric(sourceType, targetType)) {
-    throw new Error(
-      `Cannot promote numeric type ${fromType} to ${toType}`
-    );
-  }
-
-  // Numeric values are already in JavaScript number format
-  // The value itself doesn't change, just the semantic type interpretation
-  return value;
 }
 
 /**
@@ -136,25 +128,22 @@ export function promoteNumericValue(
  * @param type2 - Second type
  * @returns The common type, or undefined if not both numeric
  */
-export function getCommonNumericType(
-  type1: AtomicType,
-  type2: AtomicType
-): AtomicType | undefined {
-  const level1 = getNumericHierarchyLevel(type1);
-  const level2 = getNumericHierarchyLevel(type2);
+export function getCommonNumericType(type1: AtomicType, type2: AtomicType): AtomicType | undefined {
+    const level1 = getNumericHierarchyLevel(type1);
+    const level2 = getNumericHierarchyLevel(type2);
 
-  if (level1 === -1 || level2 === -1) {
-    return undefined;
-  }
+    if (level1 === -1 || level2 === -1) {
+        return undefined;
+    }
 
-  if (level1 > level2) {
-    return type1;
-  } else if (level2 > level1) {
-    return type2;
-  } else {
-    // Same level
-    return type1;
-  }
+    if (level1 > level2) {
+        return type1;
+    } else if (level2 > level1) {
+        return type2;
+    } else {
+        // Same level
+        return type1;
+    }
 }
 
 /**
@@ -162,7 +151,7 @@ export function getCommonNumericType(
  * According to XPath 2.0, anyURI can be promoted to string
  */
 export function canPromoteToString(type: AtomicType): boolean {
-  return type.name === 'anyURI' || type.name === 'untypedAtomic';
+    return type.name === 'anyURI' || type.name === 'untypedAtomic';
 }
 
 /**
@@ -175,15 +164,15 @@ export function canPromoteToString(type: AtomicType): boolean {
  * @throws Error if promotion is not allowed
  */
 export function promoteToString(value: any, fromType: string): string {
-  if (!['anyURI', 'untypedAtomic', 'string'].includes(fromType)) {
-    throw new Error(`Cannot promote type ${fromType} to string`);
-  }
+    if (!['anyURI', 'untypedAtomic', 'string'].includes(fromType)) {
+        throw new Error(`Cannot promote type ${fromType} to string`);
+    }
 
-  if (typeof value === 'string') {
-    return value;
-  }
+    if (typeof value === 'string') {
+        return value;
+    }
 
-  return String(value);
+    return String(value);
 }
 
 /**
@@ -196,17 +185,17 @@ export function promoteToString(value: any, fromType: string): string {
  * @throws Error if the value cannot be converted to the target type
  */
 export function promoteUntypedToNumeric(value: string, targetType: string): number {
-  if (!['integer', 'decimal', 'float', 'double'].includes(targetType)) {
-    throw new Error(`Cannot promote untypedAtomic to non-numeric type ${targetType}`);
-  }
+    if (!['integer', 'decimal', 'float', 'double'].includes(targetType)) {
+        throw new Error(`Cannot promote untypedAtomic to non-numeric type ${targetType}`);
+    }
 
-  const num = parseFloat(value);
+    const num = parseFloat(value);
 
-  if (isNaN(num)) {
-    throw new Error(`Cannot convert "${value}" to numeric type ${targetType}`);
-  }
+    if (isNaN(num)) {
+        throw new Error(`Cannot convert "${value}" to numeric type ${targetType}`);
+    }
 
-  return num;
+    return num;
 }
 
 /**
@@ -214,25 +203,25 @@ export function promoteUntypedToNumeric(value: string, targetType: string): numb
  * Different contexts apply different promotion rules
  */
 export enum PromotionContext {
-  /**
-   * Arithmetic context: untypedAtomic → double, numeric types promoted
-   */
-  ARITHMETIC = 'arithmetic',
+    /**
+     * Arithmetic context: untypedAtomic → double, numeric types promoted
+     */
+    ARITHMETIC = 'arithmetic',
 
-  /**
-   * Comparison context: untypedAtomic → string or double depending on comparison
-   */
-  COMPARISON = 'comparison',
+    /**
+     * Comparison context: untypedAtomic → string or double depending on comparison
+     */
+    COMPARISON = 'comparison',
 
-  /**
-   * String context: everything converts to string
-   */
-  STRING = 'string',
+    /**
+     * String context: everything converts to string
+     */
+    STRING = 'string',
 
-  /**
-   * Boolean context: Effective Boolean Value
-   */
-  BOOLEAN = 'boolean'
+    /**
+     * Boolean context: Effective Boolean Value
+     */
+    BOOLEAN = 'boolean',
 }
 
 /**
@@ -246,94 +235,90 @@ export enum PromotionContext {
  * @returns { value, type } - The promoted value and resulting type
  */
 export function promoteInContext(
-  value: any,
-  fromType: string,
-  context: PromotionContext,
-  targetType?: string
+    value: any,
+    fromType: string,
+    context: PromotionContext,
+    targetType?: string
 ): { value: any; type: string } {
-  if (fromType === 'untypedAtomic') {
-    switch (context) {
-      case PromotionContext.ARITHMETIC:
-        // Promote to double
-        return {
-          value: promoteUntypedToNumeric(value, 'double'),
-          type: 'double'
-        };
+    if (fromType === 'untypedAtomic') {
+        switch (context) {
+            case PromotionContext.ARITHMETIC:
+                // Promote to double
+                return {
+                    value: promoteUntypedToNumeric(value, 'double'),
+                    type: 'double',
+                };
 
-      case PromotionContext.STRING:
-        return {
-          value: promoteToString(value, fromType),
-          type: 'string'
-        };
+            case PromotionContext.STRING:
+                return {
+                    value: promoteToString(value, fromType),
+                    type: 'string',
+                };
 
-      case PromotionContext.COMPARISON:
-        if (targetType) {
-          const targetAtomicType = getAtomicType(targetType);
-          if (targetAtomicType && getNumericHierarchyLevel(targetAtomicType) !== -1) {
-            return {
-              value: promoteUntypedToNumeric(value, targetType),
-              type: targetType
-            };
-          }
+            case PromotionContext.COMPARISON:
+                if (targetType) {
+                    const targetAtomicType = getAtomicType(targetType);
+                    if (targetAtomicType && getNumericHierarchyLevel(targetAtomicType) !== -1) {
+                        return {
+                            value: promoteUntypedToNumeric(value, targetType),
+                            type: targetType,
+                        };
+                    }
+                }
+                return {
+                    value: promoteToString(value, fromType),
+                    type: 'string',
+                };
+
+            case PromotionContext.BOOLEAN:
+                // In boolean context, untyped atomic is treated as string
+                return {
+                    value: promoteToString(value, fromType),
+                    type: 'string',
+                };
+
+            default:
+                return { value, type: fromType };
         }
-        return {
-          value: promoteToString(value, fromType),
-          type: 'string'
-        };
-
-      case PromotionContext.BOOLEAN:
-        // In boolean context, untyped atomic is treated as string
-        return {
-          value: promoteToString(value, fromType),
-          type: 'string'
-        };
-
-      default:
-        return { value, type: fromType };
     }
-  }
 
-  if (fromType === 'anyURI' && context === PromotionContext.STRING) {
-    return {
-      value: promoteToString(value, fromType),
-      type: 'string'
-    };
-  }
+    if (fromType === 'anyURI' && context === PromotionContext.STRING) {
+        return {
+            value: promoteToString(value, fromType),
+            type: 'string',
+        };
+    }
 
-  return { value, type: fromType };
+    return { value, type: fromType };
 }
 
 /**
  * Get a human-readable description of type promotion rules
  */
 export function describePromotion(fromType: string, toType: string): string {
-  if (fromType === toType) {
-    return `No promotion needed (same type)`;
-  }
-
-  if (fromType === 'untypedAtomic') {
-    if (toType === 'double') {
-      return 'Promote untypedAtomic to double (numeric context)';
+    if (fromType === toType) {
+        return `No promotion needed (same type)`;
     }
-    if (toType === 'string') {
-      return 'Promote untypedAtomic to string (string context)';
+
+    if (fromType === 'untypedAtomic') {
+        if (toType === 'double') {
+            return 'Promote untypedAtomic to double (numeric context)';
+        }
+        if (toType === 'string') {
+            return 'Promote untypedAtomic to string (string context)';
+        }
     }
-  }
 
-  if (fromType === 'anyURI' && toType === 'string') {
-    return 'Promote anyURI to string';
-  }
+    if (fromType === 'anyURI' && toType === 'string') {
+        return 'Promote anyURI to string';
+    }
 
-  const fromAtomicType = getAtomicType(fromType);
-  const toAtomicType = getAtomicType(toType);
+    const fromAtomicType = getAtomicType(fromType);
+    const toAtomicType = getAtomicType(toType);
 
-  if (
-    fromAtomicType &&
-    toAtomicType &&
-    canPromoteNumeric(fromAtomicType, toAtomicType)
-  ) {
-    return `Promote numeric type ${fromType} to ${toType}`;
-  }
+    if (fromAtomicType && toAtomicType && canPromoteNumeric(fromAtomicType, toAtomicType)) {
+        return `Promote numeric type ${fromType} to ${toType}`;
+    }
 
-  return `Cannot promote ${fromType} to ${toType}`;
+    return `Cannot promote ${fromType} to ${toType}`;
 }

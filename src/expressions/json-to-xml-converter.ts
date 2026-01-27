@@ -9,22 +9,22 @@ export interface JsonToXmlOptions {
      * Allow non-strict JSON parsing. Default: false
      */
     liberal?: boolean;
-    
+
     /**
      * How to handle duplicate keys: 'reject', 'use-first', or 'retain'. Default: 'reject'
      */
     duplicates?: 'reject' | 'use-first' | 'retain';
-    
+
     /**
      * Whether to validate JSON schema. Default: false
      */
     validate?: boolean;
-    
+
     /**
      * Whether to handle escape sequences. Default: true
      */
     escape?: boolean;
-    
+
     /**
      * Custom fallback function for invalid JSON
      */
@@ -87,9 +87,9 @@ export class JsonToXmlConverter {
      */
     private createDocumentNode(value: any, options?: JsonToXmlOptions): XPathNode {
         this.elementId = 0; // Reset ID counter
-        
+
         const rootElement = this.valueToElement(value, 'root', options);
-        
+
         // Create document node wrapper
         const documentNode: XPathNode = {
             nodeType: NodeType.DOCUMENT_NODE,
@@ -98,7 +98,7 @@ export class JsonToXmlConverter {
             childNodes: [rootElement],
             documentElement: rootElement,
         };
-        
+
         // Store reference but avoid circular parent reference
         rootElement.ownerDocument = documentNode;
         return documentNode;
@@ -107,7 +107,12 @@ export class JsonToXmlConverter {
     /**
      * Convert a JSON value to an XML element
      */
-    private valueToElement(value: any, elementName: string, options?: JsonToXmlOptions, parent?: XPathNode): XPathNode {
+    private valueToElement(
+        value: any,
+        elementName: string,
+        options?: JsonToXmlOptions,
+        parent?: XPathNode
+    ): XPathNode {
         const element: XPathNode = {
             nodeType: NodeType.ELEMENT_NODE,
             nodeName: elementName,
@@ -142,7 +147,12 @@ export class JsonToXmlConverter {
                     seenKeys.add(key);
 
                     const sanitizedKey = this.sanitizeElementName(key);
-                    const childElement = this.valueToElement(value[key], sanitizedKey, options, element);
+                    const childElement = this.valueToElement(
+                        value[key],
+                        sanitizedKey,
+                        options,
+                        element
+                    );
                     childNodes.push(childElement);
                 }
             }
@@ -232,10 +242,10 @@ export class JsonToXmlConverter {
             // Try common lenient parsing approaches
             // Remove trailing commas
             let lenient = jsonText.replace(/,(\s*[}\]])/g, '$1');
-            
+
             // Allow single quotes
             lenient = lenient.replace(/'/g, '"');
-            
+
             // Try parsing with lenient version
             const value = JSON.parse(lenient);
             return this.createDocumentNode(value, options);

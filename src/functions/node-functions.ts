@@ -17,9 +17,12 @@ export function nodeName(arg: XPathResult, context: XPathContext): string | null
 
     // Only elements, attributes, and processing instructions have names
     const nodeType = node.nodeType;
-    if (nodeType !== 1 && // ELEMENT_NODE
+    if (
+        nodeType !== 1 && // ELEMENT_NODE
         nodeType !== 2 && // ATTRIBUTE_NODE
-        nodeType !== 7) { // PROCESSING_INSTRUCTION_NODE
+        nodeType !== 7
+    ) {
+        // PROCESSING_INSTRUCTION_NODE
         return null;
     }
 
@@ -39,7 +42,7 @@ export function nilled(arg: XPathResult, context: XPathContext): boolean | null 
     if (node.nodeType !== 1) return null; // ELEMENT_NODE
 
     // Check for xsi:nil attribute
-    const nilAttr = node.getAttribute?.('xsi:nil')
+    const nilAttr = node.getAttribute?.('xsi:nil');
 
     return nilAttr === 'true' || nilAttr === '1';
 }
@@ -206,9 +209,12 @@ export function localName(arg: XPathResult, context: XPathContext): string {
 
     // Only elements, attributes, and PIs have local names
     const nodeType = node.nodeType;
-    if (nodeType !== 1 && // ELEMENT_NODE
+    if (
+        nodeType !== 1 && // ELEMENT_NODE
         nodeType !== 2 && // ATTRIBUTE_NODE
-        nodeType !== 7) { // PROCESSING_INSTRUCTION_NODE
+        nodeType !== 7
+    ) {
+        // PROCESSING_INSTRUCTION_NODE
         return '';
     }
 
@@ -226,8 +232,11 @@ export function namespaceUri(arg: XPathResult, context: XPathContext): string {
 
     // Only elements and attributes have namespace URIs
     const nodeType = node.nodeType;
-    if (nodeType !== 1 && // ELEMENT_NODE
-        nodeType !== 2) { // ATTRIBUTE_NODE
+    if (
+        nodeType !== 1 && // ELEMENT_NODE
+        nodeType !== 2
+    ) {
+        // ATTRIBUTE_NODE
         return '';
     }
 
@@ -245,9 +254,12 @@ export function name(arg: XPathResult, context: XPathContext): string {
 
     // Only elements, attributes, and PIs have names
     const nodeType = node.nodeType;
-    if (nodeType !== 1 && // ELEMENT_NODE
+    if (
+        nodeType !== 1 && // ELEMENT_NODE
         nodeType !== 2 && // ATTRIBUTE_NODE
-        nodeType !== 7) { // PROCESSING_INSTRUCTION_NODE
+        nodeType !== 7
+    ) {
+        // PROCESSING_INSTRUCTION_NODE
         return '';
     }
 
@@ -276,9 +288,7 @@ function getNode(arg: XPathResult, context: XPathContext): XPathNode | null {
 }
 
 function isNode(value: unknown): value is XPathNode {
-    return typeof value === 'object' &&
-        value !== null &&
-        'nodeType' in value;
+    return typeof value === 'object' && value !== null && 'nodeType' in value;
 }
 
 function getStringValue(node: XPathNode): string {
@@ -287,8 +297,11 @@ function getStringValue(node: XPathNode): string {
     }
 
     // For element nodes, concatenate all text descendants
-    if (node.nodeType === 1 || // ELEMENT_NODE
-        node.nodeType === 9) { // DOCUMENT_NODE
+    if (
+        node.nodeType === 1 || // ELEMENT_NODE
+        node.nodeType === 9
+    ) {
+        // DOCUMENT_NODE
         return getDescendantTextContent(node);
     }
 
@@ -300,9 +313,11 @@ function getDescendantTextContent(node: XPathNode): string {
 
     if ('childNodes' in node && Array.isArray(node.childNodes)) {
         for (const child of node.childNodes) {
-            if (child.nodeType === 3) { // TEXT_NODE
+            if (child.nodeType === 3) {
+                // TEXT_NODE
                 parts.push(child.textContent ?? '');
-            } else if (child.nodeType === 1) { // ELEMENT_NODE
+            } else if (child.nodeType === 1) {
+                // ELEMENT_NODE
                 parts.push(getDescendantTextContent(child as XPathNode));
             }
         }

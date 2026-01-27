@@ -68,9 +68,10 @@ export class XPathBinaryExpression extends XPathExpression {
     private compareNodeSetToValue(nodeSet: any[], value: any, operator: string): boolean {
         // Compare each node in the set to the value
         for (const node of nodeSet) {
-            const nodeValue = typeof value === 'number'
-                ? Number(this.getStringValue(node))
-                : this.getStringValue(node);
+            const nodeValue =
+                typeof value === 'number'
+                    ? Number(this.getStringValue(node))
+                    : this.getStringValue(node);
             if (this.comparePrimitives(nodeValue, value, operator)) {
                 return true;
             }
@@ -81,9 +82,10 @@ export class XPathBinaryExpression extends XPathExpression {
     private compareValueToNodeSet(value: any, nodeSet: any[], operator: string): boolean {
         // Compare value to each node in the set
         for (const node of nodeSet) {
-            const nodeValue = typeof value === 'number'
-                ? Number(this.getStringValue(node))
-                : this.getStringValue(node);
+            const nodeValue =
+                typeof value === 'number'
+                    ? Number(this.getStringValue(node))
+                    : this.getStringValue(node);
             if (this.comparePrimitives(value, nodeValue, operator)) {
                 return true;
             }

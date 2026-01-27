@@ -197,7 +197,7 @@ describe('Predicate Expression Evaluation', () => {
             const child1 = createNode('item');
             const child2 = createNode('item');
             const child3 = createNode('item');
-            
+
             root.childNodes = [child1, child2, child3];
             child1.parentNode = root;
             child2.parentNode = root;
@@ -205,7 +205,7 @@ describe('Predicate Expression Evaluation', () => {
 
             // Predicate: position() > 1
             const predicate = new XPathPredicate(parser.parse(lexer.scan('position() > 1')));
-            
+
             // Test position 2
             const context2: XPathContext = { node: child2, position: 2, size: 3 };
             const result2 = predicate.test(context2);
@@ -222,7 +222,7 @@ describe('Predicate Expression Evaluation', () => {
             const child1 = createNode('item');
             const child2 = createNode('item');
             const child3 = createNode('item');
-            
+
             root.childNodes = [child1, child2, child3];
             child1.parentNode = root;
             child2.parentNode = root;
@@ -230,7 +230,7 @@ describe('Predicate Expression Evaluation', () => {
 
             // Predicate: position() = last()
             const predicate = new XPathPredicate(parser.parse(lexer.scan('position() = last()')));
-            
+
             // Test position 3 with size 3
             const context3: XPathContext = { node: child3, position: 3, size: 3 };
             const result3 = predicate.test(context3);

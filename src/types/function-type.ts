@@ -99,7 +99,7 @@ export function createFunctionType(
  * Get a string representation of a function type.
  */
 export function describeFunctionType(type: FunctionType): string {
-    const params = type.parameterTypes.map(p => String(p)).join(', ');
+    const params = type.parameterTypes.map((p) => String(p)).join(', ');
     return `function(${params}) as ${type.returnType}`;
 }
 

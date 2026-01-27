@@ -1,4 +1,4 @@
-import { XPathNode } from "./node";
+import { XPathNode } from './node';
 
 /**
  * Type for custom XPath functions that can be registered in the context.
@@ -100,7 +100,7 @@ export interface XPathContext {
     /**
      * XPath specification version being used.
      * Default: '1.0'
-     * 
+     *
      * This affects:
      * - Function library available
      * - Type system behavior
@@ -201,14 +201,14 @@ export interface XPathFunctionItem {
  * XPath 2.0+: sequences (which subsume node-sets), atomic values, functions
  */
 export type XPathResult =
-    | XPathNode[]         // Node set (XPath 1.0) or sequence of nodes (XPath 2.0+)
-    | string              // String
-    | number              // Number
-    | boolean             // Boolean
-    | any[]               // Sequence (XPath 2.0+)
-    | Map<any, any>       // Map (XPath 3.0+)
-    | null                // Empty sequence (XPath 2.0+)
-    | XPathFunctionItem;  // Function item (XPath 3.0+)
+    | XPathNode[] // Node set (XPath 1.0) or sequence of nodes (XPath 2.0+)
+    | string // String
+    | number // Number
+    | boolean // Boolean
+    | any[] // Sequence (XPath 2.0+)
+    | Map<any, any> // Map (XPath 3.0+)
+    | null // Empty sequence (XPath 2.0+)
+    | XPathFunctionItem; // Function item (XPath 3.0+)
 
 /**
  * Creates a new XPath context with the given node as the context node.

@@ -24,7 +24,9 @@ describe('Union Expression Evaluation', () => {
             localName: nodeName,
             textContent: '',
             parentNode: null,
-            getChildNodes() { return this.childNodes; }
+            getChildNodes() {
+                return this.childNodes;
+            },
         };
     }
 
@@ -81,7 +83,7 @@ describe('Union Expression Evaluation', () => {
             const elem1 = createNode('elem1');
             const elem2 = createNode('elem2');
             const elem3 = createNode('elem3');
-            
+
             elem1.parentNode = root;
             elem2.parentNode = root;
             elem3.parentNode = root;
@@ -98,7 +100,7 @@ describe('Union Expression Evaluation', () => {
             const root = createNode('root');
             const item1 = createNode('item');
             const item2 = createNode('item');
-            
+
             item1.parentNode = root;
             item2.parentNode = root;
             root.childNodes = [item1, item2];
@@ -116,7 +118,7 @@ describe('Union Expression Evaluation', () => {
             const root = createNode('root');
             const title1 = createNode('title');
             const title2 = createNode('title');
-            
+
             title1.parentNode = root;
             title2.parentNode = root;
             root.childNodes = [title1, title2];
@@ -132,7 +134,7 @@ describe('Union Expression Evaluation', () => {
             const root = createNode('root');
             const elem1 = createNode('elem1');
             const elem2 = createNode('elem2');
-            
+
             elem1.parentNode = root;
             elem2.parentNode = root;
             root.childNodes = [elem1, elem2];
@@ -235,7 +237,7 @@ describe('Union Expression Evaluation', () => {
             const root = createNode('root');
             const elem1 = createNode('elem1');
             const elem2 = createNode('elem2');
-            
+
             elem1.parentNode = root;
             elem2.parentNode = root;
             root.childNodes = [elem1, elem2];

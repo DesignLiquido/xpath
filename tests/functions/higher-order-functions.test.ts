@@ -80,7 +80,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should sum numbers from left', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('fold-left((1, 2, 3, 4), 0, function($acc, $x) { $acc + $x })');
+            const tokens = lexer.scan(
+                'fold-left((1, 2, 3, 4), 0, function($acc, $x) { $acc + $x })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe(10);
@@ -89,7 +91,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should concatenate strings from left', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('fold-left(("a", "b", "c"), "", function($acc, $x) { $acc || $x })');
+            const tokens = lexer.scan(
+                'fold-left(("a", "b", "c"), "", function($acc, $x) { $acc || $x })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe('abc');
@@ -107,7 +111,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should build reverse sequence', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('fold-left((1, 2, 3), (), function($acc, $x) { ($x, $acc) })');
+            const tokens = lexer.scan(
+                'fold-left((1, 2, 3), (), function($acc, $x) { ($x, $acc) })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toEqual([3, 2, 1]);
@@ -118,7 +124,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should sum numbers from right', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('fold-right((1, 2, 3, 4), 0, function($x, $acc) { $acc + $x })');
+            const tokens = lexer.scan(
+                'fold-right((1, 2, 3, 4), 0, function($x, $acc) { $acc + $x })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe(10);
@@ -127,7 +135,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should concatenate strings from right', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('fold-right(("a", "b", "c"), "", function($x, $acc) { $acc || $x })');
+            const tokens = lexer.scan(
+                'fold-right(("a", "b", "c"), "", function($x, $acc) { $acc || $x })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toBe('cba');
@@ -147,7 +157,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should apply function to pairs of items', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('for-each-pair((1, 2, 3), (4, 5, 6), function($a, $b) { $a + $b })');
+            const tokens = lexer.scan(
+                'for-each-pair((1, 2, 3), (4, 5, 6), function($a, $b) { $a + $b })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toEqual([5, 7, 9]);
@@ -156,7 +168,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should stop at shorter sequence', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('for-each-pair((1, 2, 3, 4), (10, 20), function($a, $b) { $a + $b })');
+            const tokens = lexer.scan(
+                'for-each-pair((1, 2, 3, 4), (10, 20), function($a, $b) { $a + $b })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toEqual([11, 22]);
@@ -174,7 +188,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should concatenate strings pairwise', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('for-each-pair(("a", "b"), ("1", "2"), function($a, $b) { $a || $b })');
+            const tokens = lexer.scan(
+                'for-each-pair(("a", "b"), ("1", "2"), function($a, $b) { $a || $b })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toEqual(['a1', 'b2']);
@@ -302,7 +318,9 @@ describe('XPath 3.0 Higher-Order Functions', () => {
         it('should chain for-each with filter', () => {
             const lexer = new XPathLexer('3.0');
             const parser = new XPath30Parser();
-            const tokens = lexer.scan('for-each(filter((1, 2, 3, 4, 5), function($x) { $x > 2 }), function($x) { $x * 2 })');
+            const tokens = lexer.scan(
+                'for-each(filter((1, 2, 3, 4, 5), function($x) { $x > 2 }), function($x) { $x * 2 })'
+            );
             const expr = parser.parse(tokens);
             const result = expr.evaluate(mockContext);
             expect(result).toEqual([6, 8, 10]);

@@ -3,7 +3,10 @@ import { matchesSequenceType, SequenceType } from '../types';
 import { XPathExpression } from './expression';
 
 export class XPathInstanceOfExpression extends XPathExpression {
-    constructor(private readonly expression: XPathExpression, private readonly sequenceType: SequenceType) {
+    constructor(
+        private readonly expression: XPathExpression,
+        private readonly sequenceType: SequenceType
+    ) {
         super();
     }
 

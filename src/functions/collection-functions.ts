@@ -26,37 +26,37 @@ import { XPathDynamicError } from '../errors';
  * - Each node is returned only once (no duplicates)
  */
 export function collectionFn(context: XPathContext, uri?: string | null): XPathNode[] {
-  // Determine which collection URI to use
-  let collectionUri: string | undefined;
+    // Determine which collection URI to use
+    let collectionUri: string | undefined;
 
-  if (uri !== undefined && uri !== null) {
-    // Explicit URI provided
-    collectionUri = uri;
-  } else {
-    // Use default collection
-    collectionUri = context.defaultCollection;
-  }
+    if (uri !== undefined && uri !== null) {
+        // Explicit URI provided
+        collectionUri = uri;
+    } else {
+        // Use default collection
+        collectionUri = context.defaultCollection;
+    }
 
-  // If no collection URI determined, return empty sequence
-  if (!collectionUri) {
-    return [];
-  }
+    // If no collection URI determined, return empty sequence
+    if (!collectionUri) {
+        return [];
+    }
 
-  // Look up the collection
-  const collections = context.availableCollections;
-  if (!collections) {
-    return [];
-  }
+    // Look up the collection
+    const collections = context.availableCollections;
+    if (!collections) {
+        return [];
+    }
 
-  const collection = collections[collectionUri];
-  if (!collection) {
-    // Collection URI not found - return empty sequence (spec allows this)
-    // Some implementations might raise FODC0002 error, but XPath 2.0 allows empty return
-    return [];
-  }
+    const collection = collections[collectionUri];
+    if (!collection) {
+        // Collection URI not found - return empty sequence (spec allows this)
+        // Some implementations might raise FODC0002 error, but XPath 2.0 allows empty return
+        return [];
+    }
 
-  // Return the collection (array of nodes)
-  return Array.isArray(collection) ? collection : [];
+    // Return the collection (array of nodes)
+    return Array.isArray(collection) ? collection : [];
 }
 
 /**
@@ -74,20 +74,17 @@ export function collectionFn(context: XPathContext, uri?: string | null): XPathN
  * - Proper error handling (FODC0005 for unavailable documents)
  */
 export function docFn(context: XPathContext, uri: string): any {
-  if (!uri) {
-    throw new XPathDynamicError(
-      'FODC0005',
-      'fn:doc(): URI argument cannot be empty'
-    );
-  }
+    if (!uri) {
+        throw new XPathDynamicError('FODC0005', 'fn:doc(): URI argument cannot be empty');
+    }
 
-  const documents = context.availableDocuments;
-  if (!documents) {
-    return null;
-  }
+    const documents = context.availableDocuments;
+    if (!documents) {
+        return null;
+    }
 
-  const doc = documents[uri];
-  return doc || null;
+    const doc = documents[uri];
+    return doc || null;
 }
 
 /**
@@ -104,14 +101,14 @@ export function docFn(context: XPathContext, uri: string): any {
  * - Consistent behavior with fn:doc()
  */
 export function docAvailableFn(context: XPathContext, uri: string): boolean {
-  if (!uri) {
-    return false;
-  }
+    if (!uri) {
+        return false;
+    }
 
-  const documents = context.availableDocuments;
-  if (!documents) {
-    return false;
-  }
+    const documents = context.availableDocuments;
+    if (!documents) {
+        return false;
+    }
 
-  return uri in documents;
+    return uri in documents;
 }

@@ -348,10 +348,16 @@ export function toNodeSet(sequence: any): XPathNode[] {
 export function compare1_0(left: any, right: any, operator: string): boolean {
     // If either operand is a node-set (array), extract string values
     if (Array.isArray(left)) {
-        left = left.length > 0 && left[0] && (left[0] as any).nodeType ? getNodeStringValue(left[0]) : getFirstItem(left);
+        left =
+            left.length > 0 && left[0] && (left[0] as any).nodeType
+                ? getNodeStringValue(left[0])
+                : getFirstItem(left);
     }
     if (Array.isArray(right)) {
-        right = right.length > 0 && right[0] && (right[0] as any).nodeType ? getNodeStringValue(right[0]) : getFirstItem(right);
+        right =
+            right.length > 0 && right[0] && (right[0] as any).nodeType
+                ? getNodeStringValue(right[0])
+                : getFirstItem(right);
     }
 
     switch (operator) {

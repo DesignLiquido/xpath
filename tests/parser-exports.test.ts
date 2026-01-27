@@ -7,7 +7,7 @@ import {
     XPath10Parser,
     XPath20Parser,
     XPathParser,
-    createXPathParser
+    createXPathParser,
 } from '../src/parser';
 import { XPathLexer } from '../src/lexer';
 

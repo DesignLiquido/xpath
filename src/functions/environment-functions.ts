@@ -1,6 +1,6 @@
 /**
  * XPath 3.0 Environment Functions
- * 
+ *
  * Implements environment variable access functions:
  * https://www.w3.org/TR/xpath-functions-30/#environment
  */
@@ -13,13 +13,13 @@ import { XPathContext, XPathResult } from '../context';
  */
 export function environmentVariable(context: XPathContext, name: any): XPathResult {
     const varName = String(name);
-    
+
     // In Node.js, access process.env
     if (typeof process !== 'undefined' && process.env) {
         const value = process.env[varName];
         return value !== undefined ? value : null;
     }
-    
+
     // In browser environment, return null (no env vars available)
     return null;
 }
@@ -33,7 +33,7 @@ export function availableEnvironmentVariables(context: XPathContext): XPathResul
     if (typeof process !== 'undefined' && process.env) {
         return Object.keys(process.env);
     }
-    
+
     // In browser environment, return empty sequence
     return [];
 }

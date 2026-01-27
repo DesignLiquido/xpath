@@ -14,10 +14,10 @@
  * Reference: https://www.w3.org/TR/xpath-31/#id-map-constructors
  */
 
-import { XPathExpression } from "./expression";
-import { XPathContext } from "../context";
-import { atomize } from "../types/atomization";
-import { typeMismatch } from "../errors";
+import { XPathExpression } from './expression';
+import { XPathContext } from '../context';
+import { atomize } from '../types/atomization';
+import { typeMismatch } from '../errors';
 
 /**
  * Represents a single key-value pair entry in a map constructor.
@@ -61,15 +61,15 @@ export class XPathMapConstructorExpression implements XPathExpression {
 
             // Keys must be atomic values (single atomic value per entry)
             if (atomicKeys.error) {
-                throw typeMismatch("atomic value", "value with error", "map key");
+                throw typeMismatch('atomic value', 'value with error', 'map key');
             }
 
             if (atomicKeys.isEmpty || atomicKeys.values.length === 0) {
-                throw typeMismatch("atomic value", "empty sequence", "map key");
+                throw typeMismatch('atomic value', 'empty sequence', 'map key');
             }
 
             if (atomicKeys.values.length > 1) {
-                throw typeMismatch("single atomic value", "sequence", "map key");
+                throw typeMismatch('single atomic value', 'sequence', 'map key');
             }
 
             const key = atomicKeys.values[0];

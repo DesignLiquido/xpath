@@ -6,11 +6,21 @@ import { XPathContext } from '../../src/context';
 import { XPathCastableExpression, XPathExpression } from '../../src/expressions';
 import { XPathLexer } from '../../src/lexer';
 import { XPath20Parser } from '../../src/parser';
-import { ITEM_TYPE, OccurrenceIndicator, createAtomicSequenceType, createItemSequenceType, getAtomicType } from '../../src/types';
+import {
+    ITEM_TYPE,
+    OccurrenceIndicator,
+    createAtomicSequenceType,
+    createItemSequenceType,
+    getAtomicType,
+} from '../../src/types';
 
 class LiteralExpression extends XPathExpression {
-    constructor(private readonly value: any) { super(); }
-    evaluate(_ctx: XPathContext): any { return this.value; }
+    constructor(private readonly value: any) {
+        super();
+    }
+    evaluate(_ctx: XPathContext): any {
+        return this.value;
+    }
 }
 
 describe('XPath 2.0 Castable Expression (Phase 4.3)', () => {
@@ -64,7 +74,7 @@ describe('XPath 2.0 Castable Expression (Phase 4.3)', () => {
     it('parses castable with ? occurrence', () => {
         const lexer = new XPathLexer('2.0');
         const parser = new XPath20Parser();
-        const tokens = lexer.scan("() castable as xs:int?");
+        const tokens = lexer.scan('() castable as xs:int?');
         const ast = parser.parse(tokens);
         expect(ast.evaluate(ctx)).toBe(true);
     });

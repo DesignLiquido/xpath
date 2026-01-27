@@ -283,12 +283,16 @@ describe('XPath 3.1 Array Functions', () => {
 
     describe('array:fold-left', () => {
         it('should sum array elements', () => {
-            const result = evaluate('array:fold-left([1, 2, 3, 4], 0, function($acc, $x) { $acc + $x })');
+            const result = evaluate(
+                'array:fold-left([1, 2, 3, 4], 0, function($acc, $x) { $acc + $x })'
+            );
             expect(result).toBe(10);
         });
 
         it('should concatenate strings', () => {
-            const result = evaluate('array:fold-left(["a", "b", "c"], "", function($acc, $x) { $acc || $x })');
+            const result = evaluate(
+                'array:fold-left(["a", "b", "c"], "", function($acc, $x) { $acc || $x })'
+            );
             expect(result).toBe('abc');
         });
 
@@ -300,12 +304,16 @@ describe('XPath 3.1 Array Functions', () => {
 
     describe('array:fold-right', () => {
         it('should fold from right', () => {
-            const result = evaluate('array:fold-right([1, 2, 3, 4], 0, function($x, $acc) { $acc + $x })');
+            const result = evaluate(
+                'array:fold-right([1, 2, 3, 4], 0, function($x, $acc) { $acc + $x })'
+            );
             expect(result).toBe(10);
         });
 
         it('should concatenate strings in reverse order', () => {
-            const result = evaluate('array:fold-right(["a", "b", "c"], "", function($x, $acc) { $acc || $x })');
+            const result = evaluate(
+                'array:fold-right(["a", "b", "c"], "", function($x, $acc) { $acc || $x })'
+            );
             expect(result).toBe('cba');
         });
 

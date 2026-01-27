@@ -7,8 +7,8 @@
  * Reference: https://www.w3.org/TR/xpath-functions-31/#map-functions
  */
 
-import { XPathContext } from "../context";
-import { isXPathMap } from "../expressions/map-constructor-expression";
+import { XPathContext } from '../context';
+import { isXPathMap } from '../expressions/map-constructor-expression';
 
 function requireMap(value: any, funcName: string): any {
     // Unwrap single-item sequences (e.g., from . expression)
@@ -18,7 +18,9 @@ function requireMap(value: any, funcName: string): any {
         } else if (value.length === 0) {
             throw new Error(`XPTY0004: ${funcName} requires a map, got empty sequence`);
         } else {
-            throw new Error(`XPTY0004: ${funcName} requires a single map, got sequence of ${value.length} items`);
+            throw new Error(
+                `XPTY0004: ${funcName} requires a single map, got sequence of ${value.length} items`
+            );
         }
     }
 
@@ -37,12 +39,12 @@ function cloneMap(map: any): any {
 
 export function mapSize(context: XPathContext, map: any): number {
     const m = requireMap(map, 'map:size');
-    return Object.keys(m).filter(k => !k.startsWith('__')).length;
+    return Object.keys(m).filter((k) => !k.startsWith('__')).length;
 }
 
 export function mapKeys(context: XPathContext, map: any): string[] {
     const m = requireMap(map, 'map:keys');
-    return Object.keys(m).filter(k => !k.startsWith('__'));
+    return Object.keys(m).filter((k) => !k.startsWith('__'));
 }
 
 export function mapContains(context: XPathContext, map: any, key: any): boolean {
@@ -123,7 +125,7 @@ export function mapRemove(context: XPathContext, map: any, keys: any | any[]): a
     const m = requireMap(map, 'map:remove');
     const keyList = Array.isArray(keys) ? keys : [keys];
 
-    const toRemove = new Set(keyList.map(k => String(k)));
+    const toRemove = new Set(keyList.map((k) => String(k)));
 
     const result = cloneMap(m);
     // Iterate over array of keys for compatibility with TS downlevel iteration

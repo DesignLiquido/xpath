@@ -15,14 +15,15 @@ describe('XPath 3.1 Lookup Operator', () => {
         return map;
     };
 
-    const createContext = (variables: Record<string, any> = {}, contextItem?: any): XPathContext => ({
-        node: undefined,
-        position: 1,
-        size: 1,
-        variables,
-        functions: {},
-        ...(contextItem !== undefined && { contextItem })
-    } as any);
+    const createContext = (variables: Record<string, any> = {}, contextItem?: any): XPathContext =>
+        ({
+            node: undefined,
+            position: 1,
+            size: 1,
+            variables,
+            functions: {},
+            ...(contextItem !== undefined && { contextItem }),
+        }) as any;
 
     const parseExpression = (xpath: string) => {
         const lexer = new XPathLexer('3.1');
@@ -157,7 +158,11 @@ describe('XPath 3.1 Lookup Operator', () => {
         });
 
         test('should flatten nested arrays with wildcard', () => {
-            const array = createXPathArray([1, createXPathArray([2, 3]), createXPathArray([4, createXPathArray([5, 6])])]);
+            const array = createXPathArray([
+                1,
+                createXPathArray([2, 3]),
+                createXPathArray([4, createXPathArray([5, 6])]),
+            ]);
             const context = createContext({ testArray: array });
 
             const result = parseExpression('$testArray?*').evaluate(context);
@@ -222,7 +227,7 @@ describe('XPath 3.1 Lookup Operator', () => {
         test('should chain map lookups', () => {
             const nestedMap = createXPathMap({
                 user: createXPathMap({ name: 'Bob', age: 25 }),
-                settings: createXPathMap({ theme: 'dark' })
+                settings: createXPathMap({ theme: 'dark' }),
             });
             const context = createContext({ data: nestedMap });
 
@@ -233,7 +238,7 @@ describe('XPath 3.1 Lookup Operator', () => {
         test('should chain array and map lookups', () => {
             const arrayOfMaps = createXPathArray([
                 createXPathMap({ id: 1, value: 'A' }),
-                createXPathMap({ id: 2, value: 'B' })
+                createXPathMap({ id: 2, value: 'B' }),
             ]);
             const context = createContext({ items: arrayOfMaps });
 
@@ -259,7 +264,10 @@ describe('XPath 3.1 Lookup Operator', () => {
             // by creating a malformed lookup expression
             expect(() => {
                 // This should be caught during parsing, but if it gets through:
-                const invalidLookup = new XPathLookupExpression(null, { type: 'INVALID' as any, value: undefined });
+                const invalidLookup = new XPathLookupExpression(null, {
+                    type: 'INVALID' as any,
+                    value: undefined,
+                });
                 invalidLookup.evaluate(context);
             }).toThrow();
         });

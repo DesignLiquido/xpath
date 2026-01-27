@@ -270,7 +270,11 @@ export function oneOrMore(arg: XPathResult): XPathResult[] {
 export function exactlyOne(arg: XPathResult): XPathResult {
     const seq = toSequence(arg);
     if (seq.length !== 1) {
-        throw typeMismatch('exactly one item', seq.length === 0 ? 'empty sequence' : `sequence of ${seq.length} items`, 'fn:exactly-one');
+        throw typeMismatch(
+            'exactly one item',
+            seq.length === 0 ? 'empty sequence' : `sequence of ${seq.length} items`,
+            'fn:exactly-one'
+        );
     }
     return seq[0];
 }
@@ -362,14 +366,12 @@ function atomize(value: XPathResult): string | number | boolean {
  */
 function itemsDeepEqual(item1: XPathResult, item2: XPathResult): boolean {
     // Both null/undefined
-    if ((item1 === null || item1 === undefined) &&
-        (item2 === null || item2 === undefined)) {
+    if ((item1 === null || item1 === undefined) && (item2 === null || item2 === undefined)) {
         return true;
     }
 
     // One null, other not
-    if (item1 === null || item1 === undefined ||
-        item2 === null || item2 === undefined) {
+    if (item1 === null || item1 === undefined || item2 === null || item2 === undefined) {
         return false;
     }
 
@@ -401,8 +403,18 @@ function isNode(value: XPathResult): boolean {
  * Deep equality comparison for nodes.
  */
 function nodesDeepEqual(node1: XPathResult, node2: XPathResult): boolean {
-    const n1 = node1 as { nodeType?: number; nodeName?: string; textContent?: string; childNodes?: any[] };
-    const n2 = node2 as { nodeType?: number; nodeName?: string; textContent?: string; childNodes?: any[] };
+    const n1 = node1 as {
+        nodeType?: number;
+        nodeName?: string;
+        textContent?: string;
+        childNodes?: any[];
+    };
+    const n2 = node2 as {
+        nodeType?: number;
+        nodeName?: string;
+        textContent?: string;
+        childNodes?: any[];
+    };
 
     // Different node types
     if (n1.nodeType !== n2.nodeType) return false;
@@ -411,7 +423,8 @@ function nodesDeepEqual(node1: XPathResult, node2: XPathResult): boolean {
     if (n1.nodeName !== n2.nodeName) return false;
 
     // For text, comment, etc.: compare text content
-    if (n1.nodeType === 3 || n1.nodeType === 8) { // Text or Comment
+    if (n1.nodeType === 3 || n1.nodeType === 8) {
+        // Text or Comment
         return n1.textContent === n2.textContent;
     }
 

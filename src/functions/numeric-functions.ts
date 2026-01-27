@@ -106,7 +106,7 @@ export function min(arg: XPathResult, collation?: XPathResult): number | string 
     if (values.length === 0) return null;
 
     // Determine comparison mode: numeric if all items can be converted to numbers
-    const allNumeric = values.every(v => !isNaN(toNumber(v)));
+    const allNumeric = values.every((v) => !isNaN(toNumber(v)));
 
     if (allNumeric) {
         let minVal = Infinity;
@@ -142,7 +142,7 @@ export function max(arg: XPathResult, collation?: XPathResult): number | string 
     if (values.length === 0) return null;
 
     // Determine comparison mode: numeric if all items can be converted to numbers
-    const allNumeric = values.every(v => !isNaN(toNumber(v)));
+    const allNumeric = values.every((v) => !isNaN(toNumber(v)));
 
     if (allNumeric) {
         let maxVal = -Infinity;

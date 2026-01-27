@@ -26,14 +26,16 @@ describe('XPath 3.1 Array Constructors', () => {
         it('should recognize array as reserved word in 3.1', () => {
             const lexer = new XPathLexer('3.1');
             const tokens = lexer.scan('array { }');
-            expect(tokens.some(t => t.type === 'RESERVED_WORD' && t.lexeme === 'array')).toBe(true);
+            expect(tokens.some((t) => t.type === 'RESERVED_WORD' && t.lexeme === 'array')).toBe(
+                true
+            );
         });
 
         it('should recognize square brackets in 3.1', () => {
             const lexer = new XPathLexer('3.1');
             const tokens = lexer.scan('[1, 2, 3]');
-            expect(tokens.some(t => t.type === 'OPEN_SQUARE_BRACKET')).toBe(true);
-            expect(tokens.some(t => t.type === 'CLOSE_SQUARE_BRACKET')).toBe(true);
+            expect(tokens.some((t) => t.type === 'OPEN_SQUARE_BRACKET')).toBe(true);
+            expect(tokens.some((t) => t.type === 'CLOSE_SQUARE_BRACKET')).toBe(true);
         });
     });
 

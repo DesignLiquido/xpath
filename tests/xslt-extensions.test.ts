@@ -1,11 +1,11 @@
 import { XPathLexer } from '../src/lexer';
 import { XPath10Parser } from '../src/parser';
-import { 
-    XSLTExtensions, 
+import {
+    XSLTExtensions,
     XSLTFunctionMetadata,
     getExtensionFunctionNames,
     validateExtensions,
-    createEmptyExtensions
+    createEmptyExtensions,
 } from '../src/xslt-extensions';
 import { XPathContext } from '../src/context';
 
@@ -25,15 +25,15 @@ describe('XSLT Extensions', () => {
                         name: 'generate-id',
                         minArgs: 0,
                         maxArgs: 1,
-                        implementation: (context) => 'id-123'
+                        implementation: (context) => 'id-123',
                     },
                     {
                         name: 'system-property',
                         minArgs: 1,
                         maxArgs: 1,
-                        implementation: (context, name) => '1.0'
-                    }
-                ]
+                        implementation: (context, name) => '1.0',
+                    },
+                ],
             };
 
             const names = getExtensionFunctionNames(extensions);
@@ -48,9 +48,9 @@ describe('XSLT Extensions', () => {
                         name: 'test-func',
                         minArgs: 0,
                         maxArgs: 2,
-                        implementation: (context) => 'result'
-                    }
-                ]
+                        implementation: (context) => 'result',
+                    },
+                ],
             };
 
             const errors = validateExtensions(extensions);
@@ -64,14 +64,14 @@ describe('XSLT Extensions', () => {
                     {
                         name: 'duplicate',
                         minArgs: 0,
-                        implementation: (context) => 'first'
+                        implementation: (context) => 'first',
                     },
                     {
                         name: 'duplicate',
                         minArgs: 0,
-                        implementation: (context) => 'second'
-                    }
-                ]
+                        implementation: (context) => 'second',
+                    },
+                ],
             };
 
             const errors = validateExtensions(extensions);
@@ -85,9 +85,9 @@ describe('XSLT Extensions', () => {
                     {
                         name: 'bad-func',
                         minArgs: -1,
-                        implementation: (context) => 'result'
-                    }
-                ]
+                        implementation: (context) => 'result',
+                    },
+                ],
             };
 
             const errors = validateExtensions(extensions);
@@ -102,9 +102,9 @@ describe('XSLT Extensions', () => {
                         name: 'bad-func',
                         minArgs: 3,
                         maxArgs: 1,
-                        implementation: (context) => 'result'
-                    }
-                ]
+                        implementation: (context) => 'result',
+                    },
+                ],
             };
 
             const errors = validateExtensions(extensions);
@@ -116,7 +116,7 @@ describe('XSLT Extensions', () => {
         it('should accept extensions in parser options', () => {
             const extensions: XSLTExtensions = {
                 version: '1.0',
-                functions: []
+                functions: [],
             };
 
             expect(() => new XPath10Parser({ extensions })).not.toThrow();
@@ -129,18 +129,19 @@ describe('XSLT Extensions', () => {
                     {
                         name: 'dup',
                         minArgs: 0,
-                        implementation: (context) => 'one'
+                        implementation: (context) => 'one',
                     },
                     {
                         name: 'dup',
                         minArgs: 0,
-                        implementation: (context) => 'two'
-                    }
-                ]
+                        implementation: (context) => 'two',
+                    },
+                ],
             };
 
-            expect(() => new XPath10Parser({ extensions }))
-                .toThrow('Invalid XSLT extensions: Duplicate function name: dup');
+            expect(() => new XPath10Parser({ extensions })).toThrow(
+                'Invalid XSLT extensions: Duplicate function name: dup'
+            );
         });
     });
 
@@ -182,9 +183,9 @@ describe('XSLT Extensions', () => {
                         minArgs: 0,
                         maxArgs: 1,
                         implementation: generateIdImpl,
-                        description: 'Generate unique identifier for a node'
-                    }
-                ]
+                        description: 'Generate unique identifier for a node',
+                    },
+                ],
             };
 
             // Create parser with extensions
@@ -202,7 +203,7 @@ describe('XSLT Extensions', () => {
             const mockNode = {
                 nodeName: 'book',
                 nodeType: 1,
-                textContent: 'Test Book'
+                textContent: 'Test Book',
             };
 
             const context: XPathContext = {
@@ -210,8 +211,8 @@ describe('XSLT Extensions', () => {
                 position: 1,
                 size: 1,
                 functions: {
-                    'generate-id': generateIdImpl
-                }
+                    'generate-id': generateIdImpl,
+                },
             };
 
             // Evaluate
@@ -225,7 +226,7 @@ describe('XSLT Extensions', () => {
                 const properties: Record<string, string> = {
                     'xsl:version': '1.0',
                     'xsl:vendor': 'Design Liquido XPath',
-                    'xsl:vendor-url': 'https://github.com/designliquido/xpath'
+                    'xsl:vendor-url': 'https://github.com/designliquido/xpath',
                 };
                 return properties[String(propertyName)] || '';
             };
@@ -239,9 +240,9 @@ describe('XSLT Extensions', () => {
                         minArgs: 1,
                         maxArgs: 1,
                         implementation: systemPropertyImpl,
-                        description: 'Query XSLT processor properties'
-                    }
-                ]
+                        description: 'Query XSLT processor properties',
+                    },
+                ],
             };
 
             // Create parser and lexer
@@ -258,8 +259,8 @@ describe('XSLT Extensions', () => {
                 position: 1,
                 size: 1,
                 functions: {
-                    'system-property': systemPropertyImpl
-                }
+                    'system-property': systemPropertyImpl,
+                },
             };
 
             // Evaluate

@@ -30,7 +30,9 @@ describe('XPath Static Context', () => {
         expect(ctx.functionSignatures['custom-fn'].namespace).toBe(DEFAULT_FUNCTION_NAMESPACE);
 
         expect(isReservedFunctionName(RESERVED_FUNCTION_NAMES[0], ctx)).toBe(true);
-        expect(() => registerFunctionSignature(ctx, { name: RESERVED_FUNCTION_NAMES[0], minArgs: 0 })).toThrow('reserved');
+        expect(() =>
+            registerFunctionSignature(ctx, { name: RESERVED_FUNCTION_NAMES[0], minArgs: 0 })
+        ).toThrow('reserved');
     });
 
     it('validates collations and function signatures', () => {
@@ -44,7 +46,7 @@ describe('XPath Static Context', () => {
 
         expect(ctx.collations).toContain(ctx.defaultCollation);
         const errors = validateStaticContext(ctx);
-        expect(errors.some(e => e.includes('maxArgs'))).toBe(true);
+        expect(errors.some((e) => e.includes('maxArgs'))).toBe(true);
     });
 
     it('tracks variable and context item types', () => {

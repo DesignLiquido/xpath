@@ -6,8 +6,12 @@ import { OccurrenceIndicator, createAtomicSequenceType, getAtomicType } from '..
 import { XPathExpression } from '../../src/expressions/expression';
 
 class LiteralExpression extends XPathExpression {
-    constructor(private readonly value: any) { super(); }
-    evaluate(_ctx: XPathContext): any { return this.value; }
+    constructor(private readonly value: any) {
+        super();
+    }
+    evaluate(_ctx: XPathContext): any {
+        return this.value;
+    }
 }
 
 describe('XPath 2.0 Treat Expression (Phase 4.4)', () => {

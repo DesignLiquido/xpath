@@ -1,4 +1,4 @@
-import { TokenType as XPathTokenType } from "./token-type";
+import { TokenType as XPathTokenType } from './token-type';
 
 export class XPathToken {
     type: XPathTokenType;

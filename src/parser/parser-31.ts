@@ -11,16 +11,23 @@
  * Reference: https://www.w3.org/TR/xpath-31/
  */
 
-import { XPathExpression } from "../expressions";
-import { XPathMapConstructorExpression, MapConstructorEntry } from "../expressions/map-constructor-expression";
+import { XPathExpression } from '../expressions';
+import {
+    XPathMapConstructorExpression,
+    MapConstructorEntry,
+} from '../expressions/map-constructor-expression';
 import {
     XPathSquareBracketArrayConstructor,
-    XPathCurlyBraceArrayConstructor
-} from "../expressions/array-constructor-expression";
-import { XPathLookupExpression, KeySpecifier, KeySpecifierType } from "../expressions/lookup-expression";
-import { XPathVariableReference } from "../expressions";
-import { XPathBaseParserOptions } from "../xslt-extensions";
-import { XPath30Parser } from "./parser-30";
+    XPathCurlyBraceArrayConstructor,
+} from '../expressions/array-constructor-expression';
+import {
+    XPathLookupExpression,
+    KeySpecifier,
+    KeySpecifierType,
+} from '../expressions/lookup-expression';
+import { XPathVariableReference } from '../expressions';
+import { XPathBaseParserOptions } from '../xslt-extensions';
+import { XPath30Parser } from './parser-30';
 
 export class XPath31Parser extends XPath30Parser {
     constructor(options?: XPathBaseParserOptions) {
@@ -42,23 +49,31 @@ export class XPath31Parser extends XPath30Parser {
     protected parsePrimaryExpr(): XPathExpression {
         // Map constructor: map { key: value, ... } (XPath 3.1)
         // Note: map:* function calls (e.g., map:size) are handled by parent class
-        if (this.check('RESERVED_WORD') && this.peek().lexeme === 'map' &&
-            this.peekNext()?.type === 'OPEN_CURLY_BRACKET') {
+        if (
+            this.check('RESERVED_WORD') &&
+            this.peek().lexeme === 'map' &&
+            this.peekNext()?.type === 'OPEN_CURLY_BRACKET'
+        ) {
             return this.parseMapConstructor();
         }
 
         // Array constructor: array { expr } (XPath 3.1)
         // Note: array:* function calls (e.g., array:size) are handled by parent class
-        if (this.check('RESERVED_WORD') && this.peek().lexeme === 'array' &&
-            this.peekNext()?.type === 'OPEN_CURLY_BRACKET') {
+        if (
+            this.check('RESERVED_WORD') &&
+            this.peek().lexeme === 'array' &&
+            this.peekNext()?.type === 'OPEN_CURLY_BRACKET'
+        ) {
             return this.parseCurlyArrayConstructor();
         }
 
         // Handle map:* and array:* function calls (e.g., map:size, array:size)
         // These look like reserved words followed by colon and function name
-        if (this.check('RESERVED_WORD') &&
+        if (
+            this.check('RESERVED_WORD') &&
             (this.peek().lexeme === 'map' || this.peek().lexeme === 'array') &&
-            this.peekNext()?.type === 'COLON') {
+            this.peekNext()?.type === 'COLON'
+        ) {
             return this.parseNamespacedFunctionCall();
         }
 
@@ -123,7 +138,7 @@ export class XPath31Parser extends XPath30Parser {
      * Parse a map constructor expression (XPath 3.1).
      * Syntax: map { key1: value1, key2: value2, ... }
      * Syntax: map { } (empty map)
-     * 
+     *
      * Each entry is: ExprSingle : ExprSingle
      */
     private parseMapConstructor(): XPathExpression {
@@ -216,7 +231,7 @@ export class XPath31Parser extends XPath30Parser {
             // Return an array with an empty sequence expression
             return new XPathCurlyBraceArrayConstructor({
                 evaluate: () => [],
-                toString: () => '()'
+                toString: () => '()',
             } as XPathExpression);
         }
 
@@ -267,7 +282,13 @@ export class XPath31Parser extends XPath30Parser {
             const numToken = this.advance();
             const position = parseInt(numToken.lexeme, 10);
             keySpecifier = { type: KeySpecifierType.INTEGER_LITERAL, value: position };
-        } else if (this.peek()?.type === 'IDENTIFIER' || this.peek()?.type === 'FUNCTION' || this.peek()?.type === 'OPERATOR' || this.peek()?.type === 'LOCATION' || this.peek()?.type === 'NODE_TYPE') {
+        } else if (
+            this.peek()?.type === 'IDENTIFIER' ||
+            this.peek()?.type === 'FUNCTION' ||
+            this.peek()?.type === 'OPERATOR' ||
+            this.peek()?.type === 'LOCATION' ||
+            this.peek()?.type === 'NODE_TYPE'
+        ) {
             // NCName: ?key
             const name = this.advance().lexeme;
             keySpecifier = { type: KeySpecifierType.NCNAME, value: name };

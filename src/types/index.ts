@@ -10,109 +10,120 @@ export { AtomicTypeImpl } from './base';
 
 // Re-export SequenceType system
 export {
-  SequenceType,
-  OccurrenceIndicator,
-  ItemType,
-  KindTest,
-  ITEM_TYPE,
-  createEmptySequenceType,
-  createItemSequenceType,
-  createAtomicSequenceType
+    SequenceType,
+    OccurrenceIndicator,
+    ItemType,
+    KindTest,
+    ITEM_TYPE,
+    createEmptySequenceType,
+    createItemSequenceType,
+    createAtomicSequenceType,
 } from './sequence-type';
 
 // Re-export KindTest implementations
 export {
-  NodeKindTest,
-  ElementTest,
-  AttributeTest,
-  DocumentNodeTest,
-  TextTest,
-  CommentTest,
-  ProcessingInstructionTest,
-  SchemaElementTest,
-  SchemaAttributeTest,
-  KIND_TESTS,
-  createElement,
-  createAttribute,
-  createDocumentNode,
-  createProcessingInstruction,
-  createSchemaElement,
-  createSchemaAttribute
+    NodeKindTest,
+    ElementTest,
+    AttributeTest,
+    DocumentNodeTest,
+    TextTest,
+    CommentTest,
+    ProcessingInstructionTest,
+    SchemaElementTest,
+    SchemaAttributeTest,
+    KIND_TESTS,
+    createElement,
+    createAttribute,
+    createDocumentNode,
+    createProcessingInstruction,
+    createSchemaElement,
+    createSchemaAttribute,
 } from './kind-tests';
 
 // Re-export SequenceType matching functions
 export {
-  matchesSequenceType,
-  matchesItemType,
-  matches,
-  findMismatch,
-  countMatches,
-  atomicTypeSatisfies,
-  describeSequenceType,
-  isSingleItem,
-  isValidSequence,
-  toSequence,
-  itemTypesEquivalent,
-  sequenceTypesEquivalent,
-  MatchResult
+    matchesSequenceType,
+    matchesItemType,
+    matches,
+    findMismatch,
+    countMatches,
+    atomicTypeSatisfies,
+    describeSequenceType,
+    isSingleItem,
+    isValidSequence,
+    toSequence,
+    itemTypesEquivalent,
+    sequenceTypesEquivalent,
+    MatchResult,
 } from './sequence-type-matcher';
 
 // Re-export Type Promotion system
 export {
-  NumericTypeHierarchy,
-  getNumericHierarchyLevel,
-  canPromoteNumeric,
-  promoteNumericValue,
-  getCommonNumericType,
-  canPromoteToString,
-  promoteToString,
-  promoteUntypedToNumeric,
-  PromotionContext,
-  promoteInContext,
-  describePromotion
+    NumericTypeHierarchy,
+    getNumericHierarchyLevel,
+    canPromoteNumeric,
+    promoteNumericValue,
+    getCommonNumericType,
+    canPromoteToString,
+    promoteToString,
+    promoteUntypedToNumeric,
+    PromotionContext,
+    promoteInContext,
+    describePromotion,
 } from './type-promotion';
 
 // Re-export Atomization system
 export {
-  atomize,
-  atomizeToSingleValue,
-  extractStringValues,
-  atomizationToSequence,
-  isAtomizationSuccess,
-  getAtomizationErrorDescription,
-  isNode,
-  hasElementOnlyContent,
-  getNodeTypedValue,
-  getNodeStringValue,
-  createTestNode,
-  createElementWithText,
-  createElementWithChildren,
-  AtomizationResult,
-  XPathNode
+    atomize,
+    atomizeToSingleValue,
+    extractStringValues,
+    atomizationToSequence,
+    isAtomizationSuccess,
+    getAtomizationErrorDescription,
+    isNode,
+    hasElementOnlyContent,
+    getNodeTypedValue,
+    getNodeStringValue,
+    createTestNode,
+    createElementWithText,
+    createElementWithChildren,
+    AtomizationResult,
+    XPathNode,
 } from './atomization';
 
 // Re-export all type implementations
-export { AnyAtomicTypeImpl, UntypedAtomicImpl, StringTypeImpl, BooleanTypeImpl } from './simple-types';
+export {
+    AnyAtomicTypeImpl,
+    UntypedAtomicImpl,
+    StringTypeImpl,
+    BooleanTypeImpl,
+} from './simple-types';
 export { DecimalTypeImpl, FloatTypeImpl, DoubleTypeImpl, IntegerTypeImpl } from './numeric-types';
 export { DurationTypeImpl, DateTimeTypeImpl, DateTypeImpl, TimeTypeImpl } from './datetime-types';
 export { parseDuration, parseTime } from './datetime-types';
-export { GYearMonthTypeImpl, GYearTypeImpl, GMonthDayTypeImpl, GDayTypeImpl, GMonthTypeImpl } from './gregorian-types';
+export {
+    GYearMonthTypeImpl,
+    GYearTypeImpl,
+    GMonthDayTypeImpl,
+    GDayTypeImpl,
+    GMonthTypeImpl,
+} from './gregorian-types';
 export { HexBinaryTypeImpl, Base64BinaryTypeImpl } from './binary-types';
 export { AnyURITypeImpl, QNameTypeImpl } from './uri-qname-types';
 export { IntegerDerivedTypeImpl } from './integer-derived-types';
 
 // XPath 3.0 Function Type System
 export {
-  FunctionType,
-  FunctionItem,
-  createFunctionItem,
-  isFunctionItem,
-  createFunctionType,
-  describeFunctionType,
-  FN_NAMESPACE,
-  MATH_NAMESPACE,
-  MAP_NAMESPACE,
-  ARRAY_NAMESPACE,
+    FunctionType,
+    FunctionItem,
+    createFunctionItem,
+    isFunctionItem,
+    createFunctionType,
+    describeFunctionType,
+    FN_NAMESPACE,
+    MATH_NAMESPACE,
+    MAP_NAMESPACE,
+    ARRAY_NAMESPACE,
 } from './function-type';
 
 // Import all type implementations
@@ -175,94 +186,150 @@ const integerType = new IntegerTypeImpl(decimalType, decimalType);
 
 // Integer-derived types with ranges
 // Note: JavaScript numbers are 64-bit floats, so we use safe integer bounds
-const longType = new IntegerDerivedTypeImpl('long', integerType, decimalType, -9223372036854775808, 9223372036854775807);
+const longType = new IntegerDerivedTypeImpl(
+    'long',
+    integerType,
+    decimalType,
+    -9223372036854775808,
+    9223372036854775807
+);
 const intType = new IntegerDerivedTypeImpl('int', longType, decimalType, -2147483648, 2147483647);
 const shortType = new IntegerDerivedTypeImpl('short', intType, decimalType, -32768, 32767);
 const byteType = new IntegerDerivedTypeImpl('byte', shortType, decimalType, -128, 127);
 
-const nonPositiveIntegerType = new IntegerDerivedTypeImpl('nonPositiveInteger', integerType, decimalType, undefined, 0);
-const negativeIntegerType = new IntegerDerivedTypeImpl('negativeInteger', nonPositiveIntegerType, decimalType, undefined, -1);
+const nonPositiveIntegerType = new IntegerDerivedTypeImpl(
+    'nonPositiveInteger',
+    integerType,
+    decimalType,
+    undefined,
+    0
+);
+const negativeIntegerType = new IntegerDerivedTypeImpl(
+    'negativeInteger',
+    nonPositiveIntegerType,
+    decimalType,
+    undefined,
+    -1
+);
 
-const nonNegativeIntegerType = new IntegerDerivedTypeImpl('nonNegativeInteger', integerType, decimalType, 0, undefined);
-const positiveIntegerType = new IntegerDerivedTypeImpl('positiveInteger', nonNegativeIntegerType, decimalType, 1, undefined);
+const nonNegativeIntegerType = new IntegerDerivedTypeImpl(
+    'nonNegativeInteger',
+    integerType,
+    decimalType,
+    0,
+    undefined
+);
+const positiveIntegerType = new IntegerDerivedTypeImpl(
+    'positiveInteger',
+    nonNegativeIntegerType,
+    decimalType,
+    1,
+    undefined
+);
 
-const unsignedLongType = new IntegerDerivedTypeImpl('unsignedLong', nonNegativeIntegerType, decimalType, 0, 18446744073709551615);
-const unsignedIntType = new IntegerDerivedTypeImpl('unsignedInt', unsignedLongType, decimalType, 0, 4294967295);
-const unsignedShortType = new IntegerDerivedTypeImpl('unsignedShort', unsignedIntType, decimalType, 0, 65535);
-const unsignedByteType = new IntegerDerivedTypeImpl('unsignedByte', unsignedShortType, decimalType, 0, 255);
+const unsignedLongType = new IntegerDerivedTypeImpl(
+    'unsignedLong',
+    nonNegativeIntegerType,
+    decimalType,
+    0,
+    18446744073709551615
+);
+const unsignedIntType = new IntegerDerivedTypeImpl(
+    'unsignedInt',
+    unsignedLongType,
+    decimalType,
+    0,
+    4294967295
+);
+const unsignedShortType = new IntegerDerivedTypeImpl(
+    'unsignedShort',
+    unsignedIntType,
+    decimalType,
+    0,
+    65535
+);
+const unsignedByteType = new IntegerDerivedTypeImpl(
+    'unsignedByte',
+    unsignedShortType,
+    decimalType,
+    0,
+    255
+);
 
 /**
  * Built-in atomic types registry
  */
 export const ATOMIC_TYPES: Record<string, AtomicType> = {
-  'anyAtomicType': anyAtomicType,
-  'untypedAtomic': untypedAtomic,
-  'string': stringType,
-  'boolean': booleanType,
-  'decimal': decimalType,
-  'float': floatType,
-  'double': doubleType,
-  'integer': integerType,
-  'duration': durationType,
-  'dateTime': dateTimeType,
-  'date': dateType,
-  'time': timeType,
-  'anyURI': anyURIType,
-  'QName': qnameType,
-  // Gregorian types
-  'gYearMonth': gYearMonthType,
-  'gYear': gYearType,
-  'gMonthDay': gMonthDayType,
-  'gDay': gDayType,
-  'gMonth': gMonthType,
-  // Binary types
-  'hexBinary': hexBinaryType,
-  'base64Binary': base64BinaryType,
-  // Integer-derived types
-  'long': longType,
-  'int': intType,
-  'short': shortType,
-  'byte': byteType,
-  'nonPositiveInteger': nonPositiveIntegerType,
-  'negativeInteger': negativeIntegerType,
-  'nonNegativeInteger': nonNegativeIntegerType,
-  'positiveInteger': positiveIntegerType,
-  'unsignedLong': unsignedLongType,
-  'unsignedInt': unsignedIntType,
-  'unsignedShort': unsignedShortType,
-  'unsignedByte': unsignedByteType,
+    anyAtomicType: anyAtomicType,
+    untypedAtomic: untypedAtomic,
+    string: stringType,
+    boolean: booleanType,
+    decimal: decimalType,
+    float: floatType,
+    double: doubleType,
+    integer: integerType,
+    duration: durationType,
+    dateTime: dateTimeType,
+    date: dateType,
+    time: timeType,
+    anyURI: anyURIType,
+    QName: qnameType,
+    // Gregorian types
+    gYearMonth: gYearMonthType,
+    gYear: gYearType,
+    gMonthDay: gMonthDayType,
+    gDay: gDayType,
+    gMonth: gMonthType,
+    // Binary types
+    hexBinary: hexBinaryType,
+    base64Binary: base64BinaryType,
+    // Integer-derived types
+    long: longType,
+    int: intType,
+    short: shortType,
+    byte: byteType,
+    nonPositiveInteger: nonPositiveIntegerType,
+    negativeInteger: negativeIntegerType,
+    nonNegativeInteger: nonNegativeIntegerType,
+    positiveInteger: positiveIntegerType,
+    unsignedLong: unsignedLongType,
+    unsignedInt: unsignedIntType,
+    unsignedShort: unsignedShortType,
+    unsignedByte: unsignedByteType,
 };
 
 /**
  * Get an atomic type by its local name
  */
 export function getAtomicType(name: string): AtomicType | undefined {
-  return ATOMIC_TYPES[name];
+    return ATOMIC_TYPES[name];
 }
 
 /**
  * Check if a value is an instance of a given atomic type
  */
 export function isInstanceOf(value: any, typeName: string): boolean {
-  const type = getAtomicType(typeName);
-  if (!type) return false;
-  return type.validate(value);
+    const type = getAtomicType(typeName);
+    if (!type) return false;
+    return type.validate(value);
 }
 
 /**
  * Cast a value to a given atomic type
  */
 export function castAs(value: any, typeName: string): any {
-  const type = getAtomicType(typeName);
-  if (!type) {
-    throw new Error(`Unknown atomic type: ${typeName}`);
-  }
-  return type.cast(value);
+    const type = getAtomicType(typeName);
+    if (!type) {
+        throw new Error(`Unknown atomic type: ${typeName}`);
+    }
+    return type.cast(value);
 }
 
 /**
  * Check if a type is numeric (integer, decimal, float, double)
  */
 export function isNumericType(type: AtomicType): boolean {
-  return ['decimal', 'float', 'double', 'integer', 'long', 'int', 'short', 'byte'].includes(type.name);
+    return ['decimal', 'float', 'double', 'integer', 'long', 'int', 'short', 'byte'].includes(
+        type.name
+    );
 }

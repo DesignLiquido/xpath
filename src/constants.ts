@@ -1,6 +1,6 @@
 /**
  * Unified Constants File for XPath Implementation
- * 
+ *
  * Consolidates all export const declarations from throughout the codebase
  * for improved maintainability and easier discovery.
  */

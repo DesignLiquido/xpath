@@ -15,8 +15,8 @@
  * Reference: https://www.w3.org/TR/xpath-31/#id-array-constructors
  */
 
-import { XPathExpression } from "./expression";
-import { XPathContext } from "../context";
+import { XPathExpression } from './expression';
+import { XPathContext } from '../context';
 
 /**
  * Marker interface for XPath 3.1 arrays.
@@ -40,7 +40,7 @@ export function isXPathArray(value: any): value is XPathArray {
 export function createXPathArray(members: any[]): XPathArray {
     return {
         __isArray: true,
-        members: members
+        members: members,
     };
 }
 
@@ -59,7 +59,9 @@ export function getArraySize(arr: XPathArray): number {
  */
 export function getArrayMember(arr: XPathArray, position: number): any {
     if (position < 1 || position > arr.members.length) {
-        throw new Error(`FOAY0001: Array index ${position} out of bounds (array size: ${arr.members.length})`);
+        throw new Error(
+            `FOAY0001: Array index ${position} out of bounds (array size: ${arr.members.length})`
+        );
     }
     return arr.members[position - 1];
 }
@@ -87,7 +89,7 @@ export class XPathSquareBracketArrayConstructor implements XPathExpression {
     }
 
     toString(): string {
-        const itemStrs = this.items.map(i => i.toString()).join(', ');
+        const itemStrs = this.items.map((i) => i.toString()).join(', ');
         return `[${itemStrs}]`;
     }
 }

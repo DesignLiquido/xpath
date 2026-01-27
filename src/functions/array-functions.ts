@@ -7,8 +7,14 @@
  * Reference: https://www.w3.org/TR/xpath-functions-31/#array-functions
  */
 
-import { XPathContext } from "../context";
-import { isXPathArray, XPathArray, createXPathArray, getArrayMember, getArraySize } from "../expressions/array-constructor-expression";
+import { XPathContext } from '../context';
+import {
+    isXPathArray,
+    XPathArray,
+    createXPathArray,
+    getArrayMember,
+    getArraySize,
+} from '../expressions/array-constructor-expression';
 
 /**
  * Check if a value is an XPath array and throw error if not.
@@ -22,7 +28,9 @@ function requireArray(value: any, funcName: string): XPathArray {
         } else if (value.length === 0) {
             throw new Error(`XPTY0004: ${funcName} requires an array, got empty sequence`);
         } else {
-            throw new Error(`XPTY0004: ${funcName} requires a single array, got sequence of ${value.length} items`);
+            throw new Error(
+                `XPTY0004: ${funcName} requires a single array, got sequence of ${value.length} items`
+            );
         }
     }
 
@@ -40,7 +48,9 @@ function validatePosition(arr: XPathArray, position: number, funcName: string): 
         throw new Error(`XPTY0004: ${funcName} position must be an integer, got ${position}`);
     }
     if (position < 1 || position > arr.members.length) {
-        throw new Error(`FOAY0001: ${funcName} position ${position} is out of bounds (array size: ${arr.members.length})`);
+        throw new Error(
+            `FOAY0001: ${funcName} position ${position} is out of bounds (array size: ${arr.members.length})`
+        );
     }
 }
 
@@ -71,7 +81,12 @@ export function arrayGet(context: XPathContext, array: any, position: number): a
  *
  * Returns a new array with the member at position replaced.
  */
-export function arrayPut(context: XPathContext, array: any, position: number, member: any): XPathArray {
+export function arrayPut(
+    context: XPathContext,
+    array: any,
+    position: number,
+    member: any
+): XPathArray {
     const arr = requireArray(array, 'array:put');
     validatePosition(arr, position, 'array:put');
 
@@ -96,7 +111,12 @@ export function arrayAppend(context: XPathContext, array: any, appendage: any): 
  *
  * Returns a contiguous portion of the array.
  */
-export function arraySubarray(context: XPathContext, array: any, start: number, length?: number): XPathArray {
+export function arraySubarray(
+    context: XPathContext,
+    array: any,
+    start: number,
+    length?: number
+): XPathArray {
     const arr = requireArray(array, 'array:subarray');
 
     if (!Number.isInteger(start)) {
@@ -108,7 +128,9 @@ export function arraySubarray(context: XPathContext, array: any, start: number, 
     }
 
     if (start > arr.members.length + 1) {
-        throw new Error(`FOAY0001: array:subarray start ${start} is out of bounds (array size: ${arr.members.length})`);
+        throw new Error(
+            `FOAY0001: array:subarray start ${start} is out of bounds (array size: ${arr.members.length})`
+        );
     }
 
     const startIdx = start - 1;
@@ -127,7 +149,9 @@ export function arraySubarray(context: XPathContext, array: any, start: number, 
     }
 
     if (startIdx + length > arr.members.length) {
-        throw new Error(`FOAY0001: array:subarray range [${start}, ${start + length - 1}] exceeds array bounds`);
+        throw new Error(
+            `FOAY0001: array:subarray range [${start}, ${start + length - 1}] exceeds array bounds`
+        );
     }
 
     return createXPathArray(arr.members.slice(startIdx, startIdx + length));
@@ -138,7 +162,11 @@ export function arraySubarray(context: XPathContext, array: any, start: number, 
  *
  * Returns a new array with members at specified positions removed.
  */
-export function arrayRemove(context: XPathContext, array: any, positions: number | number[]): XPathArray {
+export function arrayRemove(
+    context: XPathContext,
+    array: any,
+    positions: number | number[]
+): XPathArray {
     const arr = requireArray(array, 'array:remove');
 
     // Normalize positions to array
@@ -150,12 +178,14 @@ export function arrayRemove(context: XPathContext, array: any, positions: number
             throw new Error(`XPTY0004: array:remove position must be an integer, got ${pos}`);
         }
         if (pos < 1 || pos > arr.members.length) {
-            throw new Error(`FOAY0001: array:remove position ${pos} is out of bounds (array size: ${arr.members.length})`);
+            throw new Error(
+                `FOAY0001: array:remove position ${pos} is out of bounds (array size: ${arr.members.length})`
+            );
         }
     }
 
     // Convert to 0-based indices and create a set for O(1) lookup
-    const indicesToRemove = new Set(posArray.map(p => p - 1));
+    const indicesToRemove = new Set(posArray.map((p) => p - 1));
 
     const newMembers = arr.members.filter((_, idx) => !indicesToRemove.has(idx));
     return createXPathArray(newMembers);
@@ -166,16 +196,25 @@ export function arrayRemove(context: XPathContext, array: any, positions: number
  *
  * Returns a new array with a new member inserted before the specified position.
  */
-export function arrayInsertBefore(context: XPathContext, array: any, position: number, member: any): XPathArray {
+export function arrayInsertBefore(
+    context: XPathContext,
+    array: any,
+    position: number,
+    member: any
+): XPathArray {
     const arr = requireArray(array, 'array:insert-before');
 
     if (!Number.isInteger(position)) {
-        throw new Error(`XPTY0004: array:insert-before position must be an integer, got ${position}`);
+        throw new Error(
+            `XPTY0004: array:insert-before position must be an integer, got ${position}`
+        );
     }
 
     // Position can be from 1 to length + 1 (insert at end)
     if (position < 1 || position > arr.members.length + 1) {
-        throw new Error(`FOAY0001: array:insert-before position ${position} is out of bounds (valid range: 1 to ${arr.members.length + 1})`);
+        throw new Error(
+            `FOAY0001: array:insert-before position ${position} is out of bounds (valid range: 1 to ${arr.members.length + 1})`
+        );
     }
 
     const newMembers = [...arr.members];
@@ -284,7 +323,7 @@ export function arrayFlatten(context: XPathContext, input: any): any[] {
 export function arrayForEach(context: XPathContext, array: any, action: any): XPathArray {
     const arr = requireArray(array, 'array:for-each');
 
-    if (!action || typeof action !== 'function' && !action.__isFunctionItem) {
+    if (!action || (typeof action !== 'function' && !action.__isFunctionItem)) {
         throw new Error(`XPTY0004: array:for-each requires a function as second argument`);
     }
 
@@ -306,7 +345,7 @@ export function arrayForEach(context: XPathContext, array: any, action: any): XP
 export function arrayFilter(context: XPathContext, array: any, predicate: any): XPathArray {
     const arr = requireArray(array, 'array:filter');
 
-    if (!predicate || typeof predicate !== 'function' && !predicate.__isFunctionItem) {
+    if (!predicate || (typeof predicate !== 'function' && !predicate.__isFunctionItem)) {
         throw new Error(`XPTY0004: array:filter requires a function as second argument`);
     }
 
@@ -334,7 +373,7 @@ export function arrayFilter(context: XPathContext, array: any, predicate: any): 
 export function arrayFoldLeft(context: XPathContext, array: any, zero: any, f: any): any {
     const arr = requireArray(array, 'array:fold-left');
 
-    if (!f || typeof f !== 'function' && !f.__isFunctionItem) {
+    if (!f || (typeof f !== 'function' && !f.__isFunctionItem)) {
         throw new Error(`XPTY0004: array:fold-left requires a function as third argument`);
     }
 
@@ -357,7 +396,7 @@ export function arrayFoldLeft(context: XPathContext, array: any, zero: any, f: a
 export function arrayFoldRight(context: XPathContext, array: any, zero: any, f: any): any {
     const arr = requireArray(array, 'array:fold-right');
 
-    if (!f || typeof f !== 'function' && !f.__isFunctionItem) {
+    if (!f || (typeof f !== 'function' && !f.__isFunctionItem)) {
         throw new Error(`XPTY0004: array:fold-right requires a function as third argument`);
     }
 
@@ -379,7 +418,12 @@ export function arrayFoldRight(context: XPathContext, array: any, zero: any, f: 
  *
  * Returns a new array with members sorted.
  */
-export function arraySort(context: XPathContext, array: any, collation?: string, key?: any): XPathArray {
+export function arraySort(
+    context: XPathContext,
+    array: any,
+    collation?: string,
+    key?: any
+): XPathArray {
     const arr = requireArray(array, 'array:sort');
 
     // Get key function if provided
@@ -413,7 +457,7 @@ export function arraySort(context: XPathContext, array: any, collation?: string,
         return result !== 0 ? result : a.idx - b.idx;
     });
 
-    return createXPathArray(indexedMembers.map(item => item.member));
+    return createXPathArray(indexedMembers.map((item) => item.member));
 }
 
 /**

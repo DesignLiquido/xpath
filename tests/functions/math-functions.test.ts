@@ -20,7 +20,7 @@ describe('XPath 3.0 Math Functions', () => {
             size: 1,
             variables: {},
             namespaces: {
-                'math': 'http://www.w3.org/2005/xpath-functions/math',
+                math: 'http://www.w3.org/2005/xpath-functions/math',
             },
         } as XPathContext;
     });
@@ -447,12 +447,12 @@ describe('XPath 3.0 Math Functions', () => {
             // Second quadrant
             const tokens2 = lexer.scan('math:atan2(1, -1)');
             const expr2 = parser.parse(tokens2);
-            expect(expr2.evaluate(mockContext)).toBeCloseTo(3 * Math.PI / 4, 15);
+            expect(expr2.evaluate(mockContext)).toBeCloseTo((3 * Math.PI) / 4, 15);
 
             // Third quadrant
             const tokens3 = lexer.scan('math:atan2(-1, -1)');
             const expr3 = parser.parse(tokens3);
-            expect(expr3.evaluate(mockContext)).toBeCloseTo(-3 * Math.PI / 4, 15);
+            expect(expr3.evaluate(mockContext)).toBeCloseTo((-3 * Math.PI) / 4, 15);
 
             // Fourth quadrant
             const tokens4 = lexer.scan('math:atan2(-1, 1)');

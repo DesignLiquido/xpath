@@ -1,16 +1,12 @@
 {
-  "entryPoints": [
-    "src/index.ts"
-  ],
-  "readme": "README.md",
-  "excludeExternals": true,
-  "excludePrivate": true,
-  "excludeProtected": false,
-  "excludeInternal": false,
-  "hideGenerator": true,
-  "sort": [
-    "source-order"
-  ],
-  "tsconfig": "tsconfig.json",
-  "out": "docs"
+    "entryPoints": ["src/index.ts"],
+    "readme": "README.md",
+    "excludeExternals": true,
+    "excludePrivate": true,
+    "excludeProtected": false,
+    "excludeInternal": false,
+    "hideGenerator": true,
+    "sort": ["source-order"],
+    "tsconfig": "tsconfig.json",
+    "out": "docs"
 }

@@ -19,18 +19,29 @@ import {
     XPathNumberLiteral,
     XPathVariableReference,
     CommaExpression,
-} from "../expressions";
-import { XPathLetExpression, XPathLetBinding } from "../expressions/let-expression";
-import { XPathSimpleMapExpression } from "../expressions/simple-map-expression";
-import { XPathStringConcatExpression } from "../expressions/string-concat-expression";
-import { XPathArrowExpression } from "../expressions/arrow-expression";
-import { XPathNamedFunctionRef } from "../expressions/named-function-ref-expression";
-import { XPathInlineFunctionExpression, InlineFunctionParameter } from "../expressions/inline-function-expression";
-import { XPathDynamicFunctionCall } from "../expressions/dynamic-function-call-expression";
-import { XPathBaseParserOptions } from "../xslt-extensions";
-import { XPath20Parser } from "./parser-20";
-import { SequenceType, OccurrenceIndicator, createAtomicSequenceType, createItemSequenceType, ITEM_TYPE, getAtomicType, createEmptySequenceType } from "../types";
-import { grammarViolation } from "../errors";
+} from '../expressions';
+import { XPathLetExpression, XPathLetBinding } from '../expressions/let-expression';
+import { XPathSimpleMapExpression } from '../expressions/simple-map-expression';
+import { XPathStringConcatExpression } from '../expressions/string-concat-expression';
+import { XPathArrowExpression } from '../expressions/arrow-expression';
+import { XPathNamedFunctionRef } from '../expressions/named-function-ref-expression';
+import {
+    XPathInlineFunctionExpression,
+    InlineFunctionParameter,
+} from '../expressions/inline-function-expression';
+import { XPathDynamicFunctionCall } from '../expressions/dynamic-function-call-expression';
+import { XPathBaseParserOptions } from '../xslt-extensions';
+import { XPath20Parser } from './parser-20';
+import {
+    SequenceType,
+    OccurrenceIndicator,
+    createAtomicSequenceType,
+    createItemSequenceType,
+    ITEM_TYPE,
+    getAtomicType,
+    createEmptySequenceType,
+} from '../types';
+import { grammarViolation } from '../errors';
 
 export class XPath30Parser extends XPath20Parser {
     constructor(options?: XPathBaseParserOptions) {
@@ -213,7 +224,10 @@ export class XPath30Parser extends XPath20Parser {
                 funcExpr = new XPathVariableReference(varName);
 
                 // Arguments in parentheses (use parseExprSingle to avoid comma being treated as sequence)
-                this.consume('OPEN_PAREN', "Expected '(' after function variable in arrow expression");
+                this.consume(
+                    'OPEN_PAREN',
+                    "Expected '(' after function variable in arrow expression"
+                );
                 if (!this.check('CLOSE_PAREN')) {
                     do {
                         args.push(this.parseExprSingle());
@@ -252,7 +266,7 @@ export class XPath30Parser extends XPath20Parser {
 
     /**
      * Override parseFunctionCall to use parseExprSingle for arguments.
-     * 
+     *
      * In XPath 3.0, function arguments are ExprSingle, not Expr.
      * This means commas in arguments don't create sequences at the function level.
      * For example: concat("Hello ", $name) should parse as two arguments,
@@ -317,7 +331,7 @@ export class XPath30Parser extends XPath20Parser {
         if (this.isFunctionRefStart()) {
             return false;
         }
-        
+
         return super.isStepStart();
     }
 
@@ -336,14 +350,14 @@ export class XPath30Parser extends XPath20Parser {
         if (this.check('OPEN_PAREN')) {
             // It's a dynamic function call
             this.advance(); // consume '('
-            
+
             const args: XPathExpression[] = [];
             if (!this.check('CLOSE_PAREN')) {
                 do {
                     args.push(this.parseExprSingle());
                 } while (this.match('COMMA'));
             }
-            
+
             this.consume('CLOSE_PAREN', "Expected ')' after function arguments");
             expr = new XPathDynamicFunctionCall(expr, args);
         }
@@ -372,44 +386,50 @@ export class XPath30Parser extends XPath20Parser {
         if (this.isAtEnd()) return false;
 
         const token = this.peek();
-        
+
         // EQName followed by # is a function reference
         if (token.type === 'EQNAME') {
             const next = this.peekNext();
             return next?.type === 'HASH';
         }
-        
+
         // Check for identifier/function/operator/location that could start a QName
-        if (token.type === 'IDENTIFIER' || token.type === 'FUNCTION' || token.type === 'OPERATOR' || token.type === 'LOCATION') {
+        if (
+            token.type === 'IDENTIFIER' ||
+            token.type === 'FUNCTION' ||
+            token.type === 'OPERATOR' ||
+            token.type === 'LOCATION'
+        ) {
             // Scan ahead to find a HASH token, allowing for:
             // name#N
             // prefix:name#N
             // upper-case#N (hyphenated names)
             // prefix:upper-case#N (hyphenated local names)
-            
+
             let lookAhead = 1;
             let foundHash = false;
 
             while (lookAhead < this.tokens.length - this.current) {
                 const tok = this.tokens[this.current + lookAhead];
-                
+
                 if (!tok) break;
-                
+
                 // Stop if we hit HASH - that's what we're looking for
                 if (tok.type === 'HASH') {
                     foundHash = true;
                     break;
                 }
-                
+
                 // Allow: hyphens, colons, and name tokens (IDENTIFIER, FUNCTION, OPERATOR, LOCATION, NODE_TYPE)
-                const isValidQNameChar = tok.type === 'MINUS' ||
-                                        tok.type === 'COLON' ||
-                                        tok.type === 'IDENTIFIER' ||
-                                        tok.type === 'FUNCTION' ||
-                                        tok.type === 'OPERATOR' ||
-                                        tok.type === 'LOCATION' ||
-                                        tok.type === 'NODE_TYPE';
-                
+                const isValidQNameChar =
+                    tok.type === 'MINUS' ||
+                    tok.type === 'COLON' ||
+                    tok.type === 'IDENTIFIER' ||
+                    tok.type === 'FUNCTION' ||
+                    tok.type === 'OPERATOR' ||
+                    tok.type === 'LOCATION' ||
+                    tok.type === 'NODE_TYPE';
+
                 if (isValidQNameChar) {
                     lookAhead++;
                 } else {
@@ -438,9 +458,14 @@ export class XPath30Parser extends XPath20Parser {
                 const op = this.previous().lexeme;
                 // Peek at the next identifier and include it
                 const nextToken = this.peek();
-                if (nextToken && (nextToken.type === 'IDENTIFIER' || nextToken.type === 'FUNCTION' ||
-                                  nextToken.type === 'OPERATOR' || nextToken.type === 'LOCATION' ||
-                                  nextToken.type === 'NODE_TYPE')) {
+                if (
+                    nextToken &&
+                    (nextToken.type === 'IDENTIFIER' ||
+                        nextToken.type === 'FUNCTION' ||
+                        nextToken.type === 'OPERATOR' ||
+                        nextToken.type === 'LOCATION' ||
+                        nextToken.type === 'NODE_TYPE')
+                ) {
                     this.advance();
                     name = `${name}${op}${nextToken.lexeme}`;
                 } else {
@@ -477,7 +502,7 @@ export class XPath30Parser extends XPath20Parser {
         if (!this.check('CLOSE_PAREN')) {
             do {
                 this.consume('DOLLAR', "Expected '$' before parameter name");
-                const paramName = this.consume('IDENTIFIER', "Expected parameter name").lexeme;
+                const paramName = this.consume('IDENTIFIER', 'Expected parameter name').lexeme;
 
                 // Optional type annotation
                 let paramType: SequenceType | undefined;
@@ -529,7 +554,7 @@ export class XPath30Parser extends XPath20Parser {
     private parseLetBinding(): XPathLetBinding {
         this.consume('DOLLAR', "Expected '$' before variable name in let binding");
         // Variable name can be any name token (including function names like 'name', 'string', etc.)
-        const nameToken = this.consumeNameTokenInternal("Expected variable name in let binding");
+        const nameToken = this.consumeNameTokenInternal('Expected variable name in let binding');
         const name = nameToken.lexeme;
 
         // Optional type annotation
@@ -641,8 +666,14 @@ export class XPath30Parser extends XPath20Parser {
     private isNameTokenInternal(): boolean {
         if (this.isAtEnd()) return false;
         const type = this.peek().type;
-        return type === 'IDENTIFIER' || type === 'FUNCTION' || type === 'NODE_TYPE' ||
-               type === 'OPERATOR' || type === 'LOCATION' || type === 'RESERVED_WORD';
+        return (
+            type === 'IDENTIFIER' ||
+            type === 'FUNCTION' ||
+            type === 'NODE_TYPE' ||
+            type === 'OPERATOR' ||
+            type === 'LOCATION' ||
+            type === 'RESERVED_WORD'
+        );
     }
 
     private checkNameInternal(name: string): boolean {

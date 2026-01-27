@@ -28,14 +28,14 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     // String functions
     'upper-case': (_ctx, arg) => String(arg).toUpperCase(),
     'lower-case': (_ctx, arg) => String(arg).toLowerCase(),
-    'concat': (_ctx, ...args) => args.map(a => String(a)).join(''),
+    concat: (_ctx, ...args) => args.map((a) => String(a)).join(''),
     'string-join': (_ctx, seq, sep = '') => {
         if (Array.isArray(seq)) {
-            return seq.map(s => String(s)).join(String(sep));
+            return seq.map((s) => String(s)).join(String(sep));
         }
         return String(seq);
     },
-    'substring': (_ctx, str, start, len?) => {
+    substring: (_ctx, str, start, len?) => {
         const s = String(str);
         const startIdx = Math.round(Number(start)) - 1;
         if (len === undefined) {
@@ -47,10 +47,10 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     },
     'string-length': (_ctx, arg) => String(arg).length,
     'normalize-space': (_ctx, arg) => String(arg).trim().replace(/\s+/g, ' '),
-    'contains': (_ctx, str, sub) => String(str).includes(String(sub)),
+    contains: (_ctx, str, sub) => String(str).includes(String(sub)),
     'starts-with': (_ctx, str, sub) => String(str).startsWith(String(sub)),
     'ends-with': (_ctx, str, sub) => String(str).endsWith(String(sub)),
-    'translate': (_ctx, str, from, to) => {
+    translate: (_ctx, str, from, to) => {
         const s = String(str);
         const f = String(from);
         const t = String(to);
@@ -62,24 +62,26 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         }
         return result;
     },
-    'replace': (_ctx, input, pattern, replacement) => {
+    replace: (_ctx, input, pattern, replacement) => {
         const regex = new RegExp(String(pattern), 'g');
         return String(input).replace(regex, String(replacement));
     },
-    'matches': (_ctx, input, pattern) => {
+    matches: (_ctx, input, pattern) => {
         const regex = new RegExp(String(pattern));
         return regex.test(String(input));
     },
-    'tokenize': (_ctx, input, pattern = '\\s+') => {
+    tokenize: (_ctx, input, pattern = '\\s+') => {
         const regex = new RegExp(String(pattern));
-        return String(input).split(regex).filter(s => s.length > 0);
+        return String(input)
+            .split(regex)
+            .filter((s) => s.length > 0);
     },
 
     // Numeric functions
-    'abs': (_ctx, arg) => Math.abs(Number(arg)),
-    'ceiling': (_ctx, arg) => Math.ceil(Number(arg)),
-    'floor': (_ctx, arg) => Math.floor(Number(arg)),
-    'round': (_ctx, arg) => Math.round(Number(arg)),
+    abs: (_ctx, arg) => Math.abs(Number(arg)),
+    ceiling: (_ctx, arg) => Math.ceil(Number(arg)),
+    floor: (_ctx, arg) => Math.floor(Number(arg)),
+    round: (_ctx, arg) => Math.round(Number(arg)),
     'round-half-to-even': (_ctx, arg, precision = 0) => {
         const p = Math.pow(10, Number(precision));
         const n = Number(arg) * p;
@@ -90,13 +92,13 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         }
         return Math.round(n) / p;
     },
-    'number': (_ctx, arg) => Number(arg),
+    number: (_ctx, arg) => Number(arg),
 
     // Boolean functions
-    'true': () => true,
-    'false': () => false,
-    'not': (_ctx, arg) => !arg,
-    'boolean': (_ctx, arg) => {
+    true: () => true,
+    false: () => false,
+    not: (_ctx, arg) => !arg,
+    boolean: (_ctx, arg) => {
         if (typeof arg === 'boolean') return arg;
         if (typeof arg === 'number') return arg !== 0 && !isNaN(arg);
         if (typeof arg === 'string') return arg.length > 0;
@@ -105,38 +107,39 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     },
 
     // Sequence functions
-    'count': (_ctx, seq) => Array.isArray(seq) ? seq.length : (seq === null || seq === undefined ? 0 : 1),
-    'sum': (_ctx, seq) => {
+    count: (_ctx, seq) =>
+        Array.isArray(seq) ? seq.length : seq === null || seq === undefined ? 0 : 1,
+    sum: (_ctx, seq) => {
         if (!Array.isArray(seq)) return Number(seq) || 0;
         return seq.reduce((acc, val) => acc + (Number(val) || 0), 0);
     },
-    'avg': (_ctx, seq) => {
+    avg: (_ctx, seq) => {
         if (!Array.isArray(seq)) return Number(seq);
         if (seq.length === 0) return null;
         const sum = seq.reduce((acc, val) => acc + (Number(val) || 0), 0);
         return sum / seq.length;
     },
-    'min': (_ctx, seq) => {
+    min: (_ctx, seq) => {
         if (!Array.isArray(seq)) return Number(seq);
         if (seq.length === 0) return null;
-        return Math.min(...seq.map(v => Number(v)));
+        return Math.min(...seq.map((v) => Number(v)));
     },
-    'max': (_ctx, seq) => {
+    max: (_ctx, seq) => {
         if (!Array.isArray(seq)) return Number(seq);
         if (seq.length === 0) return null;
-        return Math.max(...seq.map(v => Number(v)));
+        return Math.max(...seq.map((v) => Number(v)));
     },
-    'empty': (_ctx, seq) => {
+    empty: (_ctx, seq) => {
         if (seq === null || seq === undefined) return true;
         if (Array.isArray(seq)) return seq.length === 0;
         return false;
     },
-    'exists': (_ctx, seq) => {
+    exists: (_ctx, seq) => {
         if (seq === null || seq === undefined) return false;
         if (Array.isArray(seq)) return seq.length > 0;
         return true;
     },
-    'reverse': (_ctx, seq) => {
+    reverse: (_ctx, seq) => {
         if (!Array.isArray(seq)) return [seq];
         return [...seq].reverse();
     },
@@ -144,7 +147,7 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         if (!Array.isArray(seq)) return [seq];
         return Array.from(new Set(seq));
     },
-    'subsequence': (_ctx, seq, start, length?) => {
+    subsequence: (_ctx, seq, start, length?) => {
         if (!Array.isArray(seq)) seq = [seq];
         const startIdx = Math.round(Number(start)) - 1;
         if (length === undefined) {
@@ -159,7 +162,7 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         const position = Math.max(0, Math.round(Number(pos)) - 1);
         return [...seq.slice(0, position), ...inserts, ...seq.slice(position)];
     },
-    'remove': (_ctx, seq, pos) => {
+    remove: (_ctx, seq, pos) => {
         if (!Array.isArray(seq)) seq = [seq];
         const position = Math.round(Number(pos)) - 1;
         if (position < 0 || position >= seq.length) return seq;
@@ -167,9 +170,9 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     },
 
     // Node functions
-    'position': (ctx) => ctx.position ?? 0,
-    'last': (ctx) => ctx.size ?? 0,
-    'string': (ctx, arg?) => {
+    position: (ctx) => ctx.position ?? 0,
+    last: (ctx) => ctx.size ?? 0,
+    string: (ctx, arg?) => {
         if (arg === undefined) {
             return ctx.node?.textContent ?? '';
         }
@@ -186,19 +189,19 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         const node = arg ? (Array.isArray(arg) ? arg[0] : arg) : ctx.node;
         return node?.namespaceUri ?? '';
     },
-    'name': (ctx, arg?) => {
+    name: (ctx, arg?) => {
         const node = arg ? (Array.isArray(arg) ? arg[0] : arg) : ctx.node;
         return node?.nodeName ?? '';
     },
 
     // Higher-order functions (XPath 3.0)
     'for-each': HOF.forEach,
-    'filter': HOF.filter,
+    filter: HOF.filter,
     'fold-left': HOF.foldLeft,
     'fold-right': HOF.foldRight,
     'for-each-pair': HOF.forEachPair,
-    'sort': SEQ30.sort,
-    'apply': HOF.apply,
+    sort: SEQ30.sort,
+    apply: HOF.apply,
     'function-name': HOF.functionName,
     'function-arity': HOF.functionArity,
 
@@ -219,10 +222,10 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'math:atan2': MATH.atan2,
 
     // Sequence functions (XPath 3.0)
-    'head': (_ctx, seq) => SEQ.head(seq),
-    'tail': (_ctx, seq) => SEQ.tail(seq),
-    'innermost': SEQ30.innermost,
-    'outermost': SEQ30.outermost,
+    head: (_ctx, seq) => SEQ.head(seq),
+    tail: (_ctx, seq) => SEQ.tail(seq),
+    innermost: SEQ30.innermost,
+    outermost: SEQ30.outermost,
 
     // Environment functions (XPath 3.0)
     'environment-variable': ENV.environmentVariable,
@@ -260,7 +263,9 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
 
     // JSON functions (XPath 3.1)
     'parse-json': JSONF.parseJson,
-    'serialize': JSONF.serialize,
+    serialize: JSONF.serialize,
+    'json-to-xml': JSONF.jsonToXml,
+    'xml-to-json': JSONF.xmlToJson,
 
     // String functions (XPath 3.0 additions)
     'analyze-string': STR30.analyzeString,
@@ -273,32 +278,32 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
  * Format: [minArgs, maxArgs]
  */
 const FUNCTION_ARITY: Record<string, [number, number]> = {
-    'concat': [2, Infinity],
-    'substring': [2, 3],
+    concat: [2, Infinity],
+    substring: [2, 3],
     'string-join': [1, 2],
     'normalize-space': [0, 1],
     'string-length': [0, 1],
     'local-name': [0, 1],
     'namespace-uri': [0, 1],
-    'name': [0, 1],
-    'round': [1, 2],
+    name: [0, 1],
+    round: [1, 2],
     'round-half-to-even': [1, 2],
-    'string': [0, 1],
-    'number': [0, 1],
-    'replace': [3, 4],
-    'matches': [2, 3],
-    'tokenize': [1, 3],
-    'subsequence': [2, 3],
+    string: [0, 1],
+    number: [0, 1],
+    replace: [3, 4],
+    matches: [2, 3],
+    tokenize: [1, 3],
+    subsequence: [2, 3],
     'insert-before': [3, 3],
-    'remove': [2, 2],
+    remove: [2, 2],
     // Higher-order functions
     'for-each': [2, 2],
-    'filter': [2, 2],
+    filter: [2, 2],
     'fold-left': [3, 3],
     'fold-right': [3, 3],
     'for-each-pair': [3, 3],
-    'sort': [1, 3],
-    'apply': [2, 2],
+    sort: [1, 3],
+    apply: [2, 2],
     'function-name': [1, 1],
     'function-arity': [1, 1],
     // Math functions
@@ -317,10 +322,10 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'math:atan': [1, 1],
     'math:atan2': [2, 2],
     // Sequence functions (XPath 3.0)
-    'head': [1, 1],
-    'tail': [1, 1],
-    'innermost': [1, 1],
-    'outermost': [1, 1],
+    head: [1, 1],
+    tail: [1, 1],
+    innermost: [1, 1],
+    outermost: [1, 1],
     // Environment functions (XPath 3.0)
     'environment-variable': [1, 1],
     'available-environment-variables': [0, 0],
@@ -356,7 +361,9 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
 
     // JSON functions (XPath 3.1)
     'parse-json': [1, 2],
-    'serialize': [1, 2],
+    serialize: [1, 2],
+    'json-to-xml': [1, 2],
+    'xml-to-json': [1, 1],
 
     // String functions (XPath 3.0 additions)
     'analyze-string': [2, 3],
@@ -367,7 +374,9 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
 /**
  * Get a built-in function implementation by name.
  */
-export function getBuiltInFunction(name: string): ((context: XPathContext, ...args: any[]) => any) | undefined {
+export function getBuiltInFunction(
+    name: string
+): ((context: XPathContext, ...args: any[]) => any) | undefined {
     return BUILT_IN_FUNCTIONS[name];
 }
 
@@ -390,7 +399,7 @@ export class XPathFunctionCall extends XPathExpression {
     }
 
     evaluate(context: XPathContext): XPathResult {
-        const evaluatedArgs = this.args.map(arg => arg.evaluate(context));
+        const evaluatedArgs = this.args.map((arg) => arg.evaluate(context));
 
         // XPath 2.0 constructor functions: QName(...) delegates to atomic type cast
         const constructorType = this.getConstructorType();
@@ -402,16 +411,28 @@ export class XPathFunctionCall extends XPathExpression {
             const raw = evaluatedArgs[0];
             if (Array.isArray(raw)) {
                 if (raw.length === 0) {
-                    throw typeMismatch('single item', 'empty sequence', `constructor function ${this.name}`);
+                    throw typeMismatch(
+                        'single item',
+                        'empty sequence',
+                        `constructor function ${this.name}`
+                    );
                 }
                 if (raw.length !== 1) {
-                    throw typeMismatch('single item', `sequence of ${raw.length} items`, `constructor function ${this.name}`);
+                    throw typeMismatch(
+                        'single item',
+                        `sequence of ${raw.length} items`,
+                        `constructor function ${this.name}`
+                    );
                 }
                 return this.castConstructorValue(constructorType, raw[0]);
             }
 
             if (raw === undefined || raw === null) {
-                throw typeMismatch('single item', 'empty sequence', `constructor function ${this.name}`);
+                throw typeMismatch(
+                    'single item',
+                    'empty sequence',
+                    `constructor function ${this.name}`
+                );
             }
 
             return this.castConstructorValue(constructorType, raw);
@@ -437,7 +458,7 @@ export class XPathFunctionCall extends XPathExpression {
             case 'string':
                 return this.stringValue(evaluatedArgs, context);
             case 'concat':
-                return evaluatedArgs.map(arg => this.convertToString(arg)).join('');
+                return evaluatedArgs.map((arg) => this.convertToString(arg)).join('');
             case 'starts-with':
                 return String(evaluatedArgs[0]).startsWith(String(evaluatedArgs[1]));
             case 'contains':
@@ -486,25 +507,31 @@ export class XPathFunctionCall extends XPathExpression {
             default:
                 // Check built-in XPath 2.0/3.0 functions from the BUILT_IN_FUNCTIONS map
                 let builtInFunc = BUILT_IN_FUNCTIONS[this.name];
-                
+
                 // If not found and name is an EQName, try to resolve it
                 if (!builtInFunc && this.name.startsWith('Q{')) {
                     const { namespace, localName } = this.parseEQName(this.name);
-                    
+
                     // Try local name first
                     builtInFunc = BUILT_IN_FUNCTIONS[localName];
-                    
+
                     // If still not found and namespace is math, try with math: prefix
-                    if (!builtInFunc && namespace === 'http://www.w3.org/2005/xpath-functions/math') {
+                    if (
+                        !builtInFunc &&
+                        namespace === 'http://www.w3.org/2005/xpath-functions/math'
+                    ) {
                         builtInFunc = BUILT_IN_FUNCTIONS['math:' + localName];
                     }
 
                     // If still not found and namespace is array, try with array: prefix
-                    if (!builtInFunc && namespace === 'http://www.w3.org/2005/xpath-functions/array') {
+                    if (
+                        !builtInFunc &&
+                        namespace === 'http://www.w3.org/2005/xpath-functions/array'
+                    ) {
                         builtInFunc = BUILT_IN_FUNCTIONS['array:' + localName];
                     }
                 }
-                
+
                 if (builtInFunc) {
                     return builtInFunc(context, ...evaluatedArgs);
                 }
@@ -597,7 +624,7 @@ export class XPathFunctionCall extends XPathExpression {
             // Return the text content of the first node
             return firstNode?.textContent ?? String(firstNode);
         }
-        
+
         // For primitive values, use JavaScript's String conversion
         return String(value);
     }
@@ -637,7 +664,10 @@ export class XPathFunctionCall extends XPathExpression {
         }
         const length = Math.round(Number(args[2]));
         const adjustedStart = Math.max(0, start);
-        const adjustedLength = Math.min(length - (adjustedStart - start), str.length - adjustedStart);
+        const adjustedLength = Math.min(
+            length - (adjustedStart - start),
+            str.length - adjustedStart
+        );
         return str.substring(adjustedStart, adjustedStart + adjustedLength);
     }
 
@@ -707,7 +737,9 @@ export class XPathFunctionCall extends XPathExpression {
         // Check XSLT version - json-to-xml is only supported in XSLT 3.0+
         // If xsltVersion is not set (in xpath lib tests), allow it for now
         if (context.xsltVersion && context.xsltVersion !== '3.0') {
-            throw new Error('json-to-xml() is only supported in XSLT 3.0. Use version="3.0" in your stylesheet.');
+            throw new Error(
+                'json-to-xml() is only supported in XSLT 3.0. Use version="3.0" in your stylesheet.'
+            );
         }
 
         // Get JSON text (first argument)
@@ -720,7 +752,7 @@ export class XPathFunctionCall extends XPathExpression {
         }
 
         const documentNode = this.jsonConverter.convert(jsonText, options);
-        
+
         // Return as node set (array) with single document node, or empty array if null
         return documentNode ? [documentNode] : [];
     }

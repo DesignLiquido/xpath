@@ -59,7 +59,9 @@ describe('XPath 3.1 Map Functions', () => {
     });
 
     test('map:for-each', () => {
-        const result = evaluate('map:for-each(map { "a": 1, "b": 2 }, function($k, $v) { $v * 2 })');
+        const result = evaluate(
+            'map:for-each(map { "a": 1, "b": 2 }, function($k, $v) { $v * 2 })'
+        );
         expect(isXPathMap(result)).toBe(true);
         expect(result.a).toBe(2);
         expect(result.b).toBe(4);

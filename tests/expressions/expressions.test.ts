@@ -275,7 +275,9 @@ describe('Expression Evaluation', () => {
         });
 
         it('should evaluate string-length without argument', () => {
-            const result = evaluate("string-length()", { node: { textContent: 'test', nodeType: 1, nodeName: 'test' } as any });
+            const result = evaluate('string-length()', {
+                node: { textContent: 'test', nodeType: 1, nodeName: 'test' } as any,
+            });
             expect(result).toBe(4);
         });
 
@@ -302,7 +304,7 @@ describe('Expression Evaluation', () => {
                 localName: 'first',
                 textContent: 'Hello',
                 childNodes: [],
-                parentNode: undefined as any // will be set below
+                parentNode: undefined as any, // will be set below
             };
 
             const second: XPathNode = {
@@ -311,7 +313,7 @@ describe('Expression Evaluation', () => {
                 localName: 'second',
                 textContent: 'World',
                 childNodes: [],
-                parentNode: undefined as any // will be set below
+                parentNode: undefined as any, // will be set below
             };
 
             const root: XPathNode = {
@@ -319,7 +321,7 @@ describe('Expression Evaluation', () => {
                 nodeName: 'root',
                 localName: 'root',
                 childNodes: [first, second],
-                parentNode: null
+                parentNode: null,
             };
 
             // Set parent references
@@ -338,7 +340,7 @@ describe('Expression Evaluation', () => {
                 localName: 'item',
                 textContent: 'First',
                 childNodes: [],
-                parentNode: undefined as any
+                parentNode: undefined as any,
             };
 
             const item2: XPathNode = {
@@ -347,7 +349,7 @@ describe('Expression Evaluation', () => {
                 localName: 'item',
                 textContent: 'Second',
                 childNodes: [],
-                parentNode: undefined as any
+                parentNode: undefined as any,
             };
 
             const root: XPathNode = {
@@ -355,7 +357,7 @@ describe('Expression Evaluation', () => {
                 nodeName: 'root',
                 localName: 'root',
                 childNodes: [item1, item2],
-                parentNode: null
+                parentNode: null,
             };
 
             item1.parentNode = root;
@@ -378,16 +380,16 @@ describe('Expression Evaluation', () => {
                         nodeName: 'firstName',
                         localName: 'firstName',
                         textContent: 'John',
-                        childNodes: []
+                        childNodes: [],
                     } as XPathNode,
                     {
                         nodeType: NodeType.ATTRIBUTE_NODE,
                         nodeName: 'lastName',
                         localName: 'lastName',
                         textContent: 'Doe',
-                        childNodes: []
-                    } as XPathNode
-                ]
+                        childNodes: [],
+                    } as XPathNode,
+                ],
             };
 
             const result = evaluate("concat(@firstName, ' ', @lastName)", { node: element });
@@ -401,7 +403,7 @@ describe('Expression Evaluation', () => {
                 localName: 'name',
                 textContent: 'Alice',
                 childNodes: [],
-                parentNode: undefined as any
+                parentNode: undefined as any,
             };
 
             const age: XPathNode = {
@@ -410,7 +412,7 @@ describe('Expression Evaluation', () => {
                 localName: 'age',
                 textContent: '30',
                 childNodes: [],
-                parentNode: undefined as any
+                parentNode: undefined as any,
             };
 
             const root: XPathNode = {
@@ -418,7 +420,7 @@ describe('Expression Evaluation', () => {
                 nodeName: 'root',
                 localName: 'root',
                 childNodes: [name, age],
-                parentNode: null
+                parentNode: null,
             };
 
             name.parentNode = root;
@@ -434,7 +436,7 @@ describe('Expression Evaluation', () => {
                 nodeType: NodeType.ELEMENT_NODE,
                 nodeName: 'root',
                 localName: 'root',
-                childNodes: []
+                childNodes: [],
             };
 
             // Non-existent path returns empty node-set, which should convert to empty string
@@ -449,7 +451,7 @@ describe('Expression Evaluation', () => {
                 localName: 'child',
                 textContent: 'NestedValue',
                 childNodes: [],
-                parentNode: undefined as any
+                parentNode: undefined as any,
             };
 
             const parent: XPathNode = {
@@ -457,7 +459,7 @@ describe('Expression Evaluation', () => {
                 nodeName: 'parent',
                 localName: 'parent',
                 childNodes: [child],
-                parentNode: undefined as any
+                parentNode: undefined as any,
             };
 
             const root: XPathNode = {
@@ -465,7 +467,7 @@ describe('Expression Evaluation', () => {
                 nodeName: 'root',
                 localName: 'root',
                 childNodes: [parent],
-                parentNode: null
+                parentNode: null,
             };
 
             child.parentNode = parent;
@@ -541,7 +543,9 @@ describe('Expression Evaluation', () => {
         });
 
         it('should evaluate normalize-space without argument', () => {
-            const result = evaluate("normalize-space()", { node: { textContent: '  text  ', nodeType: 1, nodeName: 'test' } as any });
+            const result = evaluate('normalize-space()', {
+                node: { textContent: '  text  ', nodeType: 1, nodeName: 'test' } as any,
+            });
             expect(result).toBe('text');
         });
 
@@ -556,12 +560,14 @@ describe('Expression Evaluation', () => {
         });
 
         it('should evaluate string function with argument', () => {
-            const result = evaluate("string(123)");
+            const result = evaluate('string(123)');
             expect(result).toBe('123');
         });
 
         it('should evaluate string function without argument', () => {
-            const result = evaluate("string()", { node: { textContent: 'test', nodeType: 1, nodeName: 'test' } as any });
+            const result = evaluate('string()', {
+                node: { textContent: 'test', nodeType: 1, nodeName: 'test' } as any,
+            });
             expect(result).toBe('test');
         });
     });
@@ -630,7 +636,9 @@ describe('Expression Evaluation', () => {
         });
 
         it('should evaluate number without argument', () => {
-            const result = evaluate("number()", { node: { textContent: '123', nodeType: 1, nodeName: 'test' } as any });
+            const result = evaluate('number()', {
+                node: { textContent: '123', nodeType: 1, nodeName: 'test' } as any,
+            });
             expect(result).toBe(123);
         });
 
@@ -695,7 +703,7 @@ describe('Expression Evaluation', () => {
     describe('Function Call Expressions - Custom Functions', () => {
         it('should call custom function', () => {
             const customFunc = jest.fn().mockReturnValue('custom');
-            const result = evaluate('myFunc()', { 
+            const result = evaluate('myFunc()', {
                 functions: { myFunc: customFunc },
                 variables: {},
             });
@@ -705,7 +713,7 @@ describe('Expression Evaluation', () => {
 
         it('should call custom function with arguments', () => {
             const customFunc = jest.fn().mockReturnValue('result');
-            evaluate("myFunc('arg1', 'arg2')", { 
+            evaluate("myFunc('arg1', 'arg2')", {
                 functions: { myFunc: customFunc },
                 variables: {},
             });

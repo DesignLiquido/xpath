@@ -5,8 +5,12 @@ import { XPathLexer } from '../../src/lexer';
 import { XPath20Parser } from '../../src/parser';
 
 class LiteralExpression extends XPathExpression {
-    constructor(private readonly value: any) { super(); }
-    evaluate(_ctx: XPathContext): any { return this.value; }
+    constructor(private readonly value: any) {
+        super();
+    }
+    evaluate(_ctx: XPathContext): any {
+        return this.value;
+    }
 }
 
 describe('XPath 2.0 Constructor Functions (Phase 4.5)', () => {

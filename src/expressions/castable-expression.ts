@@ -8,13 +8,20 @@ import { XPathExpression } from './expression';
  * Returns true if a value can be cast to the given atomic SequenceType without raising an error.
  */
 export class XPathCastableExpression extends XPathExpression {
-    constructor(private readonly expression: XPathExpression, private readonly sequenceType: SequenceType) {
+    constructor(
+        private readonly expression: XPathExpression,
+        private readonly sequenceType: SequenceType
+    ) {
         super();
     }
 
     evaluate(context: XPathContext): boolean {
         const value = this.expression.evaluate(context);
-        const sequence = Array.isArray(value) ? value : value === undefined || value === null ? [] : [value];
+        const sequence = Array.isArray(value)
+            ? value
+            : value === undefined || value === null
+              ? []
+              : [value];
 
         // cardinality: only zero or one item allowed
         if (sequence.length > 1) {

@@ -24,13 +24,14 @@ console.log(config.features.sequences); // true
 
 // Check feature support
 if (isFeatureSupported('2.0', 'ifThenElse')) {
-  // Use if-then-else expressions
+    // Use if-then-else expressions
 }
 ```
 
 #### Version-Specific Features
 
 **XPath 2.0 Features:**
+
 - Sequences (generalization of node-sets)
 - Explicit type system (xs:string, xs:integer, etc.)
 - `if-then-else` expressions
@@ -39,6 +40,7 @@ if (isFeatureSupported('2.0', 'ifThenElse')) {
 - Range expressions (`1 to 10`)
 
 **XPath 3.0 Features:**
+
 - All XPath 2.0 features
 - Higher-order functions (functions as first-class values)
 - Map data type
@@ -47,6 +49,7 @@ if (isFeatureSupported('2.0', 'ifThenElse')) {
 - String templates
 
 **XPath 3.1 Features:**
+
 - All XPath 3.0 features
 - Map and array constructors (`map{}`, `array{}`)
 - Enhanced JSON support
@@ -72,10 +75,10 @@ const parser3 = new XPathBaseParser({ version: '2.0', strict: false });
 
 ```typescript
 interface XPathBaseParserOptions {
-  version?: '1.0' | '2.0' | '3.0' | '3.1';  // Default: '1.0'
-  extensions?: XSLTExtensions;              // XSLT function extensions
-  cache?: boolean;                          // Expression caching
-  strict?: boolean;                         // Strict version checking (default: true)
+    version?: '1.0' | '2.0' | '3.0' | '3.1'; // Default: '1.0'
+    extensions?: XSLTExtensions; // XSLT function extensions
+    cache?: boolean; // Expression caching
+    strict?: boolean; // Strict version checking (default: true)
 }
 ```
 
@@ -87,18 +90,18 @@ The `XPathContext` interface has been extended to support future versions:
 
 ```typescript
 interface XPathContext {
-  // ... existing XPath 1.0 properties ...
-  
-  // XPath version
-  xpathVersion?: '1.0' | '2.0' | '3.0' | '3.1';
-  
-  // XPath 2.0+ properties
-  defaultCollation?: string;      // Default collation for string comparisons
-  baseUri?: string;               // Base URI for resolving relative URIs
-  implicitTimezone?: string;      // Timezone as duration (e.g., '-PT5H')
-  
-  // Extension data (for custom implementations)
-  extensions?: Record<string, any>;
+    // ... existing XPath 1.0 properties ...
+
+    // XPath version
+    xpathVersion?: '1.0' | '2.0' | '3.0' | '3.1';
+
+    // XPath 2.0+ properties
+    defaultCollation?: string; // Default collation for string comparisons
+    baseUri?: string; // Base URI for resolving relative URIs
+    implicitTimezone?: string; // Timezone as duration (e.g., '-PT5H')
+
+    // Extension data (for custom implementations)
+    extensions?: Record<string, any>;
 }
 ```
 
@@ -108,14 +111,16 @@ interface XPathContext {
 import { createContext } from '@designliquido/xpath';
 
 const context = createContext(rootNode, {
-  xpathVersion: '2.0',
-  defaultCollation: 'http://www.w3.org/2005/xpath-functions/collation/codepoint',
-  baseUri: 'http://example.com/docs/',
-  implicitTimezone: '-PT5H',  // US Eastern Time
-  extensions: {
-    // Custom extension data
-    myCustomData: { /* ... */ }
-  }
+    xpathVersion: '2.0',
+    defaultCollation: 'http://www.w3.org/2005/xpath-functions/collation/codepoint',
+    baseUri: 'http://example.com/docs/',
+    implicitTimezone: '-PT5H', // US Eastern Time
+    extensions: {
+        // Custom extension data
+        myCustomData: {
+            /* ... */
+        },
+    },
 });
 ```
 
@@ -125,13 +130,13 @@ The `XPathResult` type has been extended to support future XPath versions:
 
 ```typescript
 type XPathResult =
-  | XPathNode[]      // Node set (XPath 1.0) / sequence of nodes (XPath 2.0+)
-  | string           // String
-  | number           // Number
-  | boolean          // Boolean
-  | any[]            // Sequence (XPath 2.0+)
-  | Map<any, any>    // Map (XPath 3.0+)
-  | Function;        // Function item (XPath 3.0+)
+    | XPathNode[] // Node set (XPath 1.0) / sequence of nodes (XPath 2.0+)
+    | string // String
+    | number // Number
+    | boolean // Boolean
+    | any[] // Sequence (XPath 2.0+)
+    | Map<any, any> // Map (XPath 3.0+)
+    | Function; // Function item (XPath 3.0+)
 ```
 
 ### Sequence Support
@@ -150,7 +155,7 @@ const result = fromSequence(sequence);
 
 // Check if value is a sequence
 if (isSequence(value)) {
-  console.log('Items:', value.items);
+    console.log('Items:', value.items);
 }
 ```
 
@@ -195,10 +200,10 @@ A type system infrastructure has been prepared:
 
 ```typescript
 interface XPathType {
-  name: string;                    // 'xs:string', 'xs:integer', etc.
-  category: 'atomic' | 'node' | 'function' | 'sequence';
-  optional?: boolean;              // Accepts empty sequence
-  cardinality?: 'one' | 'zero-or-one' | 'zero-or-more' | 'one-or-more';
+    name: string; // 'xs:string', 'xs:integer', etc.
+    category: 'atomic' | 'node' | 'function' | 'sequence';
+    optional?: boolean; // Accepts empty sequence
+    cardinality?: 'one' | 'zero-or-one' | 'zero-or-more' | 'one-or-more';
 }
 ```
 
@@ -214,58 +219,58 @@ interface XPathType {
 ### Phase 1: XPath 2.0 Core (Priority)
 
 1. **Sequences**
-   - Replace node-set with sequence throughout
-   - Implement sequence operators and functions
-   - Update all existing functions to work with sequences
+    - Replace node-set with sequence throughout
+    - Implement sequence operators and functions
+    - Update all existing functions to work with sequences
 
 2. **Type System**
-   - Atomic type definitions
-   - Type casting (`cast as`, `castable as`)
-   - Type checking (`instance of`)
-   - Schema-aware type system (optional)
+    - Atomic type definitions
+    - Type casting (`cast as`, `castable as`)
+    - Type checking (`instance of`)
+    - Schema-aware type system (optional)
 
 3. **New Expressions**
-   - `if-then-else` expressions
-   - Range expressions (`1 to 10`)
-   - Quantified expressions (`some $x in ... satisfies ...`)
+    - `if-then-else` expressions
+    - Range expressions (`1 to 10`)
+    - Quantified expressions (`some $x in ... satisfies ...`)
 
 4. **FLWOR Expressions**
-   - `for` clause
-   - `let` clause
-   - `where` clause
-   - `order by` clause
-   - `return` clause
+    - `for` clause
+    - `let` clause
+    - `where` clause
+    - `order by` clause
+    - `return` clause
 
 5. **Function Library**
-   - Add 100+ XPath 2.0 functions
-   - Categorize by: String, Numeric, Date/Time, Sequence, etc.
+    - Add 100+ XPath 2.0 functions
+    - Categorize by: String, Numeric, Date/Time, Sequence, etc.
 
 ### Phase 2: XPath 3.0 Extensions
 
 1. **Higher-Order Functions**
-   - Functions as values
-   - Function items
-   - Inline function expressions
-   - Partial function application
+    - Functions as values
+    - Function items
+    - Inline function expressions
+    - Partial function application
 
 2. **Map and Array**
-   - Map data structure
-   - Array data structure
-   - Map/array functions
+    - Map data structure
+    - Array data structure
+    - Map/array functions
 
 3. **Arrow Operator**
-   - Pipeline-style function application
+    - Pipeline-style function application
 
 ### Phase 3: XPath 3.1 Enhancements
 
 1. **Map/Array Constructors**
-   - `map{}` syntax
-   - `array{}` syntax
+    - `map{}` syntax
+    - `array{}` syntax
 
 2. **JSON Support**
-   - `json-doc()` function
-   - `parse-json()` function
-   - JSON serialization
+    - `json-doc()` function
+    - `parse-json()` function
+    - JSON serialization
 
 ## Backward Compatibility
 
@@ -279,11 +284,13 @@ All versions maintain backward compatibility:
 ## Testing Strategy
 
 ### Current Tests (XPath 1.0)
+
 - ✅ 390 tests covering all XPath 1.0 features
 - ✅ 100% coverage of core expression types
 - ✅ XSLT extensions integration tests
 
 ### Future Tests (XPath 2.0+)
+
 - Version-specific test suites
 - Feature flag tests
 - Cross-version compatibility tests
@@ -294,17 +301,17 @@ All versions maintain backward compatibility:
 The architecture supports three types of extensions:
 
 1. **XSLT Extensions** - Already implemented
-   - XSLT-specific functions
-   - Clean separation from XPath core
+    - XSLT-specific functions
+    - Clean separation from XPath core
 
 2. **Custom Functions** - Already supported
-   - User-defined functions via context
-   - Full access to evaluation context
+    - User-defined functions via context
+    - Full access to evaluation context
 
 3. **Version Extensions** - Prepared
-   - Version-specific expression types
-   - Version-specific function libraries
-   - Feature flags for gradual rollout
+    - Version-specific expression types
+    - Version-specific function libraries
+    - Feature flags for gradual rollout
 
 ## Development Guidelines
 

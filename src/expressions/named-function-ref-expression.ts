@@ -50,7 +50,10 @@ export class XPathNamedFunctionRef extends XPathExpression {
      */
     private resolveFunction(context: XPathContext): XPathFunctionItem | null {
         // Parse the name to get namespace and local name
-        const { namespace: parsedNamespace, localName } = this.parseNameWithNamespace(this.name, context);
+        const { namespace: parsedNamespace, localName } = this.parseNameWithNamespace(
+            this.name,
+            context
+        );
 
         // Use the parsed namespace
         const namespace = parsedNamespace;
@@ -58,13 +61,13 @@ export class XPathNamedFunctionRef extends XPathExpression {
         // Try to get built-in function - first try local name, then with namespace prefix
         let builtIn = getBuiltInFunction(localName);
         let lookupName = localName;
-        
+
         // If not found and namespace is math, try with math: prefix
         if (!builtIn && namespace === MATH_NAMESPACE) {
             builtIn = getBuiltInFunction('math:' + localName);
             lookupName = 'math:' + localName;
         }
-        
+
         if (builtIn) {
             // Verify arity matches
             const expectedArity = getBuiltInFunctionArity(lookupName);
@@ -90,7 +93,8 @@ export class XPathNamedFunctionRef extends XPathExpression {
         // Check context's function registry
         if (context.functionRegistry) {
             // Try looking up by local name or full name
-            const registeredFunc = context.functionRegistry[localName] || context.functionRegistry[this.name];
+            const registeredFunc =
+                context.functionRegistry[localName] || context.functionRegistry[this.name];
             if (registeredFunc) {
                 return {
                     __isFunctionItem: true as const,
@@ -125,15 +129,15 @@ export class XPathNamedFunctionRef extends XPathExpression {
     private arityMatches(funcName: string, arity: number): boolean {
         // Some functions have variable arity
         const variableArityFuncs: Record<string, [number, number]> = {
-            'concat': [2, Infinity],
-            'substring': [2, 3],
+            concat: [2, Infinity],
+            substring: [2, 3],
             'string-join': [1, 2],
             'normalize-space': [0, 1],
             'string-length': [0, 1],
             'local-name': [0, 1],
             'namespace-uri': [0, 1],
-            'name': [0, 1],
-            'round': [1, 2],
+            name: [0, 1],
+            round: [1, 2],
             'format-number': [2, 3],
         };
 
@@ -150,7 +154,10 @@ export class XPathNamedFunctionRef extends XPathExpression {
      * Parse a QName or EQName into namespace and local name.
      * Handles both prefix:local format and Q{uri}local format.
      */
-    private parseNameWithNamespace(name: string, context: XPathContext): { namespace?: string; localName: string } {
+    private parseNameWithNamespace(
+        name: string,
+        context: XPathContext
+    ): { namespace?: string; localName: string } {
         // Check if it's an EQName (Q{uri}local)
         if (name.startsWith('Q{')) {
             const match = name.match(/^Q\{([^}]*)\}(.+)$/);
@@ -168,7 +175,7 @@ export class XPathNamedFunctionRef extends XPathExpression {
         if (colonIndex > 0) {
             const prefix = name.substring(0, colonIndex);
             const localName = name.substring(colonIndex + 1);
-            
+
             // Resolve prefix to namespace
             let namespace: string | undefined;
             if (prefix === 'fn') {
@@ -178,10 +185,10 @@ export class XPathNamedFunctionRef extends XPathExpression {
             } else if (context.namespaces && context.namespaces[prefix]) {
                 namespace = context.namespaces[prefix];
             }
-            
+
             return { namespace, localName };
         }
-        
+
         // No prefix, use default function namespace
         return { namespace: FN_NAMESPACE, localName: name };
     }
