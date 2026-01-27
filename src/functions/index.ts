@@ -23,3 +23,5 @@ export * from './string-functions-30';
 export * from './array-functions';
 export * from './map-functions';
 export * from './json-functions';
+export * from './xslt-streaming-functions';
+export { serializationFunctions } from './serialization-functions';
