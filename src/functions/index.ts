@@ -22,3 +22,4 @@ export * from './environment-functions';
 export * from './string-functions-30';
 export * from './array-functions';
 export * from './map-functions';
+export * from './json-functions';

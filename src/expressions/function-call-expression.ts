@@ -16,7 +16,9 @@ import * as SEQ from '../functions/sequence-functions';
 import * as ENV from '../functions/environment-functions';
 import * as STR30 from '../functions/string-functions-30';
 import * as ARRAY from '../functions/array-functions';
+
 import * as MAP from '../functions/map-functions';
+import * as JSONF from '../functions/json-functions';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -256,6 +258,9 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'map:for-each': MAP.mapForEach,
     'map:remove': MAP.mapRemove,
 
+    // JSON functions (XPath 3.1)
+    'parse-json': JSONF.parseJson,
+
     // String functions (XPath 3.0 additions)
     'analyze-string': STR30.analyzeString,
     'format-integer': STR30.formatInteger,
@@ -347,6 +352,9 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'map:merge': [1, 2],
     'map:for-each': [2, 2],
     'map:remove': [2, 2],
+
+    // JSON functions (XPath 3.1)
+    'parse-json': [1, 2],
 
     // String functions (XPath 3.0 additions)
     'analyze-string': [2, 3],
