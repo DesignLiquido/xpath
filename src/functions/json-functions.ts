@@ -22,6 +22,7 @@ import { XPathError } from '../errors';
 import { JsonToXmlConverter } from '../expressions/json-to-xml-converter';
 import { XPathNode } from '../node';
 import { NodeType } from '../constants';
+import { XPathContext } from '../context';
 
 // Helper: Convert JS value to XPath map/array/atomic
 function jsToXPath(value: any): any {
@@ -43,7 +44,8 @@ function jsToXPath(value: any): any {
 }
 
 // Main: fn:parse-json($json-string as xs:string, $options as map(*)?) as item()?
-export function parseJson(jsonString: any, options?: any): any {
+// Internal implementation (doesn't take context parameter)
+function parseJsonImpl(jsonString: any, options?: any): any {
     if (typeof jsonString !== 'string')
         throw new XPathError('XPTY0004', 'parse-json: first argument must be a string');
     let opts = { liberal: false, duplicates: 'use-last' };
@@ -64,6 +66,18 @@ export function parseJson(jsonString: any, options?: any): any {
     } catch (e: any) {
         throw new XPathError('FOJS0001', 'parse-json: ' + (e && e.message ? e.message : String(e)));
     }
+}
+
+// Exported with overloads to support both XPath system (with context) and direct calls (without context)
+export function parseJson(jsonString: any, options?: any): any;
+export function parseJson(_context: XPathContext, jsonString: any, options?: any): any;
+export function parseJson(_contextOrJson: any, jsonStringOrOptions?: any, options?: any): any {
+    // If first arg is a string, it's direct call (no context)
+    if (typeof _contextOrJson === 'string') {
+        return parseJsonImpl(_contextOrJson, jsonStringOrOptions);
+    }
+    // Otherwise first arg is context, shift parameters
+    return parseJsonImpl(jsonStringOrOptions, options);
 }
 
 // Helper: Convert XPath value to JSON-serializable JS value
@@ -93,7 +107,8 @@ function xpathToJs(value: any): any {
 
 // Main: fn:serialize($value as item()*, $options as map(*)?) as xs:string
 // Serializes XPath values to JSON string representation
-export function serialize(value: any, options?: any): string {
+// Internal implementation
+function serializeImpl(value: any, options?: any): string {
     let opts = { indent: undefined, method: 'json' };
     if (options && isXPathMap(options)) {
         const ind = options['indent'];
@@ -129,6 +144,27 @@ export function serialize(value: any, options?: any): string {
     }
 }
 
+// Exported with overloads to support both XPath system (with context) and direct calls (without context)
+export function serialize(value: any, options?: any): string;
+export function serialize(_context: XPathContext, value: any, options?: any): string;
+export function serialize(_contextOrValue: any, valueOrOptions?: any, options?: any): string {
+    // If we have 3 parameters, first is context
+    if (options !== undefined) {
+        return serializeImpl(valueOrOptions, options);
+    }
+    // If first arg is an object without data properties (__isMap, __isArray, or other keys),
+    // and we have a second arg, then first is likely context
+    if (_contextOrValue && typeof _contextOrValue === 'object' &&
+        !('__isMap' in _contextOrValue) &&
+        !('__isArray' in _contextOrValue) &&
+        valueOrOptions !== undefined) {
+        // First arg appears to be context (empty {} or context object), second is the value
+        return serializeImpl(valueOrOptions, options);
+    }
+    // Otherwise first arg is the value to serialize
+    return serializeImpl(_contextOrValue, valueOrOptions);
+}
+
 // Export for function registry
 export const jsonFunctions = {
     'parse-json': parseJson,
@@ -136,7 +172,8 @@ export const jsonFunctions = {
 
 // Main: fn:json-to-xml($json-string as xs:string?, $options as map(*)?) as node()?
 // Converts JSON string to XML document representation
-export function jsonToXml(jsonString: any, options?: any): XPathNode | null {
+// Internal implementation
+function jsonToXmlImpl(jsonString: any, options?: any): XPathNode | null {
     // Handle null/empty input
     if (jsonString === null || jsonString === undefined || jsonString === '') {
         return null;
@@ -164,6 +201,22 @@ export function jsonToXml(jsonString: any, options?: any): XPathNode | null {
             'json-to-xml: ' + (e && e.message ? e.message : String(e))
         );
     }
+}
+
+// Exported with overloads to support both XPath system (with context) and direct calls (without context)
+export function jsonToXml(jsonString: any, options?: any): XPathNode | null;
+export function jsonToXml(_context: XPathContext, jsonString: any, options?: any): XPathNode | null;
+export function jsonToXml(_contextOrJson: any, jsonStringOrOptions?: any, options?: any): XPathNode | null {
+    // If first arg is a string or null/undefined, it's direct call (no context)
+    if (typeof _contextOrJson === 'string' || _contextOrJson === null || _contextOrJson === undefined) {
+        return jsonToXmlImpl(_contextOrJson, jsonStringOrOptions);
+    }
+    // If first arg is a number or other non-string/non-object, it's an error in direct call
+    if (typeof _contextOrJson !== 'object') {
+        throw new XPathError('XPTY0004', 'json-to-xml: first argument must be a string or null');
+    }
+    // First arg is an object (context), shift parameters
+    return jsonToXmlImpl(jsonStringOrOptions, options);
 }
 
 // Helper: Convert XML node tree back to JSON representation
@@ -241,13 +294,25 @@ function nodeToJsonValue(node: XPathNode | null): any {
 // Converts XML nodes to JSON string representation (inverse of json-to-xml)
 // Note: First parameter is context for BUILT_IN_FUNCTIONS compatibility
 export function xmlToJson(context: any, nodes?: any): string | null {
+    // When called from BUILT_IN_FUNCTIONS, context is always first parameter
+    // When called directly, first arg could be the nodes
+    // We check if second parameter exists - if so, first is context
+    let actualNodes: any;
+    if (nodes !== undefined) {
+        // context + nodes provided
+        actualNodes = nodes;
+    } else {
+        // Only one arg - treat as nodes (direct call)
+        actualNodes = context;
+    }
+
     // Handle empty sequence or null
-    if (nodes === null || nodes === undefined) {
+    if (actualNodes === null || actualNodes === undefined) {
         return null;
     }
 
     // Convert to array if not already
-    let nodeList: any[] = Array.isArray(nodes) ? nodes : [nodes];
+    let nodeList: any[] = Array.isArray(actualNodes) ? actualNodes : [actualNodes];
 
     // Filter out non-nodes
     nodeList = nodeList.filter((n) => n && typeof n === 'object' && 'nodeType' in n);
@@ -274,3 +339,4 @@ export function xmlToJson(context: any, nodes?: any): string | null {
         );
     }
 }
+// Exported with overloads to support both XPath system (with context) and direct calls (without context)
