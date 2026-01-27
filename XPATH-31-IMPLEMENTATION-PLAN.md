@@ -430,20 +430,36 @@ All infrastructure is **already in place**:
 
 **Priority:** MEDIUM | **Effort:** 4-6 days | **Dependencies:** Task Groups 1-2
 
-##### 6.1 TypedMapTest
+##### 6.1 TypedMapTest ✓ COMPLETE
 
-- [ ] **Syntax:** `map(key-type, value-type)`
-    - [ ] Parse map type pattern
-    - [ ] Support `map(*)` (any map)
-    - [ ] Support `map(xs:string, xs:integer)` (typed)
-    - **Files:** `src/types/sequence-type-matcher.ts`
+- [x] **Syntax:** `map(key-type, value-type)` ✓ IMPLEMENTED
+    - [x] Parse map type pattern ✓
+    - [x] Support `map(*)` (any map) ✓
+    - [x] Support `map(xs:string, xs:integer)` (typed) ✓
+    - **Files:** `src/types/typed-collection-types.ts`, `src/parser/parser-30.ts`, `src/parser/parser-20.ts`
+    - **Status:** Fully functional with 62 comprehensive tests
 
-- [ ] **Type Matching**
-    - [ ] Check keys are of specified type
-    - [ ] Check values are of specified type
-    - [ ] Handle `instance of` expressions
-    - [ ] Support in `treat as` expressions
-    - **Tests:** `tests/typed-map-test.test.ts` (create)
+- [x] **Type Matching** ✓ IMPLEMENTED
+    - [x] Check keys are of specified type ✓
+    - [x] Check values are of specified type ✓
+    - [x] Handle `instance of` expressions ✓
+    - [x] Support in `treat as` expressions ✓
+    - **Tests:** `tests/typed-map-test.test.ts` - 62/62 PASSING ✓
+
+**Implementation Details:**
+
+- Created `TypedMapItemType` and `TypedArrayItemType` interfaces in `src/types/typed-collection-types.ts`
+- Added parser support for `map(key-type, value-type)` and `map(*)` syntax
+- Implemented runtime type checking with key and value type constraints
+- Enhanced `matchesItemType` to handle typed collection types properly
+- Supports nested types: `map(xs:string, map(xs:integer, xs:string))` and `map(xs:string, array(xs:integer))`
+- Comprehensive test coverage including:
+    - Basic wildcard matching (`map(*)`)
+    - Typed key/value matching
+    - Nested type structures
+    - Instance-of and treat-as expressions
+    - Occurrence indicators (`?`, `*`, `+`)
+    - Error handling and edge cases
 
 ##### 6.2 TypedArrayTest
 

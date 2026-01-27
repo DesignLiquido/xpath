@@ -57,6 +57,16 @@ export {
     MatchResult,
 } from './sequence-type-matcher';
 
+// Re-export Typed Collection Types (XPath 3.1)
+export {
+    TypedMapItemType,
+    TypedArrayItemType,
+    createTypedMapTest,
+    createTypedArrayTest,
+    isTypedMapTest,
+    isTypedArrayTest,
+} from './typed-collection-types';
+
 // Re-export Type Promotion system
 export {
     NumericTypeHierarchy,

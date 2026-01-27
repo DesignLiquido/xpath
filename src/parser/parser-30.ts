@@ -606,6 +606,58 @@ export class XPath30Parser extends XPath20Parser {
             return createItemSequenceType(ITEM_TYPE, occurrence);
         }
 
+        // map(key-type, value-type) - XPath 3.1
+        if (this.checkNameInternal('map')) {
+            this.advance();
+            this.consume('OPEN_PAREN', "Expected '(' after map");
+
+            // Check for map(*) or map(key-type, value-type)
+            let keyType: SequenceType | null = null;
+            let valueType: SequenceType | null = null;
+
+            if (this.match('ASTERISK')) {
+                // map(*) - any map
+                this.consume('CLOSE_PAREN', "Expected ')' after map(*)");
+            } else {
+                // map(key-type, value-type)
+                keyType = this.parseSequenceTypeInternal();
+                this.consume('COMMA', "Expected ',' after key type in map()");
+                valueType = this.parseSequenceTypeInternal();
+                this.consume('CLOSE_PAREN', "Expected ')' after map type");
+            }
+
+            const occurrence = this.parseOccurrenceIndicatorInternal();
+
+            // Create typed map test
+            const { createTypedMapTest } = require('../types/typed-collection-types');
+            const mapItemType = createTypedMapTest(keyType, valueType);
+            return createItemSequenceType(mapItemType, occurrence);
+        }
+
+        // array(member-type) - XPath 3.1
+        if (this.checkNameInternal('array')) {
+            this.advance();
+            this.consume('OPEN_PAREN', "Expected '(' after array");
+
+            let memberType: SequenceType | null = null;
+
+            if (this.match('ASTERISK')) {
+                // array(*) - any array
+                this.consume('CLOSE_PAREN', "Expected ')' after array(*)");
+            } else {
+                // array(member-type)
+                memberType = this.parseSequenceTypeInternal();
+                this.consume('CLOSE_PAREN', "Expected ')' after array type");
+            }
+
+            const occurrence = this.parseOccurrenceIndicatorInternal();
+
+            // Create typed array test
+            const { createTypedArrayTest } = require('../types/typed-collection-types');
+            const arrayItemType = createTypedArrayTest(memberType);
+            return createItemSequenceType(arrayItemType, occurrence);
+        }
+
         // function(...) type - simplified handling
         if (this.checkReservedWordInternal('function')) {
             this.advance();

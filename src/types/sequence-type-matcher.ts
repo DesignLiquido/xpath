@@ -40,6 +40,15 @@ export interface MatchResult {
  * @returns true if the value matches the ItemType
  */
 export function matchesItemType(value: any, itemType: ItemType): boolean {
+    // Check for typed collection types (map/array) which have their own wildcard semantics
+    // These should use their matches() method directly, not the isWildcard shortcut
+    const hasMapTest = (itemType as any).isMapTest;
+    const hasArrayTest = (itemType as any).isArrayTest;
+
+    if (hasMapTest || hasArrayTest) {
+        return itemType.matches(value);
+    }
+
     if (itemType.isWildcard) {
         // item() matches any single value
         return value !== null && value !== undefined;
@@ -100,10 +109,23 @@ export function matchesSequenceType(values: any, sequenceType: SequenceType): Ma
     const unmatched = sequence.findIndex((item) => !matchesItemType(item, typedItemType));
 
     if (unmatched !== -1) {
+        const unmatchedItem = sequence[unmatched];
+        // Handle object/array conversion safely for error messages
+        let itemDesc: string;
+        try {
+            if (typeof unmatchedItem === 'object' && unmatchedItem !== null) {
+                itemDesc = JSON.stringify(unmatchedItem);
+            } else {
+                itemDesc = String(unmatchedItem);
+            }
+        } catch {
+            itemDesc = '[complex value]';
+        }
+
         return {
             matches: false,
             itemCount: sequence.length,
-            reason: `Item ${unmatched} (${sequence[unmatched]}) does not match ${typedItemType.name}`,
+            reason: `Item ${unmatched} (${itemDesc}) does not match ${typedItemType.name}`,
         };
     }
 
