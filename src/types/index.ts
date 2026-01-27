@@ -67,6 +67,9 @@ export {
     isTypedArrayTest,
 } from './typed-collection-types';
 
+// Re-export Union Types (XPath 3.1 Extension)
+export { UnionItemType, createUnionType, isUnionType } from './union-type';
+
 // Re-export Type Promotion system
 export {
     NumericTypeHierarchy,

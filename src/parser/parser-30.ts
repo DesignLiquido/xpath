@@ -588,7 +588,7 @@ export class XPath30Parser extends XPath20Parser {
     /**
      * Parse sequence type for type annotations.
      */
-    private parseSequenceTypeInternal(): SequenceType {
+    protected parseSequenceTypeInternal(): SequenceType {
         // empty-sequence()
         if (this.checkNameInternal('empty-sequence')) {
             this.advance();

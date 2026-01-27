@@ -298,4 +298,102 @@ export class XPath31Parser extends XPath30Parser {
 
         return new XPathLookupExpression(baseExpr, keySpecifier);
     }
+
+    /**
+     * Override parseSequenceType to support union types (XPath 3.1 Extension)
+     * Syntax: type1 | type2 | ... | typeN
+     *
+     * Examples:
+     *   xs:string | xs:integer
+     *   (xs:integer | xs:decimal) | xs:double
+     */
+    protected parseSequenceType(): any {
+        // Parse the first type
+        let firstType = super.parseSequenceType();
+
+        // Check for union operator |
+        if (this.check('PIPE')) {
+            const memberTypes: any[] = [firstType];
+
+            // Parse additional types in the union
+            while (this.match('PIPE')) {
+                const nextType = super.parseSequenceType();
+                memberTypes.push(nextType);
+            }
+
+            // Create union type from all member types
+            const { createUnionType } = require('../types/union-type');
+            const { createItemSequenceType } = require('../types/sequence-type');
+
+            // Extract ItemTypes from SequenceTypes (they all should have same occurrence)
+            const itemTypes = memberTypes.map((st) => {
+                if (st.getItemType && typeof st.getItemType === 'function') {
+                    const itemType = st.getItemType();
+                    if (itemType === 'empty') {
+                        throw new Error('empty-sequence() cannot be used in union types');
+                    }
+                    return itemType;
+                }
+                return st;
+            });
+
+            // Get the occurrence indicator (use the first one, all should be compatible)
+            const occurrence = firstType.getOccurrence ? firstType.getOccurrence() : 'ONE';
+
+            // Create union ItemType
+            const unionItemType = createUnionType(...itemTypes);
+
+            // Wrap in SequenceType with the occurrence indicator
+            return createItemSequenceType(unionItemType, occurrence);
+        }
+
+        return firstType;
+    }
+
+    /**
+     * Override parseSequenceTypeInternal to support union types in type annotations
+     * This is called from instance of, treat as, cast as, etc.
+     */
+    protected parseSequenceTypeInternal(): any {
+        // Parse the first type using parent's internal method
+        let firstType = super['parseSequenceTypeInternal']();
+
+        // Check for union operator |
+        if (this.check('PIPE')) {
+            const memberTypes: any[] = [firstType];
+
+            // Parse additional types in the union
+            while (this.match('PIPE')) {
+                const nextType = super['parseSequenceTypeInternal']();
+                memberTypes.push(nextType);
+            }
+
+            // Create union type from all member types
+            const { createUnionType } = require('../types/union-type');
+            const { createItemSequenceType } = require('../types/sequence-type');
+
+            // Extract ItemTypes from SequenceTypes
+            const itemTypes = memberTypes.map((st) => {
+                if (st.getItemType && typeof st.getItemType === 'function') {
+                    const itemType = st.getItemType();
+                    if (itemType === 'empty') {
+                        throw new Error('empty-sequence() cannot be used in union types');
+                    }
+                    return itemType;
+                }
+                return st;
+            });
+
+            // Get the occurrence indicator
+            const occurrence = firstType.getOccurrence ? firstType.getOccurrence() : 'ONE';
+
+            // Create union ItemType
+            const unionItemType = createUnionType(...itemTypes);
+
+            // Wrap in SequenceType
+            return createItemSequenceType(unionItemType, occurrence);
+        }
+
+        return firstType;
+    }
 }

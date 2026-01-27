@@ -162,7 +162,7 @@ export class XPath20Parser extends XPathBaseParser {
         return { variable: name, expression };
     }
 
-    private parseSequenceType(): SequenceType {
+    protected parseSequenceType(): SequenceType {
         if (this.checkName('empty-sequence')) {
             this.advance();
             this.consume('OPEN_PAREN', "Expected '(' after empty-sequence");

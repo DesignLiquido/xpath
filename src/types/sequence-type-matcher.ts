@@ -40,6 +40,12 @@ export interface MatchResult {
  * @returns true if the value matches the ItemType
  */
 export function matchesItemType(value: any, itemType: ItemType): boolean {
+    // Check for union types (XPath 3.1 Extension)
+    const { isUnionType } = require('./union-type');
+    if (isUnionType(itemType)) {
+        return itemType.matches(value);
+    }
+
     // Check for typed collection types (map/array) which have their own wildcard semantics
     // These should use their matches() method directly, not the isWildcard shortcut
     const hasMapTest = (itemType as any).isMapTest;
