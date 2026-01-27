@@ -12,6 +12,10 @@ export class XPathStringLiteral extends XPathExpression {
     evaluate(_context: XPathContext): string {
         return this.value;
     }
+
+    toString(): string {
+        return `"${this.value}"`;
+    }
 }
 
 export class XPathNumberLiteral extends XPathExpression {
@@ -24,5 +28,9 @@ export class XPathNumberLiteral extends XPathExpression {
 
     evaluate(_context: XPathContext): number {
         return this.value;
+    }
+
+    toString(): string {
+        return this.value.toString();
     }
 }

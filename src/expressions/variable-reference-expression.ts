@@ -21,4 +21,8 @@ export class XPathVariableReference extends XPathExpression {
 
         return context.variables[this.name];
     }
+
+    toString(): string {
+        return `$${this.name}`;
+    }
 }

@@ -17,6 +17,7 @@ import {
     XPathSquareBracketArrayConstructor,
     XPathCurlyBraceArrayConstructor
 } from "../expressions/array-constructor-expression";
+import { XPathLookupExpression, KeySpecifier, KeySpecifierType } from "../expressions/lookup-expression";
 import { XPathVariableReference } from "../expressions";
 import { XPathBaseParserOptions } from "../xslt-extensions";
 import { XPath30Parser } from "./parser-30";
@@ -64,6 +65,11 @@ export class XPath31Parser extends XPath30Parser {
         // Square bracket array constructor: [item, item, ...] (XPath 3.1)
         if (this.check('OPEN_SQUARE_BRACKET')) {
             return this.parseSquareBracketArrayConstructor();
+        }
+
+        // Unary lookup operator: ?key (when context item is map/array) (XPath 3.1)
+        if (this.check('QUESTION')) {
+            return this.parseLookupExpr(null);
         }
 
         // Delegate to XPath 3.0 parser for other primary expressions
@@ -221,5 +227,54 @@ export class XPath31Parser extends XPath30Parser {
         this.consume('CLOSE_CURLY_BRACKET', "Expected '}' after array expression");
 
         return new XPathCurlyBraceArrayConstructor(expr);
+    }
+
+    /**
+     * Override parseFilterExpr to handle lookup operators after predicates.
+     * Lookup operators have lower precedence than predicates.
+     */
+    protected parseFilterExpr(): XPathExpression {
+        // First parse the base expression (which may include dynamic function calls and predicates)
+        let expr = super.parseFilterExpr();
+
+        // Check for lookup operators: expr?key (can be chained)
+        while (this.check('QUESTION')) {
+            expr = this.parseLookupExpr(expr);
+        }
+
+        return expr;
+    }
+
+    /**
+     * Parse a lookup expression: ?key, ?1, ?(expr), ?*
+     */
+    private parseLookupExpr(baseExpr: XPathExpression): XPathExpression {
+        this.consume('QUESTION', 'Expected ? for lookup operator');
+
+        let keySpecifier: KeySpecifier;
+
+        if (this.match('ASTERISK')) {
+            // Wildcard: ?*
+            keySpecifier = { type: KeySpecifierType.WILDCARD };
+        } else if (this.check('OPEN_PAREN')) {
+            // Parenthesized expression: ?(expr)
+            this.advance(); // consume '('
+            const expr = this.parseExpr();
+            this.consume('CLOSE_PAREN', "Expected ')' after lookup expression");
+            keySpecifier = { type: KeySpecifierType.PARENTHESIZED_EXPR, value: expr };
+        } else if (this.check('NUMBER')) {
+            // Integer literal: ?1, ?2, etc.
+            const numToken = this.advance();
+            const position = parseInt(numToken.lexeme, 10);
+            keySpecifier = { type: KeySpecifierType.INTEGER_LITERAL, value: position };
+        } else if (this.peek()?.type === 'IDENTIFIER' || this.peek()?.type === 'FUNCTION' || this.peek()?.type === 'OPERATOR' || this.peek()?.type === 'LOCATION' || this.peek()?.type === 'NODE_TYPE') {
+            // NCName: ?key
+            const name = this.advance().lexeme;
+            keySpecifier = { type: KeySpecifierType.NCNAME, value: name };
+        } else {
+            throw new Error('Expected key specifier after ?');
+        }
+
+        return new XPathLookupExpression(baseExpr, keySpecifier);
     }
 }

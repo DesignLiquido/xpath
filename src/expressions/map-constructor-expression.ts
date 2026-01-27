@@ -28,6 +28,21 @@ export interface MapConstructorEntry {
 }
 
 /**
+ * Check if a value is an XPath map.
+ */
+export function isXPathMap(value: any): value is XPathMap {
+    return value && typeof value === 'object' && value.__isMap === true;
+}
+
+/**
+ * Represents an XPath map with string keys and arbitrary values.
+ */
+export interface XPathMap {
+    __isMap: true;
+    [key: string]: any;
+}
+
+/**
  * Map Constructor Expression: map { key: value, ... }
  *
  * Creates a map data structure from key-value pairs.
