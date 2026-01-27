@@ -44,8 +44,9 @@ export function matchesItemType(value: any, itemType: ItemType): boolean {
     // These should use their matches() method directly, not the isWildcard shortcut
     const hasMapTest = (itemType as any).isMapTest;
     const hasArrayTest = (itemType as any).isArrayTest;
+    const hasFunctionTest = (itemType as any).isFunctionTest;
 
-    if (hasMapTest || hasArrayTest) {
+    if (hasMapTest || hasArrayTest || hasFunctionTest) {
         return itemType.matches(value);
     }
 

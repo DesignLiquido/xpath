@@ -126,9 +126,11 @@ export { IntegerDerivedTypeImpl } from './integer-derived-types';
 export {
     FunctionType,
     FunctionItem,
+    FunctionTestItemType,
     createFunctionItem,
     isFunctionItem,
     createFunctionType,
+    createFunctionTest,
     describeFunctionType,
     FN_NAMESPACE,
     MATH_NAMESPACE,

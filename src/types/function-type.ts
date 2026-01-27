@@ -10,7 +10,7 @@
  * Reference: https://www.w3.org/TR/xpath-30/#id-function-item-types
  */
 
-import { SequenceType } from './sequence-type';
+import { ItemType, SequenceType } from './sequence-type';
 
 /**
  * Represents the type signature of a function.
@@ -54,6 +54,20 @@ export interface FunctionItem {
 }
 
 /**
+ * Function test item type (e.g., function(*)) for sequence type matching.
+ */
+export interface FunctionTestItemType extends ItemType {
+    /** Marker to identify this as a function() test */
+    readonly isFunctionTest: true;
+    /** Parameter type constraints (undefined/null means wildcard) */
+    readonly parameterTypes?: SequenceType[] | null;
+    /** Return type constraint (undefined/null means wildcard) */
+    readonly returnType?: SequenceType | null;
+    /** Whether this is the wildcard function(*) test */
+    readonly isWildcard: boolean;
+}
+
+/**
  * Create a function item from an implementation.
  */
 export function createFunctionItem(
@@ -70,6 +84,69 @@ export function createFunctionItem(
         name,
         namespace,
         type,
+    };
+}
+
+/**
+ * Create a function() type test (supports function(*) wildcard).
+ */
+export function createFunctionTest(
+    parameterTypes: SequenceType[] | null = null,
+    returnType: SequenceType | null = null,
+    opts?: { isWildcard?: boolean }
+): FunctionTestItemType {
+    const isWildcard = opts?.isWildcard ?? (parameterTypes === null && returnType === null);
+    const paramCount = Array.isArray(parameterTypes) ? parameterTypes.length : undefined;
+
+    const typeName = isWildcard
+        ? 'function(*)'
+        : `function(${parameterTypes?.map((p) => p.toString()).join(', ') ?? ''})` +
+        (returnType ? ` as ${returnType.toString()}` : '');
+
+    return {
+        name: typeName,
+        isFunctionTest: true,
+        isWildcard,
+        parameterTypes: parameterTypes ?? undefined,
+        returnType: returnType ?? undefined,
+        matches(value: any): boolean {
+            if (value === null || value === undefined) {
+                return false;
+            }
+
+            const isFunctionItemLike =
+                (typeof value === 'object' && value.__isFunctionItem === true) ||
+                typeof value === 'function';
+
+            // Maps and arrays are function items in XPath 3.1
+            const isTypedMap = typeof value === 'object' && value?.__isMap === true;
+            const isTypedArray = typeof value === 'object' && value?.__isArray === true;
+
+            if (!isFunctionItemLike && !isTypedMap && !isTypedArray) {
+                return false;
+            }
+
+            if (isWildcard) {
+                return true;
+            }
+
+            // If we have parameter types, enforce arity equality when we can observe it
+            if (paramCount !== undefined) {
+                const observedArity = isTypedMap || isTypedArray
+                    ? 1
+                    : typeof value === 'function'
+                        ? value.length
+                        : typeof value?.arity === 'number'
+                            ? value.arity
+                            : undefined;
+
+                if (observedArity !== undefined && observedArity !== paramCount) {
+                    return false;
+                }
+            }
+
+            return true;
+        },
     };
 }
 

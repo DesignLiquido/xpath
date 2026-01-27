@@ -662,16 +662,39 @@ export class XPath30Parser extends XPath20Parser {
         if (this.checkReservedWordInternal('function')) {
             this.advance();
             this.consume('OPEN_PAREN', "Expected '(' after function");
-            // Skip function signature for now (can be complex)
-            let parenCount = 1;
-            while (parenCount > 0 && !this.isAtEnd()) {
-                if (this.match('OPEN_PAREN')) parenCount++;
-                else if (this.match('CLOSE_PAREN')) parenCount--;
-                else this.advance();
+
+            let parameterTypes: SequenceType[] | null = null;
+
+            if (this.match('ASTERISK')) {
+                // function(*) wildcard
+                this.consume('CLOSE_PAREN', "Expected ')' after function(*)");
+            } else if (this.check('CLOSE_PAREN')) {
+                // function() with no parameters
+                parameterTypes = [];
+                this.advance();
+            } else {
+                // Parse parameter type list: function(xs:string, xs:integer)
+                parameterTypes = [];
+                do {
+                    parameterTypes.push(this.parseSequenceTypeInternal());
+                } while (this.match('COMMA'));
+                this.consume('CLOSE_PAREN', "Expected ')' after function parameter types");
             }
+
+            // Optional return type: function(...) as returnType
+            let returnType: SequenceType | null = null;
+            if (this.checkReservedWordInternal('as')) {
+                this.advance();
+                returnType = this.parseSequenceTypeInternal();
+            }
+
             const occurrence = this.parseOccurrenceIndicatorInternal();
-            // Return item type for now - full function type support would need more work
-            return createItemSequenceType(ITEM_TYPE, occurrence);
+
+            const { createFunctionTest } = require('../types/function-type');
+            const functionItemType = createFunctionTest(parameterTypes, returnType, {
+                isWildcard: parameterTypes === null && returnType === null,
+            });
+            return createItemSequenceType(functionItemType, occurrence);
         }
 
         // Atomic type name
