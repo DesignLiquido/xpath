@@ -120,7 +120,7 @@ export abstract class XPathBaseParser {
         if (this.options.strict !== false && !supportedVersions.includes(resolvedVersion)) {
             throw new Error(
                 `XPath version ${resolvedVersion} is not supported by ${this.constructor.name}. ` +
-                    `Supported versions: ${supportedVersions.join(', ')}`
+                `Supported versions: ${supportedVersions.join(', ')}`
             );
         }
     }
