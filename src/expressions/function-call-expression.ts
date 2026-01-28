@@ -19,6 +19,7 @@ import * as ARRAY from '../functions/array-functions';
 
 import * as MAP from '../functions/map-functions';
 import * as JSONF from '../functions/json-functions';
+import * as QNAME from '../functions/qname-functions';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -311,6 +312,15 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'xs:unsignedInt': (_ctx, arg) => castAs(arg, 'unsignedInt'),
     'xs:unsignedShort': (_ctx, arg) => castAs(arg, 'unsignedShort'),
     'xs:unsignedByte': (_ctx, arg) => castAs(arg, 'unsignedByte'),
+
+    // XPath 2.0 QName Functions
+    QName: (_ctx, uri, qname) => QNAME.QName(uri, qname),
+    'resolve-QName': (_ctx, qname, element) => QNAME.resolveQName(qname, element),
+    'prefix-from-QName': (_ctx, arg) => QNAME.prefixFromQName(arg),
+    'local-name-from-QName': (_ctx, arg) => QNAME.localNameFromQName(arg),
+    'namespace-uri-from-QName': (_ctx, arg) => QNAME.namespaceUriFromQName(arg),
+    'in-scope-prefixes': (_ctx, element) => QNAME.inScopePrefixes(element),
+    'namespace-uri-for-prefix': (_ctx, prefix, element) => QNAME.namespaceUriForPrefix(prefix, element),
 };
 
 /**
@@ -443,6 +453,15 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'xs:unsignedInt': [1, 1],
     'xs:unsignedShort': [1, 1],
     'xs:unsignedByte': [1, 1],
+
+    // XPath 2.0 QName Functions
+    QName: [2, 2],
+    'resolve-QName': [2, 2],
+    'prefix-from-QName': [1, 1],
+    'local-name-from-QName': [1, 1],
+    'namespace-uri-from-QName': [1, 1],
+    'in-scope-prefixes': [1, 1],
+    'namespace-uri-for-prefix': [2, 2],
 };
 
 /**
