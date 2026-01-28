@@ -21,6 +21,7 @@ import * as MAP from '../functions/map-functions';
 import * as JSONF from '../functions/json-functions';
 import * as QNAME from '../functions/qname-functions';
 import * as URI from '../functions/uri-functions';
+import * as NODE from '../functions/node-functions';
 
 /**
  * Built-in function registry for XPath 3.0 function references.
@@ -328,6 +329,15 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'encode-for-uri': (_ctx, uriPart) => URI.encodeForUri(uriPart),
     'iri-to-uri': (_ctx, iri) => URI.iriToUri(iri),
     'escape-html-uri': (_ctx, uri) => URI.escapeHtmlUri(uri),
+
+    // XPath 2.0 Node Functions (enhanced)
+    root: (ctx, arg?) => NODE.root(arg, ctx),
+    'base-uri': (ctx, arg?) => NODE.baseUri(arg, ctx),
+    'document-uri': (ctx, arg?) => NODE.documentUri(arg, ctx),
+    nilled: (ctx, arg?) => NODE.nilled(arg, ctx),
+    'node-name': (ctx, arg?) => NODE.nodeName(arg, ctx),
+    data: (_ctx, arg) => NODE.data(arg),
+    lang: (ctx, testlang, node?) => NODE.lang(testlang, node, ctx),
 };
 
 /**
@@ -475,6 +485,15 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'encode-for-uri': [1, 1],
     'iri-to-uri': [1, 1],
     'escape-html-uri': [1, 1],
+
+    // XPath 2.0 Node Functions (enhanced)
+    root: [0, 1],
+    'base-uri': [0, 1],
+    'document-uri': [1, 1],
+    nilled: [1, 1],
+    'node-name': [1, 1],
+    data: [1, 1],
+    lang: [1, 2],
 };
 
 /**
