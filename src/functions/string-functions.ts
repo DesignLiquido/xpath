@@ -5,6 +5,7 @@
  */
 
 import { XPathContext, XPathResult } from '../context';
+import { translateXPathRegex, handleExtendedMode } from '../expressions/regex-parser';
 
 /**
  * fn:upper-case($arg as xs:string?) as xs:string
@@ -328,10 +329,11 @@ function createRegex(pattern: string, flags: string): RegExp {
     // Handle extended mode - remove whitespace and comments
     let processedPattern = pattern;
     if (extended) {
-        processedPattern = pattern
-            .replace(/#.*$/gm, '') // Remove comments
-            .replace(/\s+/g, ''); // Remove whitespace
+        processedPattern = handleExtendedMode(processedPattern);
     }
+
+    // Translate XPath regex features to JavaScript
+    processedPattern = translateXPathRegex(processedPattern);
 
     // Handle dot-all mode
     if (dotAll) {

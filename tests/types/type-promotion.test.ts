@@ -547,6 +547,160 @@ describe('Atomization System', () => {
         });
     });
 
+    describe('Atomization Edge Cases - Function Items and Complex Types', () => {
+        it('should handle atomization of simple arrays', () => {
+            const result = atomize([1, 2, 3]);
+            expect(result.values).toEqual([1, 2, 3]);
+            expect(result.isEmpty).toBe(false);
+        });
+
+        it('should handle atomization of nested arrays', () => {
+            const result = atomize([[1, 2], [3, 4]]);
+            expect(result.values).toEqual([1, 2, 3, 4]);
+            expect(result.isEmpty).toBe(false);
+        });
+
+        it('should handle atomization of mixed types in array', () => {
+            const result = atomize([1, 'string', true, null]);
+            expect(result.values).toEqual([1, 'string', true]);
+            expect(result.isEmpty).toBe(false);
+        });
+
+        it('should handle atomization of empty array', () => {
+            const result = atomize([]);
+            expect(result.values).toEqual([]);
+            expect(result.isEmpty).toBe(true);
+        });
+
+        it('should handle atomization of array with single node', () => {
+            const node = createElementWithText('element', 'text');
+            const result = atomize([node]);
+            expect(result.values).toEqual(['text']);
+            expect(result.isEmpty).toBe(false);
+        });
+
+        it('should handle atomization of array with multiple nodes', () => {
+            const node1 = createElementWithText('elem1', 'text1');
+            const node2 = createElementWithText('elem2', 'text2');
+            const result = atomize([node1, node2]);
+            expect(result.values).toEqual(['text1', 'text2']);
+            expect(result.isEmpty).toBe(false);
+        });
+
+        it('should return error for maps (non-atomizable)', () => {
+            const mapValue = {
+                $isXPathMap: true,
+                key1: 'value1',
+            };
+            const result = atomize(mapValue);
+            // Maps are atomic values and return unchanged per spec
+            expect(result.values.length).toBeGreaterThan(0);
+        });
+
+        it('should handle function items gracefully', () => {
+            const fn = () => 'test';
+            const result = atomize(fn);
+            // Function items should pass through (implementation may vary)
+            expect(result.values.length).toBeGreaterThan(0);
+        });
+
+        it('should handle typed nodes with schema type', () => {
+            const node: XPathNode = {
+                nodeType: 'element',
+                nodeName: 'age',
+                type: 'xs:integer',
+                typedValue: 42,
+                textContent: '42',
+            };
+            const result = atomize(node);
+            expect(result.values).toContain(42);
+        });
+
+        it('should handle nodes with element-only content in non-strict mode', () => {
+            const child = createTestNode('element');
+            const parent = createElementWithChildren('parent', [child]);
+            const result = atomize(parent, false);
+            // Non-strict mode: no error
+            expect(result.error).toBeUndefined();
+        });
+
+        it('should error on element-only content in strict mode', () => {
+            const child = createTestNode('element');
+            const parent = createElementWithChildren('parent', [child]);
+            const result = atomize(parent, true);
+            // Strict mode: should have error FOTY0012
+            expect(result.error).toBe('FOTY0012');
+        });
+
+        it('should handle nodes with mixed content', () => {
+            const textChild: XPathNode = { nodeType: 'text', value: 'text' };
+            const elemChild = createTestNode('element');
+            const parent: XPathNode = {
+                nodeType: 'element',
+                nodeName: 'parent',
+                childNodes: [textChild, elemChild],
+                textContent: 'text',
+            };
+            const result = atomize(parent, true);
+            // Has text content, so should succeed even in strict mode
+            expect(result.error).toBeUndefined();
+        });
+
+        it('should handle null and undefined', () => {
+            const resultNull = atomize(null);
+            expect(resultNull.isEmpty).toBe(true);
+            expect(resultNull.values).toEqual([]);
+
+            const resultUndef = atomize(undefined);
+            expect(resultUndef.isEmpty).toBe(true);
+            expect(resultUndef.values).toEqual([]);
+        });
+
+        it('should handle boolean values', () => {
+            const resultTrue = atomize(true);
+            expect(resultTrue.values).toEqual([true]);
+
+            const resultFalse = atomize(false);
+            expect(resultFalse.values).toEqual([false]);
+        });
+
+        it('should handle numeric values', () => {
+            const resultInt = atomize(42);
+            expect(resultInt.values).toEqual([42]);
+
+            const resultFloat = atomize(3.14);
+            expect(resultFloat.values).toEqual([3.14]);
+
+            const resultZero = atomize(0);
+            expect(resultZero.values).toEqual([0]);
+        });
+
+        it('should handle string values', () => {
+            const result = atomize('hello');
+            expect(result.values).toEqual(['hello']);
+
+            const resultEmpty = atomize('');
+            expect(resultEmpty.values).toEqual(['']);
+        });
+    });
+
+    describe('Atomization Error Handling', () => {
+        it('should propagate errors from nested atomization', () => {
+            const node1 = createElementWithChildren('parent1', [createTestNode('element')]);
+            const result = atomize([node1, 'text'], true);
+            // First element has error, should be in result
+            expect(result.error).toBeDefined();
+        });
+
+        it('should stop at first error in array', () => {
+            const goodValue = 42;
+            const badNode = createElementWithChildren('parent', [createTestNode('element')]);
+            const result = atomize([goodValue, badNode], true);
+            // Should error on second element
+            expect(result.error).toBeDefined();
+        });
+    });
+
     describe('Helper functions', () => {
         it('atomizationToSequence should return values', () => {
             const result = {

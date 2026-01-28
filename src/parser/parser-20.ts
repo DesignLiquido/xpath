@@ -7,6 +7,7 @@ import {
     XPathQuantifiedExpression,
     XPathTreatExpression,
     XPathUnionExpression,
+    RangeExpression,
 } from '../expressions';
 import { XPathToken } from '../lexer/token';
 import {
@@ -239,6 +240,39 @@ export class XPath20Parser extends XPathBaseParser {
         }
 
         return createAtomicSequenceType(atomicType, occurrence);
+    }
+
+    /**
+     * Override parseAdditiveExpr to insert range expression (to) parsing.
+     * Precedence: AdditiveExpr -> RangeExpr -> MultiplicativeExpr
+     */
+    protected parseAdditiveExpr(): XPathExpression {
+        let left = this.parseRangeExpr();
+
+        while (this.match('PLUS', 'MINUS')) {
+            const operator = this.previous().lexeme as '+' | '-';
+            const right = this.parseRangeExpr();
+            left = new (require('../expressions').XPathArithmeticExpression)(left, right, operator);
+        }
+
+        return left;
+    }
+
+    /**
+     * Parse range expression (to).
+     * Syntax: expr to expr
+     * Returns a sequence of consecutive integers from start to end.
+     */
+    protected parseRangeExpr(): XPathExpression {
+        let left = this.parseMultiplicativeExpr();
+
+        if (this.checkReservedWord('to')) {
+            this.advance();
+            const right = this.parseMultiplicativeExpr();
+            left = new RangeExpression(left, right);
+        }
+
+        return left;
     }
 
     private parseOccurrenceIndicator(): OccurrenceIndicator {

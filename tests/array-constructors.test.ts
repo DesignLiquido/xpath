@@ -114,7 +114,7 @@ describe('XPath 3.1 Array Constructors', () => {
             expect(expr).toBeDefined();
         });
 
-        it.skip('should parse curly array with range (to operator not yet implemented)', () => {
+        it('should parse curly array with range', () => {
             const lexer = new XPathLexer('3.1');
             const parser = new XPath31Parser();
             const tokens = lexer.scan('array { 1 to 5 }');
@@ -240,7 +240,7 @@ describe('XPath 3.1 Array Constructors', () => {
             expect(result.members).toEqual([1, 2, 3]);
         });
 
-        it.skip('should evaluate curly array with range (to operator not yet implemented)', () => {
+        it('should evaluate curly array with range', () => {
             const lexer = new XPathLexer('3.1');
             const parser = new XPath31Parser();
             const tokens = lexer.scan('array { 1 to 5 }');

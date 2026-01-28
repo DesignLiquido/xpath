@@ -43,6 +43,143 @@ function jsToXPath(value: any): any {
     throw new XPathError('FOJS0001', 'Unsupported JSON value type');
 }
 
+// Helper: Process JSON string in liberal mode
+// Removes comments and trailing commas to make it valid JSON
+function processLiberalJson(json: string): string {
+    let result = '';
+    let i = 0;
+    let inString = false;
+    let stringChar = '';
+    let escaped = false;
+
+    while (i < json.length) {
+        const char = json[i];
+        const nextChar = i + 1 < json.length ? json[i + 1] : '';
+
+        // Handle string state
+        if (inString) {
+            if (escaped) {
+                result += char;
+                escaped = false;
+                i++;
+                continue;
+            }
+            if (char === '\\') {
+                result += char;
+                escaped = true;
+                i++;
+                continue;
+            }
+            if (char === stringChar) {
+                // End of string - convert single quotes to double quotes
+                result += '"';
+                inString = false;
+                i++;
+                continue;
+            }
+            // Regular string character - if we're in single-quoted string, escape internal double quotes
+            if (stringChar === "'" && char === '"') {
+                result += '\\"';
+            } else {
+                result += char;
+            }
+            i++;
+            continue;
+        }
+
+        // Not in string - check for string start
+        if (char === '"' || char === "'") {
+            inString = true;
+            stringChar = char;
+            result += '"'; // Always use double quotes in output
+            i++;
+            continue;
+        }
+
+        // Handle comments (// and /* */)
+        if (char === '/' && nextChar === '/') {
+            // Single-line comment - skip until newline
+            i += 2;
+            while (i < json.length && json[i] !== '\n' && json[i] !== '\r') {
+                i++;
+            }
+            continue;
+        }
+
+        if (char === '/' && nextChar === '*') {
+            // Multi-line comment - skip until */
+            i += 2;
+            while (i < json.length - 1) {
+                if (json[i] === '*' && json[i + 1] === '/') {
+                    i += 2;
+                    break;
+                }
+                i++;
+            }
+            continue;
+        }
+
+        // Handle trailing commas - check if next non-whitespace is ] or }
+        if (char === ',') {
+            // Look ahead to see if this is a trailing comma
+            let j = i + 1;
+            // Skip all whitespace including newlines
+            while (j < json.length && /[\s\n\r\t]/.test(json[j])) {
+                j++;
+            }
+            // Also skip any comments after the comma
+            while (j < json.length) {
+                if (json[j] === '/' && j + 1 < json.length && json[j + 1] === '/') {
+                    // Skip single-line comment
+                    j += 2;
+                    while (j < json.length && json[j] !== '\n' && json[j] !== '\r') {
+                        j++;
+                    }
+                    // Skip whitespace after comment
+                    while (j < json.length && /[\s\n\r\t]/.test(json[j])) {
+                        j++;
+                    }
+                } else if (json[j] === '/' && j + 1 < json.length && json[j + 1] === '*') {
+                    // Skip multi-line comment
+                    j += 2;
+                    while (j < json.length - 1) {
+                        if (json[j] === '*' && json[j + 1] === '/') {
+                            j += 2;
+                            break;
+                        }
+                        j++;
+                    }
+                    // Skip whitespace after comment
+                    while (j < json.length && /[\s\n\r\t]/.test(json[j])) {
+                        j++;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            if (j < json.length && (json[j] === '}' || json[j] === ']')) {
+                // Trailing comma - skip it and preserve whitespace
+                i++;
+                // Add whitespace between comma position and closing bracket
+                while (i < j) {
+                    if (/[\s\n\r\t]/.test(json[i])) {
+                        result += json[i];
+                    }
+                    i++;
+                }
+                continue;
+            }
+        }
+
+        // Regular character
+        result += char;
+        i++;
+    }
+
+    return result;
+}
+
 // Main: fn:parse-json($json-string as xs:string, $options as map(*)?) as item()?
 // Internal implementation (doesn't take context parameter)
 function parseJsonImpl(jsonString: any, options?: any): any {
@@ -56,12 +193,13 @@ function parseJsonImpl(jsonString: any, options?: any): any {
         if (typeof dups === 'string') opts.duplicates = dups;
     }
     try {
-        // Liberal mode: allow comments, trailing commas, etc. (not implemented)
         // Duplicates: only 'use-last' supported (per spec, others error)
         if (opts.duplicates !== 'use-last')
             throw new XPathError('FOJS0001', 'Only duplicates="use-last" is supported');
-        // TODO: Implement liberal mode if needed
-        const parsed = JSON.parse(jsonString);
+
+        // Liberal mode: preprocess to handle comments, trailing commas, and single quotes
+        const processedJson = opts.liberal ? processLiberalJson(jsonString) : jsonString;
+        const parsed = JSON.parse(processedJson);
         return jsToXPath(parsed);
     } catch (e: any) {
         throw new XPathError('FOJS0001', 'parse-json: ' + (e && e.message ? e.message : String(e)));

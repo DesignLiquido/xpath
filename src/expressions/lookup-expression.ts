@@ -45,7 +45,7 @@ export class XPathLookupExpression implements XPathExpression {
     constructor(
         private baseExpr: XPathExpression | null, // null for unary lookup
         private keySpecifier: KeySpecifier
-    ) {}
+    ) { }
 
     evaluate(context: XPathContext): any {
         // Determine the target (base expression result or context item)
@@ -161,26 +161,107 @@ export class XPathLookupExpression implements XPathExpression {
 
     /**
      * Atomize a value to a string for use as a map key.
+     * Per XPath 2.0 Section 2.4.2: Atomization
+     * - Atomic values pass through unchanged
+     * - Arrays/Maps: extract atomic values and convert to string
+     * - Nodes: use string value
+     * - Function items: should error (cannot atomize function items)
      */
     private atomizeToString(value: any): string {
+        if (value === null || value === undefined) {
+            return '';
+        }
+
         if (typeof value === 'string') return value;
         if (typeof value === 'number') return value.toString();
         if (typeof value === 'boolean') return value.toString();
-        // TODO: Proper atomization for other types
-        return String(value);
+
+        // Handle XPath arrays (objects with $isXPathArray flag)
+        if (Array.isArray(value)) {
+            if (value.length === 0) return '';
+            if (value.length === 1) return this.atomizeToString(value[0]);
+            // Multiple values: use first
+            return this.atomizeToString(value[0]);
+        }
+
+        // Handle XPath maps (objects with $isXPathMap flag)
+        if (typeof value === 'object' && value.$isXPathMap) {
+            // Maps cannot be directly atomized - should error
+            throw new Error('XPTY0004: Cannot atomize a map to string');
+        }
+
+        // Handle node-like objects (have nodeType, nodeName, or textContent)
+        if (typeof value === 'object' && (value.nodeType || value.nodeName || value.textContent)) {
+            return (value.textContent || value.value || '').toString();
+        }
+
+        // Function items or other non-atomizable types
+        if (typeof value === 'function') {
+            throw new Error('XPTY0004: Cannot atomize a function item');
+        }
+
+        // Default: convert to string
+        try {
+            return String(value);
+        } catch {
+            throw new Error('XPTY0004: Cannot atomize value');
+        }
     }
 
     /**
      * Atomize a value to a number for use as an array index.
+     * Per XPath 2.0 Section 2.4.2: Atomization
+     * - Numbers pass through unchanged
+     * - Strings: convert to number
+     * - Booleans: error
+     * - Arrays/Maps/Function items: error
      */
     private atomizeToNumber(value: any): number {
+        if (value === null || value === undefined) {
+            throw new Error('XPTY0004: Cannot convert empty sequence to number');
+        }
+
         if (typeof value === 'number') return value;
+
         if (typeof value === 'string') {
             const num = parseFloat(value);
             if (isNaN(num)) throw new Error('FORG0001: Invalid number');
             return num;
         }
-        // TODO: Proper atomization for other types
+
+        if (typeof value === 'boolean') {
+            throw new Error('XPTY0004: Cannot convert boolean to number for array index');
+        }
+
+        // Handle XPath arrays
+        if (Array.isArray(value)) {
+            if (value.length === 0) {
+                throw new Error('XPTY0004: Cannot convert empty sequence to number');
+            }
+            if (value.length === 1) {
+                return this.atomizeToNumber(value[0]);
+            }
+            throw new Error('XPTY0004: Cannot convert sequence to single number');
+        }
+
+        // Handle XPath maps
+        if (typeof value === 'object' && value.$isXPathMap) {
+            throw new Error('XPTY0004: Cannot atomize a map to number');
+        }
+
+        // Handle node-like objects
+        if (typeof value === 'object' && (value.nodeType || value.nodeName || value.textContent)) {
+            const str = (value.textContent || value.value || '').toString();
+            const num = parseFloat(str);
+            if (isNaN(num)) throw new Error('FORG0001: Invalid number from node');
+            return num;
+        }
+
+        // Function items
+        if (typeof value === 'function') {
+            throw new Error('XPTY0004: Cannot atomize a function item');
+        }
+
         throw new Error('FORG0001: Cannot convert to number');
     }
 

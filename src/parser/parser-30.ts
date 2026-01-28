@@ -113,10 +113,10 @@ export class XPath30Parser extends XPath20Parser {
      * Syntax: expr || expr
      */
     private parseStringConcatExpr(): XPathExpression {
-        let left = this.parseMultiplicativeExpr();
+        let left = this.parseRangeExpr();
 
         while (this.match('CONCAT')) {
-            const right = this.parseMultiplicativeExpr();
+            const right = this.parseRangeExpr();
             left = new XPathStringConcatExpression(left, right);
         }
 

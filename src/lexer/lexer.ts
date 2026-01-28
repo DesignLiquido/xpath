@@ -125,6 +125,9 @@ const XPATH20_RESERVED_WORDS: ReservedWordMap = {
     as: { type: 'RESERVED_WORD', value: 'as' },
     castable: { type: 'RESERVED_WORD', value: 'castable' },
     treat: { type: 'RESERVED_WORD', value: 'treat' },
+
+    // Range expression (XPath 2.0)
+    to: { type: 'RESERVED_WORD', value: 'to' },
 };
 
 const XPATH30_RESERVED_WORDS: ReservedWordMap = {
