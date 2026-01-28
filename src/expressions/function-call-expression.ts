@@ -338,6 +338,12 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
     'node-name': (ctx, arg?) => NODE.nodeName(arg, ctx),
     data: (_ctx, arg) => NODE.data(arg),
     lang: (ctx, testlang, node?) => NODE.lang(testlang, node, ctx),
+
+    // XPath 2.0 Cardinality Functions
+    'zero-or-one': (_ctx, arg) => SEQ.zeroOrOne(arg),
+    'one-or-more': (_ctx, arg) => SEQ.oneOrMore(arg),
+    'exactly-one': (_ctx, arg) => SEQ.exactlyOne(arg),
+    unordered: (_ctx, arg) => SEQ.unordered(arg),
 };
 
 /**
@@ -494,6 +500,12 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'node-name': [1, 1],
     data: [1, 1],
     lang: [1, 2],
+
+    // XPath 2.0 Cardinality Functions
+    'zero-or-one': [1, 1],
+    'one-or-more': [1, 1],
+    'exactly-one': [1, 1],
+    unordered: [1, 1],
 };
 
 /**
