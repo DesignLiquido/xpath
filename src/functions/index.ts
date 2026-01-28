@@ -25,3 +25,6 @@ export * from './map-functions';
 export * from './json-functions';
 export * from './xslt-streaming-functions';
 export { serializationFunctions } from './serialization-functions';
+export { csvFunctions } from './csv-serialization';
+export { yamlFunctions } from './yaml-functions';
+export { binaryFunctions } from './binary-functions';
