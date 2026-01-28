@@ -366,6 +366,11 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     replace: [3, 4],
     matches: [2, 3],
     tokenize: [1, 3],
+    // XSLT 2.0 regex functions
+    'regex-group': [1, 1],
+    // XSLT 2.0 grouping functions
+    'current-group': [0, 0],
+    'current-grouping-key': [0, 0],
     subsequence: [2, 3],
     'insert-before': [3, 3],
     remove: [2, 2],
@@ -640,6 +645,32 @@ export class XPathFunctionCall extends XPathExpression {
             // JSON functions (XPath 3.1)
             case 'json-to-xml':
                 return this.jsonToXml(evaluatedArgs, context);
+
+            // XSLT 2.0 regex-group function (used in xsl:analyze-string)
+            case 'regex-group': {
+                const groupIndex = Math.floor(Number(evaluatedArgs[0]));
+                // Access regex groups from context.extensions (set during xsl:analyze-string)
+                const regexGroups = context.extensions?.regexGroups as string[] | undefined;
+                if (regexGroups && groupIndex >= 0 && groupIndex < regexGroups.length) {
+                    return regexGroups[groupIndex] ?? '';
+                }
+                // If context doesn't have regex groups or index out of range, return empty string
+                return '';
+            }
+
+            // XSLT 2.0 current-group function (used in xsl:for-each-group)
+            case 'current-group': {
+                // Access current group from context.extensions (set during xsl:for-each-group)
+                const currentGroup = context.extensions?.currentGroup;
+                return currentGroup ?? [];
+            }
+
+            // XSLT 2.0 current-grouping-key function (used in xsl:for-each-group)
+            case 'current-grouping-key': {
+                // Access current grouping key from context.extensions (set during xsl:for-each-group)
+                const currentGroupingKey = context.extensions?.currentGroupingKey;
+                return currentGroupingKey ?? '';
+            }
 
             default:
                 // Check built-in XPath 2.0/3.0 functions from the BUILT_IN_FUNCTIONS map
