@@ -5,18 +5,18 @@
  * Syntax: `Hello {$name}, you are {$age} years old`
  */
 
-import { XPath30Parser } from '../src/parser/parser-30';
+import { XPath31Parser } from '../src/parser/parser-31';
 import { XPathLexer } from '../src/lexer/lexer';
 import { XPathContext } from '../src/context';
 
 describe('String Templates (XPath 3.0+)', () => {
-    let parser: XPath30Parser;
+    let parser: XPath31Parser;
     let lexer: XPathLexer;
     let context: XPathContext;
 
     beforeEach(() => {
-        parser = new XPath30Parser();
-        lexer = new XPathLexer({ version: '3.0' });
+        parser = new XPath31Parser();
+        lexer = new XPathLexer({ version: '3.1' });
         context = {
             variables: {},
         };
@@ -159,7 +159,7 @@ describe('String Templates (XPath 3.0+)', () => {
     });
 
     describe('Nested Expressions', () => {
-        test.skip('should handle nested braces in expression', () => {
+        test('should handle nested braces in expression', () => {
             const result = evaluate('`Array: {array { 1, 2, 3 }}`');
             expect(result).toContain('Array:');
         });
@@ -243,7 +243,7 @@ describe('String Templates (XPath 3.0+)', () => {
     });
 
     describe('Edge Cases', () => {
-        test.skip('should handle expression with only whitespace', () => {
+        test('should handle expression with only whitespace', () => {
             const result = evaluate('`Value: {   }`');
             // Expression with only whitespace should be empty
             expect(result).toMatch(/Value:/);

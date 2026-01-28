@@ -110,19 +110,47 @@ export class SchemaValidator {
         this.schemas.set(namespace, schema);
 
         // Register types, elements, attributes from schema
-        const typesArray = Array.from(schema.types || []);
-        for (const [name, type] of typesArray) {
-            this.globalTypes.set(this.makeQName(namespace, name), type);
+        // Handle both Map and plain object formats
+        const types = schema.types;
+        if (types) {
+            if (types instanceof Map) {
+                const typesArray = Array.from(types);
+                for (const [name, type] of typesArray) {
+                    this.globalTypes.set(this.makeQName(namespace, name), type);
+                }
+            } else if (typeof types === 'object') {
+                for (const [name, type] of Object.entries(types)) {
+                    this.globalTypes.set(this.makeQName(namespace, name), type as SchemaType);
+                }
+            }
         }
 
-        const elementsArray = Array.from(schema.elementDeclarations || []);
-        for (const [name, decl] of elementsArray) {
-            this.elementDeclarations.set(this.makeQName(namespace, name), decl);
+        const elements = schema.elementDeclarations;
+        if (elements) {
+            if (elements instanceof Map) {
+                const elementsArray = Array.from(elements);
+                for (const [name, decl] of elementsArray) {
+                    this.elementDeclarations.set(this.makeQName(namespace, name), decl);
+                }
+            } else if (typeof elements === 'object') {
+                for (const [name, decl] of Object.entries(elements)) {
+                    this.elementDeclarations.set(this.makeQName(namespace, name), decl as ElementDeclaration);
+                }
+            }
         }
 
-        const attributesArray = Array.from(schema.attributeDeclarations || []);
-        for (const [name, decl] of attributesArray) {
-            this.attributeDeclarations.set(this.makeQName(namespace, name), decl);
+        const attributes = schema.attributeDeclarations;
+        if (attributes) {
+            if (attributes instanceof Map) {
+                const attributesArray = Array.from(attributes);
+                for (const [name, decl] of attributesArray) {
+                    this.attributeDeclarations.set(this.makeQName(namespace, name), decl);
+                }
+            } else if (typeof attributes === 'object') {
+                for (const [name, decl] of Object.entries(attributes)) {
+                    this.attributeDeclarations.set(this.makeQName(namespace, name), decl as AttributeDeclaration);
+                }
+            }
         }
     }
 
@@ -135,9 +163,32 @@ export class SchemaValidator {
 
     /**
      * Get type by QName
+     * Supports both qualified names like {namespace}localName and just localName
      */
     getType(qname: string): SchemaType | undefined {
-        return this.globalTypes.get(qname);
+        // First try exact match
+        const type = this.globalTypes.get(qname);
+        if (type) {
+            return type;
+        }
+
+        // If qname doesn't have namespace prefix, search by local name
+        if (!qname.startsWith('{')) {
+            const entries = Array.from(this.globalTypes.entries());
+            for (const [key, value] of entries) {
+                // Check if key ends with }localName
+                const match = key.match(/^{[^}]*}(.+)$/);
+                if (match && match[1] === qname) {
+                    return value;
+                }
+                // Also check for exact local name match (no namespace)
+                if (key === qname) {
+                    return value;
+                }
+            }
+        }
+
+        return undefined;
     }
 
     /**

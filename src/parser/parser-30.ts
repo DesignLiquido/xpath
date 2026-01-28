@@ -768,7 +768,7 @@ export class XPath30Parser extends XPath20Parser {
      * Parse a string template from its lexeme and create a StringTemplateExpression.
      * The template string contains the raw content between backticks.
      */
-    private parseStringTemplateFromLexeme(template: string): XPathExpression {
+    protected parseStringTemplateFromLexeme(template: string): XPathExpression {
         const rawParts = parseStringTemplate(template);
         const parts: (string | XPathExpression)[] = [];
 
@@ -777,12 +777,22 @@ export class XPath30Parser extends XPath20Parser {
             if (typeof part === 'string') {
                 parts.push(part);
             } else {
-                // Parse the expression string using a fresh parser instance
-                const lexer = new XPathLexer({ version: '3.0' });
-                const tokens = lexer.scan(part.expressionString);
-                const parser = new XPath30Parser();
-                const expr = parser.parse(tokens);
-                parts.push(expr);
+                // Handle empty or whitespace-only expressions
+                const exprString = part.expressionString.trim();
+                if (exprString.length === 0) {
+                    // Empty expression evaluates to empty string
+                    parts.push('');
+                } else {
+                    // Parse the expression string using a fresh parser instance of the same type
+                    // Use XPath 3.1 version to support all features (array/map constructors, etc.)
+                    const lexer = new XPathLexer({ version: '3.1' });
+                    const tokens = lexer.scan(part.expressionString);
+                    // Create a parser of the same type as this instance
+                    const ParserClass = this.constructor as new () => XPath30Parser;
+                    const parser = new ParserClass();
+                    const expr = parser.parse(tokens);
+                    parts.push(expr);
+                }
             }
         }
 
