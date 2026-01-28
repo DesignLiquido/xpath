@@ -141,6 +141,18 @@ export {
     ARRAY_NAMESPACE,
 } from './function-type';
 
+// Schema-Aware Type System
+export {
+    SchemaAwareType,
+    SchemaAwareTypeInfo,
+    getSchemaAwareType,
+    isTypeCompatible,
+    validateValueAgainstType,
+    getBuiltInType,
+    createListType,
+    registerType,
+} from './schema-aware-types';
+
 // Import all type implementations
 import { AnyAtomicTypeImpl } from './simple-types';
 import { UntypedAtomicImpl } from './simple-types';

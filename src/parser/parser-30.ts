@@ -23,6 +23,8 @@ import {
 import { XPathLetExpression, XPathLetBinding } from '../expressions/let-expression';
 import { XPathSimpleMapExpression } from '../expressions/simple-map-expression';
 import { XPathStringConcatExpression } from '../expressions/string-concat-expression';
+import { StringTemplateExpression, parseStringTemplate } from '../expressions/string-template-expression';
+import { XPathLexer } from '../lexer/lexer';
 import { XPathArrowExpression } from '../expressions/arrow-expression';
 import { XPathNamedFunctionRef } from '../expressions/named-function-ref-expression';
 import {
@@ -301,8 +303,15 @@ export class XPath30Parser extends XPath20Parser {
      * - Variable references with any name (including function names like 'name')
      * - Named function references (fn:name#arity)
      * - Inline functions (function($x) { expr })
+     * - String templates (`Hello {$name}!`)
      */
     protected parsePrimaryExpr(): XPathExpression {
+        // String template: `Hello {$name}!` (XPath 3.0+)
+        if (this.check('STRING_TEMPLATE')) {
+            const template = this.advance().lexeme;
+            return this.parseStringTemplateFromLexeme(template);
+        }
+
         // Variable reference: $name (allow any name token, not just IDENTIFIER)
         if (this.match('DOLLAR')) {
             const nameToken = this.consumeNameTokenInternal('Expected variable name after $');
@@ -753,5 +762,30 @@ export class XPath30Parser extends XPath20Parser {
 
     private checkNameInternal(name: string): boolean {
         return this.isNameTokenInternal() && this.peek().lexeme === name;
+    }
+
+    /**
+     * Parse a string template from its lexeme and create a StringTemplateExpression.
+     * The template string contains the raw content between backticks.
+     */
+    private parseStringTemplateFromLexeme(template: string): XPathExpression {
+        const rawParts = parseStringTemplate(template);
+        const parts: (string | XPathExpression)[] = [];
+
+        // Parse expression strings into actual expressions
+        for (const part of rawParts) {
+            if (typeof part === 'string') {
+                parts.push(part);
+            } else {
+                // Parse the expression string using a fresh parser instance
+                const lexer = new XPathLexer({ version: '3.0' });
+                const tokens = lexer.scan(part.expressionString);
+                const parser = new XPath30Parser();
+                const expr = parser.parse(tokens);
+                parts.push(expr);
+            }
+        }
+
+        return new StringTemplateExpression(parts);
     }
 }

@@ -82,19 +82,80 @@ export function mapEntry(context: XPathContext, key: any, value: any): any {
 export function mapMerge(context: XPathContext, maps: any | any[], options?: any): any {
     // Normalize to array of maps
     const mapList = Array.isArray(maps) ? maps : [maps];
+
+    // Parse options
+    let duplicateHandling = 'use-last'; // default per spec
+    if (options && isXPathMap(options)) {
+        if (options.duplicates !== undefined) {
+            duplicateHandling = String(options.duplicates);
+        }
+    }
+
+    // Validate duplicateHandling option
+    const validOptions = ['use-first', 'use-last', 'combine', 'reject'];
+    if (!validOptions.includes(duplicateHandling)) {
+        throw new Error(
+            `XPST0003: Invalid duplicates option '${duplicateHandling}'. ` +
+            `Must be one of: ${validOptions.join(', ')}`
+        );
+    }
+
     const result = Object.create(null);
     result.__isMap = true;
+
+    // Track which keys are duplicates (for 'reject' option)
+    const keyOccurrences: Record<string, number> = {};
 
     for (const m of mapList) {
         const mm = requireMap(m, 'map:merge');
         for (const k of Object.keys(mm)) {
             if (k.startsWith('__')) continue;
-            // Later maps win
-            result[k] = mm[k];
+
+            // Track occurrences for duplicate handling
+            if (!keyOccurrences[k]) {
+                keyOccurrences[k] = 0;
+            }
+            keyOccurrences[k]++;
+
+            // Handle duplicates based on option
+            if (duplicateHandling === 'use-first') {
+                // Only set if not already set
+                if (!(k in result)) {
+                    result[k] = mm[k];
+                }
+            } else if (duplicateHandling === 'use-last') {
+                // Always overwrite (default behavior)
+                result[k] = mm[k];
+            } else if (duplicateHandling === 'combine') {
+                // Combine values into array
+                if (k in result) {
+                    // Convert to array if not already
+                    if (Array.isArray(result[k])) {
+                        result[k].push(mm[k]);
+                    } else {
+                        result[k] = [result[k], mm[k]];
+                    }
+                } else {
+                    result[k] = mm[k];
+                }
+            } else if (duplicateHandling === 'reject') {
+                // Will check for duplicates after scanning all maps
+                result[k] = mm[k];
+            }
         }
     }
 
-    // TODO: implement options handling (e.g., duplicates) per spec
+    // Check for duplicates with 'reject' option
+    if (duplicateHandling === 'reject') {
+        for (const k in keyOccurrences) {
+            if (keyOccurrences[k] > 1) {
+                throw new Error(
+                    `XUST0003: Duplicate key '${k}' found in map:merge with duplicates='reject'`
+                );
+            }
+        }
+    }
+
     return result;
 }
 

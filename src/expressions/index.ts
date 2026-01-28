@@ -43,6 +43,7 @@ export * from './json-to-xml-converter';
 export * from './let-expression';
 export * from './simple-map-expression';
 export * from './string-concat-expression';
+export * from './string-template-expression';
 export * from './arrow-expression';
 export * from './named-function-ref-expression';
 export * from './inline-function-expression';

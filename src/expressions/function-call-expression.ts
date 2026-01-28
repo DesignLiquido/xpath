@@ -196,6 +196,9 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         const node = arg ? (Array.isArray(arg) ? arg[0] : arg) : ctx.node;
         return node?.nodeName ?? '';
     },
+    'generate-id': (ctx, arg?) => NODE.generateId(arg, ctx),
+    path: (ctx, arg?) => NODE.path(arg, ctx),
+    'has-children': (ctx, arg?) => NODE.hasChildren(arg, ctx),
 
     // Higher-order functions (XPath 3.0)
     'for-each': HOF.forEach,
@@ -359,6 +362,9 @@ const FUNCTION_ARITY: Record<string, [number, number]> = {
     'local-name': [0, 1],
     'namespace-uri': [0, 1],
     name: [0, 1],
+    'generate-id': [0, 1],
+    path: [0, 1],
+    'has-children': [0, 1],
     round: [1, 2],
     'round-half-to-even': [1, 2],
     string: [0, 1],
@@ -642,6 +648,14 @@ export class XPathFunctionCall extends XPathExpression {
                 return this.jsonToXml(evaluatedArgs, context);
 
             default:
+                // Check for custom functions in context FIRST (including XSLT extension functions)
+                // This allows XSLT/custom functions to override built-in functions if needed
+                if (context.functions && typeof context.functions[this.name] === 'function') {
+                    // Call custom function with context as first argument, followed by evaluated args
+                    // This allows XSLT functions to access context.node, context.variables, etc.
+                    return context.functions[this.name](context, ...evaluatedArgs);
+                }
+
                 // Check built-in XPath 2.0/3.0 functions from the BUILT_IN_FUNCTIONS map
                 let builtInFunc = BUILT_IN_FUNCTIONS[this.name];
 
@@ -673,12 +687,6 @@ export class XPathFunctionCall extends XPathExpression {
                     return builtInFunc(context, ...evaluatedArgs);
                 }
 
-                // Check for custom functions in context (including XSLT extension functions)
-                if (context.functions && typeof context.functions[this.name] === 'function') {
-                    // Call custom function with context as first argument, followed by evaluated args
-                    // This allows XSLT functions to access context.node, context.variables, etc.
-                    return context.functions[this.name](context, ...evaluatedArgs);
-                }
                 throw unresolvedNameReference(this.name, 'function');
         }
     }

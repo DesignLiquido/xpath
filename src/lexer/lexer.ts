@@ -363,6 +363,56 @@ export class XPathLexer {
         return new XPathToken('STRING', value);
     }
 
+    /**
+     * Parse string template: `Hello {$name}!`
+     * Returns the entire template as-is for the parser to handle interpolation.
+     */
+    parseStringTemplate(): XPathToken {
+        let value = '';
+        let depth = 0;
+
+        while (this.current < this.expression.length) {
+            const char = this.expression[this.current];
+
+            // Handle escape sequences
+            if (char === '\\' && this.current + 1 < this.expression.length) {
+                const nextChar = this.expression[this.current + 1];
+                // Check for valid escapes: \`, \{, \}, \n, \r, \t, \\
+                if (
+                    nextChar === '`' ||
+                    nextChar === '{' ||
+                    nextChar === '}' ||
+                    nextChar === 'n' ||
+                    nextChar === 'r' ||
+                    nextChar === 't' ||
+                    nextChar === '\\'
+                ) {
+                    value += char;
+                    this.next();
+                    value += this.next();
+                    continue;
+                }
+            }
+
+            // End of template
+            if (char === '`' && depth === 0) {
+                this.next(); // consume closing backtick
+                return new XPathToken('STRING_TEMPLATE', value);
+            }
+
+            // Track nested braces
+            if (char === '{') {
+                depth++;
+            } else if (char === '}') {
+                depth--;
+            }
+
+            value += this.next();
+        }
+
+        throw new Error('Unterminated string template');
+    }
+
     parseNumber(firstCharacter: string): XPathToken {
         let characters = firstCharacter;
 
@@ -549,6 +599,10 @@ export class XPathLexer {
 
             case '"':
                 return this.parseString('"');
+
+            // String template (XPath 3.0+): `Hello {$name}!`
+            case '`':
+                return this.parseStringTemplate();
 
             default:
                 if (this.isNumber(char)) {

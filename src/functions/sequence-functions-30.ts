@@ -11,40 +11,10 @@ import { head as seqHead, tail as seqTail } from './sequence-functions';
 
 /**
  * fn:innermost($nodes as node()*) as node()*
- * Returns nodes that have no ancestor in the input sequence.
- * Most deeply nested nodes (descendants take precedence over ancestors).
+ * Returns nodes that have no descendant in the input sequence.
+ * Most deeply nested nodes (no children in the input).
  */
 export function innermost(context: XPathContext, nodes: any): XPathResult {
-    const nodeList = Array.isArray(nodes) ? nodes : nodes ? [nodes] : [];
-
-    if (nodeList.length === 0) {
-        return [];
-    }
-
-    // For each node, check if any ancestor is in the set
-    return nodeList.filter((node) => {
-        // Skip non-nodes
-        if (!isNode(node)) {
-            return false;
-        }
-
-        // Check if any other node in the list is an ancestor
-        return !nodeList.some((otherNode) => {
-            if (!isNode(otherNode) || node === otherNode) {
-                return false;
-            }
-            // Check if otherNode is an ancestor of node
-            return isAncestor(otherNode, node);
-        });
-    });
-}
-
-/**
- * fn:outermost($nodes as node()*) as node()*
- * Returns nodes that have no descendant in the input sequence.
- * Least deeply nested nodes (ancestors take precedence over descendants).
- */
-export function outermost(context: XPathContext, nodes: any): XPathResult {
     const nodeList = Array.isArray(nodes) ? nodes : nodes ? [nodes] : [];
 
     if (nodeList.length === 0) {
@@ -65,6 +35,36 @@ export function outermost(context: XPathContext, nodes: any): XPathResult {
             }
             // Check if otherNode is a descendant of node
             return isAncestor(node, otherNode);
+        });
+    });
+}
+
+/**
+ * fn:outermost($nodes as node()*) as node()*
+ * Returns nodes that have no ancestor in the input sequence.
+ * Least deeply nested nodes (no parents in the input).
+ */
+export function outermost(context: XPathContext, nodes: any): XPathResult {
+    const nodeList = Array.isArray(nodes) ? nodes : nodes ? [nodes] : [];
+
+    if (nodeList.length === 0) {
+        return [];
+    }
+
+    // For each node, check if any ancestor is in the set
+    return nodeList.filter((node) => {
+        // Skip non-nodes
+        if (!isNode(node)) {
+            return false;
+        }
+
+        // Check if any other node in the list is an ancestor
+        return !nodeList.some((otherNode) => {
+            if (!isNode(otherNode) || node === otherNode) {
+                return false;
+            }
+            // Check if otherNode is an ancestor of node
+            return isAncestor(otherNode, node);
         });
     });
 }
@@ -124,13 +124,25 @@ function isAncestor(potential: any, node: any): boolean {
         return false;
     }
 
-    // Check parent chain
+    // Check parent chain with cycle detection
     let current = node.parent || node.parentNode;
-    while (current) {
+    let depth = 0;
+    const MAX_DEPTH = 10000;
+    const visited = new Set<any>();
+
+    while (current && depth < MAX_DEPTH) {
+        if (visited.has(current)) {
+            // Circular reference detected
+            break;
+        }
+        visited.add(current);
+
         if (current === potential) {
             return true;
         }
+
         current = current.parent || current.parentNode;
+        depth++;
     }
     return false;
 }

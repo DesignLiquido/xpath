@@ -58,6 +58,131 @@ describe('XPath 3.1 Map Functions', () => {
         expect(result.b).toBe(2);
     });
 
+    test('map:merge with use-last option (explicit)', () => {
+        const result = evaluate(
+            'map:merge((map { "a": 1 }, map { "b": 2 }, map { "a": 3 }), map { "duplicates": "use-last" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(result.a).toBe(3); // last value wins
+        expect(result.b).toBe(2);
+    });
+
+    test('map:merge with use-first option', () => {
+        const result = evaluate(
+            'map:merge((map { "a": 1 }, map { "b": 2 }, map { "a": 3 }), map { "duplicates": "use-first" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(result.a).toBe(1); // first value wins
+        expect(result.b).toBe(2);
+    });
+
+    test('map:merge with combine option (arrays)', () => {
+        const result = evaluate(
+            'map:merge((map { "a": 1 }, map { "b": 2 }, map { "a": 3 }), map { "duplicates": "combine" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(Array.isArray(result.a)).toBe(true);
+        expect(result.a).toEqual([1, 3]); // values combined
+        expect(result.b).toBe(2);
+    });
+
+    test('map:merge with combine option (multiple duplicates)', () => {
+        const result = evaluate(
+            'map:merge((map { "x": "a" }, map { "x": "b" }, map { "x": "c" }), map { "duplicates": "combine" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(Array.isArray(result.x)).toBe(true);
+        expect(result.x).toEqual(['a', 'b', 'c']);
+    });
+
+    test('map:merge with combine option (nested arrays)', () => {
+        const result = evaluate(
+            'map:merge((map { "data": [1, 2] }, map { "data": [3, 4] }), map { "duplicates": "combine" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(Array.isArray(result.data)).toBe(true);
+        // combine creates an array with both values as elements
+        expect(result.data.length).toBe(2);
+        // XPath arrays are represented as objects with __isArray and members
+        if (result.data[0].__isArray) {
+            expect(result.data[0].members).toEqual([1, 2]);
+            expect(result.data[1].members).toEqual([3, 4]);
+        } else {
+            expect(result.data[0]).toEqual([1, 2]);
+            expect(result.data[1]).toEqual([3, 4]);
+        }
+    });
+
+    test('map:merge with reject option (no duplicates)', () => {
+        const result = evaluate(
+            'map:merge((map { "a": 1 }, map { "b": 2 }), map { "duplicates": "reject" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(result.a).toBe(1);
+        expect(result.b).toBe(2);
+    });
+
+    test('map:merge with reject option (throws on duplicate)', () => {
+        expect(() => {
+            evaluate(
+                'map:merge((map { "a": 1 }, map { "b": 2 }, map { "a": 3 }), map { "duplicates": "reject" })'
+            );
+        }).toThrow();
+    });
+
+    test('map:merge with reject option (single map)', () => {
+        const result = evaluate(
+            'map:merge((map { "a": 1, "b": 2 }), map { "duplicates": "reject" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(result.a).toBe(1);
+        expect(result.b).toBe(2);
+    });
+
+    test('map:merge with use-first on multiple conflicts', () => {
+        const result = evaluate(
+            'map:merge((map { "a": 1, "b": 10 }, map { "a": 2, "c": 20 }, map { "b": 30 }), map { "duplicates": "use-first" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(result.a).toBe(1); // first occurrence
+        expect(result.b).toBe(10); // first occurrence
+        expect(result.c).toBe(20); // no duplicate
+    });
+
+    test('map:merge with empty maps', () => {
+        const result = evaluate(
+            'map:merge((map { }, map { "a": 1 }), map { "duplicates": "use-first" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(result.a).toBe(1);
+    });
+
+    test('map:merge with combine and no duplicates', () => {
+        const result = evaluate(
+            'map:merge((map { "a": 1 }, map { "b": 2 }), map { "duplicates": "combine" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(result.a).toBe(1);
+        expect(result.b).toBe(2);
+    });
+
+    test('map:merge invalid duplicates option throws error', () => {
+        expect(() => {
+            evaluate(
+                'map:merge((map { "a": 1 }), map { "duplicates": "invalid-option" })'
+            );
+        }).toThrow();
+    });
+
+    test('map:merge with complex values and use-last', () => {
+        const result = evaluate(
+            'map:merge((map { "data": map { "x": 1 } }, map { "data": map { "x": 2 } }), map { "duplicates": "use-last" })'
+        );
+        expect(isXPathMap(result)).toBe(true);
+        expect(isXPathMap(result.data)).toBe(true);
+        expect(result.data.x).toBe(2); // last map wins
+    });
+
     test('map:for-each', () => {
         const result = evaluate(
             'map:for-each(map { "a": 1, "b": 2 }, function($k, $v) { $v * 2 })'

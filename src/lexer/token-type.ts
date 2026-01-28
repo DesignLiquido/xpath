@@ -3,6 +3,7 @@ export type TokenType =
     | 'IDENTIFIER'
     | 'NUMBER'
     | 'STRING'
+    | 'STRING_TEMPLATE' // `Hello {$name}` (XPath 3.0+)
     | 'FUNCTION'
     | 'RESERVED_WORD'
     | 'LOCATION'

@@ -120,8 +120,17 @@ export function root(arg: XPathResult, context: XPathContext): XPathNode | null 
     if (!node) return null;
 
     let current: XPathNode = node;
-    while (current.parentNode) {
+    let depth = 0;
+    const visited = new Set<XPathNode>();
+
+    while (current.parentNode && depth < 10000) {
+        if (visited.has(current)) {
+            // Circular reference - return current node
+            return current;
+        }
+        visited.add(current);
         current = current.parentNode as XPathNode;
+        depth++;
     }
 
     return current;
@@ -266,6 +275,80 @@ export function name(arg: XPathResult, context: XPathContext): string {
     return node.nodeName ?? '';
 }
 
+/**
+ * fn:generate-id() as xs:string
+ * fn:generate-id($arg as node()?) as xs:string
+ * Generates a unique ID for a node that is consistent across multiple invocations.
+ */
+export function generateId(arg: XPathResult, context: XPathContext): string {
+    const node = getNode(arg, context);
+    if (!node) return '';
+
+    // Create a WeakMap to store IDs (or use a property on the node itself)
+    // For simplicity, we'll use a symbol property if available
+    const idSymbol = Symbol.for('__xpath_node_id__');
+
+    if (!node[idSymbol as any]) {
+        // Generate a unique ID starting with a letter
+        const timestamp = Date.now().toString(36);
+        const random = Math.random().toString(36).substring(2, 8);
+        const counter = (Math.floor(Math.random() * 10000)).toString(36);
+        node[idSymbol as any] = `n${timestamp}${random}${counter}`;
+    }
+
+    return node[idSymbol as any];
+}
+
+/**
+ * fn:path() as xs:string?
+ * fn:path($arg as node()?) as xs:string?
+ * Returns the XPath expression that would select the given node.
+ */
+export function path(arg: XPathResult, context: XPathContext): string {
+    const node = getNode(arg, context);
+    if (!node) return '';
+
+    const pathSegments: string[] = [];
+    let current: XPathNode | null = node;
+    let depth = 0;
+    const visited = new Set<XPathNode>();
+
+    while (current && depth < 10000) {
+        if (visited.has(current)) {
+            // Circular reference detected
+            break;
+        }
+        visited.add(current);
+        const segment = buildPathSegment(current);
+        if (segment) {
+            pathSegments.unshift(segment);
+        }
+        current = current.parentNode as XPathNode | null;
+        depth++;
+    }
+
+    return '/' + pathSegments.join('/');
+}
+
+/**
+ * fn:has-children() as xs:boolean
+ * fn:has-children($arg as node()?) as xs:boolean
+ * Returns true if the argument node has child nodes.
+ */
+export function hasChildren(arg: XPathResult, context: XPathContext): boolean {
+    const node = getNode(arg, context);
+    if (!node) return false;
+
+    if ('childNodes' in node && Array.isArray(node.childNodes)) {
+        return node.childNodes.length > 0;
+    }
+
+    return false;
+}
+
+// Note: innermost() and outermost() are implemented in sequence-functions-30.ts
+// They are XPath 3.0 functions that operate on sequences, not node-specific functions.
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -347,4 +430,102 @@ function toString(value: XPathResult): string {
         return getStringValue(value as XPathNode);
     }
     return String(value);
+}
+
+// ============================================================================
+// Additional Helper Functions for Advanced Node Operations
+// ============================================================================
+
+// Maximum depth to prevent infinite loops in case of circular references
+const MAX_DEPTH = 10000;
+
+/**
+ * Calculate the depth of a node in the document tree.
+ */
+function calculateDepth(node: XPathNode): number {
+    let depth = 0;
+    let current: XPathNode | null = node;
+    const visited = new Set<XPathNode>();
+
+    while (current.parentNode && depth < MAX_DEPTH) {
+        if (visited.has(current)) {
+            // Circular reference detected
+            break;
+        }
+        visited.add(current);
+        depth++;
+        current = current.parentNode as XPathNode;
+    }
+
+    return depth;
+}
+
+/**
+ * Check if a node is an ancestor of any node in an array.
+ */
+function isAncestorOf(nodes: XPathNode[], node: XPathNode): boolean {
+    for (const candidate of nodes) {
+        let current: XPathNode | null = node.parentNode as XPathNode | null;
+        let depth = 0;
+        const visited = new Set<XPathNode>();
+
+        while (current && depth < MAX_DEPTH) {
+            if (visited.has(current)) {
+                // Circular reference detected
+                break;
+            }
+            if (current === candidate) {
+                return true;
+            }
+            visited.add(current);
+            current = current.parentNode as XPathNode | null;
+            depth++;
+        }
+    }
+    return false;
+}
+
+/**
+ * Build a single segment of an XPath expression for a node.
+ */
+function buildPathSegment(node: XPathNode): string {
+    const nodeName = node.nodeName || 'node()';
+    const nodeType = node.nodeType;
+
+    switch (nodeType) {
+        case 1: // ELEMENT_NODE
+            // Check if we need a position index
+            const parent = node.parentNode;
+            if (parent && 'childNodes' in parent && Array.isArray(parent.childNodes)) {
+                const siblings = parent.childNodes.filter(
+                    (n: any) => n.nodeType === 1 && n.nodeName === nodeName
+                );
+                if (siblings.length > 1) {
+                    const position = siblings.indexOf(node) + 1;
+                    return `${nodeName}[${position}]`;
+                }
+            }
+            return nodeName;
+        case 2: // ATTRIBUTE_NODE
+            return `@${nodeName}`;
+        case 3: // TEXT_NODE
+            return 'text()';
+        case 7: // PROCESSING_INSTRUCTION_NODE
+            return `processing-instruction(${nodeName})`;
+        case 8: // COMMENT_NODE
+            return 'comment()';
+        case 9: // DOCUMENT_NODE
+            return '';
+        default:
+            return 'node()';
+    }
+}
+
+/**
+ * Normalize an argument to an array of nodes.
+ */
+function normalizeToArray(arg: XPathResult): any[] {
+    if (arg === null || arg === undefined) return [];
+    if (Array.isArray(arg)) return arg;
+    return [arg];
 }
