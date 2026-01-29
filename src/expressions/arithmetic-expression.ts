@@ -107,6 +107,11 @@ export class XPathArithmeticExpression extends XPathExpression {
             return null;
         }
 
+        // Handle NodeValue objects from XSLT context (StringValue, NumberValue, etc.)
+        if (typeof value === 'object' && 'numberValue' in value && typeof value.numberValue === 'function') {
+            return value.numberValue();
+        }
+
         // Single atomic value
         if (!Array.isArray(value)) {
             return value;
@@ -117,8 +122,8 @@ export class XPathArithmeticExpression extends XPathExpression {
             return null; // Empty sequence
         }
 
-        // Multiple items - use first
-        return value[0];
+        // Multiple items - use first (recursive to handle nested NodeValue)
+        return this.atomize(value[0]);
     }
 
     /**

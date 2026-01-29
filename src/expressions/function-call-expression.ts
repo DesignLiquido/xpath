@@ -769,7 +769,23 @@ export class XPathFunctionCall extends XPathExpression {
         if (args.length === 0) {
             return Number(this.stringValue([], context));
         }
-        return Number(args[0]);
+        const value = args[0];
+        
+        // Handle NodeValue objects from XSLT context (NumberValue, StringValue, etc.)
+        if (typeof value === 'object' && value !== null && 'numberValue' in value && typeof (value as any).numberValue === 'function') {
+            return (value as any).numberValue();
+        }
+        
+        // Handle node-set: get string value of first node then convert to number
+        if (Array.isArray(value)) {
+            if (value.length === 0) return NaN;
+            const firstNode = value[0];
+            // Get the string value of the node first
+            const stringValue = this.getNodeStringValue(firstNode);
+            return Number(stringValue);
+        }
+        
+        return Number(value);
     }
 
     private stringValue(args: XPathResult[], context: XPathContext): string {

@@ -54,6 +54,11 @@ export class XPathStringConcatExpression extends XPathExpression {
             return '';
         }
 
+        // Handle NodeValue objects from XSLT context (StringValue, NumberValue, etc.)
+        if (typeof value === 'object' && 'stringValue' in value && typeof (value as any).stringValue === 'function') {
+            return (value as any).stringValue();
+        }
+
         // Array (sequence)
         if (Array.isArray(value)) {
             if (value.length === 0) {
@@ -74,6 +79,11 @@ export class XPathStringConcatExpression extends XPathExpression {
     private valueToString(value: any): string {
         if (value === null || value === undefined) {
             return '';
+        }
+
+        // Handle NodeValue objects from XSLT context (StringValue, NumberValue, etc.)
+        if (typeof value === 'object' && 'stringValue' in value && typeof value.stringValue === 'function') {
+            return value.stringValue();
         }
 
         if (typeof value === 'string') {
