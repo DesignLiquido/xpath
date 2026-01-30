@@ -736,13 +736,19 @@ export class XPathFunctionCall extends XPathExpression {
     }
 
     private getConstructorType(): AtomicType | undefined {
-        // Only treat QName function names as constructor functions to avoid clobbering built-ins like string()
+        // Only treat xs: namespace function names as constructor functions
+        // to avoid clobbering user-defined functions like my:double
         if (!this.name.includes(':')) {
             return undefined;
         }
 
-        const [, localName] = this.name.split(':');
+        const [prefix, localName] = this.name.split(':');
         if (!localName) {
+            return undefined;
+        }
+
+        // Only xs: namespace is for constructor functions
+        if (prefix !== 'xs') {
             return undefined;
         }
 

@@ -7,6 +7,7 @@ import {
     XPathQuantifiedExpression,
     XPathTreatExpression,
     XPathUnionExpression,
+    XPathVariableReference,
     RangeExpression,
 } from '../expressions';
 import { XPathToken } from '../lexer/token';
@@ -56,6 +57,17 @@ export class XPath20Parser extends XPathBaseParser {
     protected parsePrimaryExpr(): XPathExpression {
         if (this.check('RESERVED_WORD') && this.peek().lexeme === 'if') {
             return this.parseIfExpr();
+        }
+
+        // Variable reference: $name
+        // In XPath 2.0+, variable names can be any NCName, including reserved words like 'name'
+        if (this.check('DOLLAR')) {
+            this.advance(); // consume $
+            if (!this.isNameToken()) {
+                throw new Error(`Expected variable name after $. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
+            }
+            const name = this.advance().lexeme;
+            return new XPathVariableReference(name);
         }
 
         return super.parsePrimaryExpr();
