@@ -27,10 +27,30 @@ import * as NODE from '../functions/node-functions';
  * Built-in function registry for XPath 3.0 function references.
  * Maps function names to their implementations.
  */
+const toStringValue = (arg: any): string => {
+    if (arg && typeof arg === 'object') {
+        if (typeof (arg as any).stringValue === 'function') {
+            return (arg as any).stringValue();
+        }
+        if (Array.isArray(arg)) {
+            if (arg.length === 0) return '';
+            const firstNode = arg[0];
+            return firstNode?.textContent ?? String(firstNode);
+        }
+        if (typeof (arg as any).textContent === 'string') {
+            return (arg as any).textContent;
+        }
+        if ((arg as any).nodeValue !== undefined && (arg as any).nodeValue !== null) {
+            return String((arg as any).nodeValue);
+        }
+    }
+    return String(arg ?? '');
+};
+
 const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[]) => any> = {
     // String functions
-    'upper-case': (_ctx, arg) => String(arg).toUpperCase(),
-    'lower-case': (_ctx, arg) => String(arg).toLowerCase(),
+    'upper-case': (_ctx, arg) => toStringValue(arg).toUpperCase(),
+    'lower-case': (_ctx, arg) => toStringValue(arg).toLowerCase(),
     concat: (_ctx, ...args) => args.map((a) => String(a)).join(''),
     'string-join': (_ctx, seq, sep = '') => {
         if (Array.isArray(seq)) {
