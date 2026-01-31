@@ -690,6 +690,12 @@ export class XPathFunctionCall extends XPathExpression {
                 // Check built-in XPath 2.0/3.0 functions from the BUILT_IN_FUNCTIONS map
                 let builtInFunc = BUILT_IN_FUNCTIONS[this.name];
 
+                // If not found and name has fn: prefix, try without it (fn: is the default function namespace)
+                if (!builtInFunc && this.name.startsWith('fn:')) {
+                    const localName = this.name.substring(3); // Remove 'fn:' prefix
+                    builtInFunc = BUILT_IN_FUNCTIONS[localName];
+                }
+
                 // If not found and name is an EQName, try to resolve it
                 if (!builtInFunc && this.name.startsWith('Q{')) {
                     const { namespace, localName } = this.parseEQName(this.name);
@@ -776,12 +782,12 @@ export class XPathFunctionCall extends XPathExpression {
             return Number(this.stringValue([], context));
         }
         const value = args[0];
-        
+
         // Handle NodeValue objects from XSLT context (NumberValue, StringValue, etc.)
         if (typeof value === 'object' && value !== null && 'numberValue' in value && typeof (value as any).numberValue === 'function') {
             return (value as any).numberValue();
         }
-        
+
         // Handle node-set: get string value of first node then convert to number
         if (Array.isArray(value)) {
             if (value.length === 0) return NaN;
@@ -790,7 +796,7 @@ export class XPathFunctionCall extends XPathExpression {
             const stringValue = this.getNodeStringValue(firstNode);
             return Number(stringValue);
         }
-        
+
         return Number(value);
     }
 
