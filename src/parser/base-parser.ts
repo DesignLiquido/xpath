@@ -653,7 +653,11 @@ export abstract class XPathBaseParser {
     protected parsePrimaryExpr(): XPathExpression {
         // Variable reference: $name
         if (this.match('DOLLAR')) {
-            const name = this.consume('IDENTIFIER', 'Expected variable name after $').lexeme;
+            const next = this.peek();
+            if (!next || !this.isNcNameToken(next.type)) {
+                throw grammarViolation(`Expected variable name after $. Got: ${next?.lexeme ?? 'EOF'}`);
+            }
+            const name = this.advance().lexeme;
             return new XPathVariableReference(name);
         }
 
