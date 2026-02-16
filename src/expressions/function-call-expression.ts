@@ -798,8 +798,16 @@ export class XPathFunctionCall extends XPathExpression {
     }
 
     private toNumber(args: XPathResult[], context: XPathContext): number {
+        const toNumberFromString = (text: string): number => {
+            const trimmed = text.trim();
+            if (trimmed.length === 0) {
+                return NaN;
+            }
+            return Number(trimmed);
+        };
+
         if (args.length === 0) {
-            return Number(this.stringValue([], context));
+            return toNumberFromString(this.stringValue([], context));
         }
         const value = args[0];
 
@@ -814,7 +822,11 @@ export class XPathFunctionCall extends XPathExpression {
             const firstNode = value[0];
             // Get the string value of the node first
             const stringValue = this.getNodeStringValue(firstNode);
-            return Number(stringValue);
+            return toNumberFromString(stringValue);
+        }
+
+        if (typeof value === 'string') {
+            return toNumberFromString(value);
         }
 
         return Number(value);
