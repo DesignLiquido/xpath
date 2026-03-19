@@ -628,9 +628,9 @@ export class XPathFunctionCall extends XPathExpression {
             case 'concat':
                 return evaluatedArgs.map((arg) => this.convertToString(arg)).join('');
             case 'starts-with':
-                return String(evaluatedArgs[0]).startsWith(String(evaluatedArgs[1]));
+                return this.convertToString(evaluatedArgs[0]).startsWith(this.convertToString(evaluatedArgs[1]));
             case 'contains':
-                return String(evaluatedArgs[0]).includes(String(evaluatedArgs[1]));
+                return this.convertToString(evaluatedArgs[0]).includes(this.convertToString(evaluatedArgs[1]));
             case 'substring-before':
                 return this.substringBefore(evaluatedArgs);
             case 'substring-after':
@@ -838,7 +838,7 @@ export class XPathFunctionCall extends XPathExpression {
         }
         const value = args[0];
         if (Array.isArray(value) && value.length > 0) {
-            return value[0]?.textContent ?? String(value[0]);
+            return this.getNodeStringValue(value[0]);
         }
         return String(value);
     }
@@ -925,30 +925,30 @@ export class XPathFunctionCall extends XPathExpression {
         if (args.length === 0) {
             return this.stringValue([], context).length;
         }
-        return String(args[0]).length;
+        return this.convertToString(args[0]).length;
     }
 
     private normalizeSpace(args: XPathResult[], context: XPathContext): string {
-        const str = args.length === 0 ? this.stringValue([], context) : String(args[0]);
+        const str = args.length === 0 ? this.stringValue([], context) : this.convertToString(args[0]);
         return str.trim().replace(/\s+/g, ' ');
     }
 
     private substringBefore(args: XPathResult[]): string {
-        const str = String(args[0]);
-        const search = String(args[1]);
+        const str = this.convertToString(args[0]);
+        const search = this.convertToString(args[1]);
         const index = str.indexOf(search);
         return index === -1 ? '' : str.substring(0, index);
     }
 
     private substringAfter(args: XPathResult[]): string {
-        const str = String(args[0]);
-        const search = String(args[1]);
+        const str = this.convertToString(args[0]);
+        const search = this.convertToString(args[1]);
         const index = str.indexOf(search);
         return index === -1 ? '' : str.substring(index + search.length);
     }
 
     private substring(args: XPathResult[]): string {
-        const str = String(args[0]);
+        const str = this.convertToString(args[0]);
         // XPath uses 1-based indexing and rounds
         const start = Math.round(Number(args[1])) - 1;
         if (args.length === 2) {
@@ -964,9 +964,9 @@ export class XPathFunctionCall extends XPathExpression {
     }
 
     private translate(args: XPathResult[]): string {
-        const str = String(args[0]);
-        const from = String(args[1]);
-        const to = String(args[2]);
+        const str = this.convertToString(args[0]);
+        const from = this.convertToString(args[1]);
+        const to = this.convertToString(args[2]);
         let result = '';
         for (const char of str) {
             const index = from.indexOf(char);
@@ -1006,7 +1006,7 @@ export class XPathFunctionCall extends XPathExpression {
         const nodeSet = args[0];
         if (!Array.isArray(nodeSet)) return 0;
         return (nodeSet as any[]).reduce((acc: number, node: XPathNode) => {
-            const value = Number(node?.textContent ?? node);
+            const value = Number(node?.textContent ?? this.getNodeStringValue(node));
             return acc + (isNaN(value) ? 0 : value);
         }, 0);
     }
