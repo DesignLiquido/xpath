@@ -877,6 +877,11 @@ export class XPathFunctionCall extends XPathExpression {
             return '';
         }
 
+        // Handle primitive atomic values (XPath 3.0 context items from simple map, etc.)
+        if (typeof node === 'string') return node;
+        if (typeof node === 'number') return String(node);
+        if (typeof node === 'boolean') return node ? 'true' : 'false';
+
         // If textContent is available, use it
         if (typeof node.textContent === 'string') {
             return node.textContent;
