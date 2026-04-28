@@ -14,6 +14,7 @@
 
 import { XPathContext } from '../context';
 import { XPathExpression } from './expression';
+import { getStringValueFromNode } from './node-utils';
 
 /**
  * UnaryExpression - Unary plus and minus operations
@@ -71,6 +72,9 @@ export class XPathUnaryExpression extends XPathExpression {
 
         // Single atomic value
         if (!Array.isArray(value)) {
+            // Raw DOM node — extract its string value for numeric conversion
+            const text = getStringValueFromNode(value);
+            if (text !== null) return text;
             return value;
         }
 
@@ -79,8 +83,8 @@ export class XPathUnaryExpression extends XPathExpression {
             return null; // Empty sequence
         }
 
-        // Multiple items - use first
-        return value[0];
+        // Multiple items - use first (recursive to handle nested node objects)
+        return this.atomize(value[0]);
     }
 
     /**

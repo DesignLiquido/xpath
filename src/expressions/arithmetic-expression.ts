@@ -20,6 +20,7 @@
 
 import { XPathContext } from '../context';
 import { XPathExpression } from './expression';
+import { getStringValueFromNode } from './node-utils';
 
 export type ArithmeticOperator = '+' | '-' | '*' | 'div' | 'idiv' | 'mod';
 
@@ -114,6 +115,9 @@ export class XPathArithmeticExpression extends XPathExpression {
 
         // Single atomic value
         if (!Array.isArray(value)) {
+            // Raw DOM node — extract its string value for numeric conversion
+            const text = getStringValueFromNode(value);
+            if (text !== null) return text;
             return value;
         }
 
