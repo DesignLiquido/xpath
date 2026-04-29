@@ -222,7 +222,7 @@ export class XPath30Parser extends XPath20Parser {
             if (this.check('DOLLAR')) {
                 // Variable reference to a function item: $f => ...
                 this.advance();
-                const varName = this.consume('IDENTIFIER', 'Expected variable name after $').lexeme;
+                const varName = this.parseVariableReferenceName();
                 funcExpr = new XPathVariableReference(varName);
 
                 // Arguments in parentheses (use parseExprSingle to avoid comma being treated as sequence)
@@ -314,8 +314,7 @@ export class XPath30Parser extends XPath20Parser {
 
         // Variable reference: $name (allow any name token, not just IDENTIFIER)
         if (this.match('DOLLAR')) {
-            const nameToken = this.consumeNameTokenInternal('Expected variable name after $');
-            return new XPathVariableReference(nameToken.lexeme);
+            return new XPathVariableReference(this.parseVariableReferenceName());
         }
 
         // Inline function: function($x, $y) { expr }

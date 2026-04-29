@@ -653,11 +653,7 @@ export abstract class XPathBaseParser {
     protected parsePrimaryExpr(): XPathExpression {
         // Variable reference: $name
         if (this.match('DOLLAR')) {
-            const next = this.peek();
-            if (!next || !this.isNcNameToken(next.type)) {
-                throw grammarViolation(`Expected variable name after $. Got: ${next?.lexeme ?? 'EOF'}`);
-            }
-            const name = this.advance().lexeme;
+            const name = this.parseVariableReferenceName();
             return new XPathVariableReference(name);
         }
 
@@ -794,6 +790,33 @@ export abstract class XPathBaseParser {
             type === 'LOCATION' ||
             type === 'EQNAME'
         );
+    }
+
+    protected parseVariableReferenceName(): string {
+        // Variables are QNames in XPath/XSLT: $name or $prefix:local.
+        if (this.check('EQNAME')) {
+            return this.advance().lexeme;
+        }
+
+        const next = this.peek();
+        if (!next || !this.isNcNameToken(next.type)) {
+            throw grammarViolation(`Expected variable name after $. Got: ${next?.lexeme ?? 'EOF'}`);
+        }
+
+        let name = this.advance().lexeme;
+
+        if (this.match('COLON')) {
+            const local = this.peek();
+            if (!local || !this.isNcNameToken(local.type)) {
+                throw grammarViolation(
+                    `Expected local name after namespace prefix in variable reference. Got: ${local?.lexeme ?? 'EOF'}`
+                );
+            }
+
+            name = `${name}:${this.advance().lexeme}`;
+        }
+
+        return name;
     }
 
     private isNcNameToken(type: TokenType | undefined): boolean {

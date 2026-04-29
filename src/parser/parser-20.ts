@@ -63,10 +63,7 @@ export class XPath20Parser extends XPathBaseParser {
         // In XPath 2.0+, variable names can be any NCName, including reserved words like 'name'
         if (this.check('DOLLAR')) {
             this.advance(); // consume $
-            if (!this.isNameToken()) {
-                throw new Error(`Expected variable name after $. Got: ${this.peek()?.lexeme ?? 'EOF'}`);
-            }
-            const name = this.advance().lexeme;
+            const name = this.parseVariableReferenceName();
             return new XPathVariableReference(name);
         }
 
