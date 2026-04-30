@@ -820,13 +820,15 @@ export abstract class XPathBaseParser {
     }
 
     private isNcNameToken(type: TokenType | undefined): boolean {
-        // Allow any token kinds that can represent NCName parts (prefix/local), including node-type tokens for QNames
+        // Allow any token kinds that can represent NCName parts (prefix/local), including
+        // reserved words when they appear in QName contexts like variable references ($map).
         return (
             type === 'IDENTIFIER' ||
             type === 'FUNCTION' ||
             type === 'OPERATOR' ||
             type === 'LOCATION' ||
-            type === 'NODE_TYPE'
+            type === 'NODE_TYPE' ||
+            type === 'RESERVED_WORD'
         );
     }
 
