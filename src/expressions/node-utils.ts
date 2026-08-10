@@ -24,8 +24,10 @@ export function getStringValueFromNode(node: any): string | null {
         return (v !== null && v !== undefined && v !== 'null') ? String(v) : '';
     }
 
-    // Element node (or document node) — text content is in descendant text nodes
-    if (node.nodeType === 1 || node.nodeType === 9) {
+    // Element node, document node, or document fragment node (nodeType 11 — used by
+    // xsl:variable/xsl:param result-tree fragments built from element content) —
+    // text content is in descendant text nodes.
+    if (node.nodeType === 1 || node.nodeType === 9 || node.nodeType === 11) {
         const children: any[] = node.childNodes;
         if (!children || children.length === 0) return '';
 
