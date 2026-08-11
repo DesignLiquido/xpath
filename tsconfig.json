@@ -4,7 +4,7 @@
         "outDir": "dist",
         "module": "CommonJS",
         "target": "ES2015",
-        "ignoreDeprecations": "6.0",
+        "ignoreDeprecations": "5.0",
         "rootDir": "src",
         "allowJs": true,
         "sourceMap": true,
