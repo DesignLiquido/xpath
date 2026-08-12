@@ -493,20 +493,61 @@ lexer.registerFunctions(functionNames);
 const emptyExtensions = createEmptyExtensions('1.0');
 ```
 
-### XSLT 1.0 Functions
+### XSLT 1.0 Function Catalog
 
-The following XSLT 1.0 functions are designed to be implemented via this extension API:
+These functions are designed to be implemented via this extension API. All of them are already implemented on the consumer side by the [`xslt-processor`](https://github.com/DesignLiquido/xslt-processor) package:
 
-1. **`document()`** - Load external XML documents
-2. **`key()`** - Efficient node lookup using keys
-3. **`format-number()`** - Number formatting with patterns
-4. **`generate-id()`** - Generate unique node identifiers
-5. **`unparsed-entity-uri()`** - Get URI of unparsed entities
-6. **`system-property()`** - Query processor properties
-7. **`element-available()`** - Check XSLT element availability
-8. **`function-available()`** - Check function availability
+| Function                | Spec Section                                                                                              | Purpose                                          | Notes                                                                    | Example                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------- |
+| `document()`             | [§12.1](https://www.w3.org/TR/xslt-10/#section-Multiple-Source-Documents)                                  | Load and process multiple source documents        | Requires `documentLoader` in context; empty URI returns current document    | `document('external.xml')`                    |
+| `key()`                  | [§12.2](https://www.w3.org/TR/xslt-10/#key)                                                                | Efficient node lookup using `<xsl:key>` keys       | Integrated with `<xsl:key>` declarations; indexed via `context.keys`        | `key('product-id', @ref)`                     |
+| `format-number()`        | [§12.3](https://www.w3.org/TR/xslt-10/#format-number)                                                      | Format numbers with patterns and locales           | JDK 1.1 `DecimalFormat` pattern syntax; integrates with `<xsl:decimal-format>` | `format-number(1234.5, '#,##0.00')`           |
+| `generate-id()`          | [§12.4](https://www.w3.org/TR/xslt-10/#generate-id)                                                        | Generate a unique, stable identifier for a node    | Hash-based; same node → same ID within a transformation; starts with a letter | `generate-id(.)`                              |
+| `unparsed-entity-uri()`  | [§12.4](https://www.w3.org/TR/xslt-10/#unparsed-entity-uri)                                                | Return the URI of a DTD-declared unparsed entity   | Stub — requires `unparsedEntities` map in context; DTD parsing isn't available in JS | `unparsed-entity-uri('company-logo')`         |
+| `system-property()`      | [§12.4](https://www.w3.org/TR/xslt-10/#system-property)                                                    | Query XSLT processor information                  | Required: `xsl:version`, `xsl:vendor`, `xsl:vendor-url`; extend via `systemProperties` | `system-property('xsl:version')`              |
+| `element-available()`    | [§15](https://www.w3.org/TR/xslt-10/#section-Fallback)                                                     | Check whether an XSLT instruction element exists   | Covers all 34 XSLT 1.0 elements, with or without the `xsl:` prefix           | `element-available('xsl:sort')`               |
+| `function-available()`   | [§15](https://www.w3.org/TR/xslt-10/#section-Fallback)                                                     | Check whether a function is available              | Covers core XPath 1.0, XSLT 1.0 additions, and custom functions              | `function-available('document')`              |
+| `current()`              | XSLT 1.0                                                                                                    | Return the current node being processed            | —                                                                            | `key('index', current()/@id)`                 |
 
-For detailed implementation guidance, see [TODO.md](TODO.md).
+Two additional functions are available specifically in XSLT 3.0 mode (`xsltVersion: '3.0'`):
+
+- **`xml-to-json()`** - Converts XML nodes to a JSON string representation; throws in 1.0/2.0 mode.
+- **`json-to-xml()`** - Converts a JSON string into an XNode tree compatible with XSLT processing; throws in 1.0/2.0 mode.
+
+### API Surface
+
+The xpath library exposes these types for XSLT integration:
+
+```typescript
+// From '@designliquido/xpath'
+export interface XSLTExtensions {
+    functions: XSLTFunctionMetadata[];
+    version: '1.0' | '2.0' | '3.0';
+    contextExtensions?: {
+        /* ... */
+    };
+}
+
+export interface XSLTFunctionMetadata {
+    name: string;
+    minArgs: number;
+    maxArgs?: number;
+    implementation: XSLTExtensionFunction;
+    description?: string;
+}
+
+export type XSLTExtensionFunction = (context: XPathContext, ...args: any[]) => any;
+
+export interface XPathBaseParserOptions {
+    extensions?: XSLTExtensions;
+    cache?: boolean;
+}
+
+// Helper functions
+export function validateExtensions(extensions: XSLTExtensions): string[];
+export function getExtensionFunctionNames(extensions: XSLTExtensions): string[];
+export function createEmptyExtensions(version?: '1.0' | '2.0' | '3.0'): XSLTExtensions;
+```
 
 ### Context Extensions
 
@@ -537,8 +578,19 @@ const context: XPathContext = {
         'xsl:version': '1.0',
         'xsl:vendor': 'Design Liquido',
     },
+    // For unparsed-entity-uri() function
+    unparsedEntities: {
+        logo: 'http://example.com/logo.png',
+    },
 };
 ```
+
+### References
+
+- [XPath 1.0 Specification](https://www.w3.org/TR/xpath-10/)
+- [XSLT 1.0 Specification](https://www.w3.org/TR/xslt-10/)
+- [XSLT 1.0 Section 12: Additional Functions](https://www.w3.org/TR/xslt-10/#section-Additional-Functions)
+- [XSLT 1.0 Section 15: Fallback](https://www.w3.org/TR/xslt-10/#section-Fallback)
 
 ### Complete Example
 

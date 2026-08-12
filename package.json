@@ -32,6 +32,10 @@
         "url": "https://github.com/DesignLiquido/xpath/issues"
     },
     "homepage": "https://github.com/DesignLiquido/xpath#readme",
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
     "devDependencies": {
         "@types/jest": "^29.5.14",
         "jest": "^29.7.0",
