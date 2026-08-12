@@ -549,6 +549,26 @@ describe('Expression Evaluation', () => {
             expect(result).toBe('text');
         });
 
+        it('should preserve non-breaking spaces (U+00A0) instead of collapsing them to a regular space', () => {
+            // Per the XPath/XQuery F&O spec, normalize-space() only treats #x9/#xA/#xD/#x20 as
+            // whitespace. U+00A0 (NBSP) is a distinct character and must be left untouched -
+            // it must not be collapsed or trimmed away like ordinary XML whitespace.
+            const result = evaluate("normalize-space('Foo Bar')");
+            expect(result).toBe('Foo Bar');
+        });
+
+        it('should trim surrounding XML whitespace while preserving an internal NBSP run', () => {
+            const result = evaluate("normalize-space('  Foo  Bar  ')");
+            expect(result).toBe('Foo  Bar');
+        });
+
+        it('should evaluate normalize-space without argument preserving NBSP in node text', () => {
+            const result = evaluate('normalize-space()', {
+                node: { textContent: '  Foo Bar  ', nodeType: 1, nodeName: 'test' } as any,
+            });
+            expect(result).toBe('Foo Bar');
+        });
+
         it('should evaluate translate', () => {
             const result = evaluate("translate('hello', 'el', 'ip')");
             expect(result).toBe('hippo');

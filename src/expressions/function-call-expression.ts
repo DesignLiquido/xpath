@@ -69,7 +69,10 @@ const BUILT_IN_FUNCTIONS: Record<string, (context: XPathContext, ...args: any[])
         return s.substring(adjustedStart, adjustedStart + length);
     },
     'string-length': (_ctx, arg) => String(arg).length,
-    'normalize-space': (_ctx, arg) => String(arg).trim().replace(/\s+/g, ' '),
+    'normalize-space': (_ctx, arg) =>
+        String(arg)
+            .replace(/^[\t\n\r ]+|[\t\n\r ]+$/g, '')
+            .replace(/[\t\n\r ]+/g, ' '),
     contains: (_ctx, str, sub) => String(str).includes(String(sub)),
     'starts-with': (_ctx, str, sub) => String(str).startsWith(String(sub)),
     'ends-with': (_ctx, str, sub) => String(str).endsWith(String(sub)),
@@ -935,7 +938,11 @@ export class XPathFunctionCall extends XPathExpression {
 
     private normalizeSpace(args: XPathResult[], context: XPathContext): string {
         const str = args.length === 0 ? this.stringValue([], context) : this.convertToString(args[0]);
-        return str.trim().replace(/\s+/g, ' ');
+        // Per the XPath/XQuery F&O spec, normalize-space() only collapses XML whitespace
+        // (#x9, #xA, #xD, #x20). Using JS's .trim()/\s here is wrong because ECMA-262
+        // treats U+00A0 (NBSP) and other Unicode spaces as whitespace too, which silently
+        // corrupts real content (e.g. NBSP in text) into a plain space.
+        return str.replace(/^[\t\n\r ]+|[\t\n\r ]+$/g, '').replace(/[\t\n\r ]+/g, ' ');
     }
 
     private substringBefore(args: XPathResult[]): string {
