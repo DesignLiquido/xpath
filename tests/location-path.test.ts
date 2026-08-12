@@ -284,6 +284,96 @@ describe('Location Path and Step Expression Evaluation', () => {
         });
     });
 
+    describe('Reverse axis proximity position (GitHub issue #3)', () => {
+        // <fruit><banana><lady-finger-banana/></banana><apple/><pear/><kiwi/></fruit>
+        function buildFruitTree() {
+            const fruit = createNode('fruit');
+            const banana = createNode('banana', 1, fruit);
+            const ladyFinger = createNode('lady-finger-banana', 1, banana);
+            const apple = createNode('apple', 1, fruit);
+            const pear = createNode('pear', 1, fruit);
+            const kiwi = createNode('kiwi', 1, fruit);
+
+            banana.childNodes = [ladyFinger];
+            fruit.childNodes = [banana, apple, pear, kiwi];
+
+            banana.nextSibling = apple;
+            apple.previousSibling = banana;
+            apple.nextSibling = pear;
+            pear.previousSibling = apple;
+            pear.nextSibling = kiwi;
+            kiwi.previousSibling = pear;
+
+            return { fruit, banana, ladyFinger, apple, pear, kiwi };
+        }
+
+        it('preceding-sibling::*[1] returns the closest preceding sibling, not the first in document order', () => {
+            const { apple, pear } = buildFruitTree();
+
+            const ast = parse('preceding-sibling::*[1]') as XPathLocationPath;
+            const context: XPathContext = { node: pear, position: 1, size: 1 };
+            const result = ast.evaluate(context) as any[];
+
+            expect(result).toEqual([apple]);
+        });
+
+        it('(preceding-sibling::*)[1] still uses document order, since parenthesizing breaks axis-based numbering', () => {
+            const { banana, pear } = buildFruitTree();
+
+            const ast = parse('(preceding-sibling::*)[1]') as XPathLocationPath;
+            const context: XPathContext = { node: pear, position: 1, size: 1 };
+            const result = ast.evaluate(context) as any[];
+
+            expect(result).toEqual([banana]);
+        });
+
+        it('preceding::*[1] returns the closest preceding node in reverse document order', () => {
+            const { apple, pear } = buildFruitTree();
+
+            const ast = parse('preceding::*[1]') as XPathLocationPath;
+            const context: XPathContext = { node: pear, position: 1, size: 1 };
+            const result = ast.evaluate(context) as any[];
+
+            expect(result).toEqual([apple]);
+        });
+
+        it('preceding::* is returned in document order', () => {
+            const { banana, ladyFinger, apple, pear } = buildFruitTree();
+
+            const ast = parse('preceding::*') as XPathLocationPath;
+            const context: XPathContext = { node: pear, position: 1, size: 1 };
+            const result = ast.evaluate(context) as any[];
+
+            expect(result).toEqual([banana, ladyFinger, apple]);
+        });
+
+        it('ancestor::*[1] returns the closest ancestor', () => {
+            const grandparent = createNode('root');
+            const { fruit, pear } = buildFruitTree();
+            grandparent.childNodes = [fruit];
+            fruit.parentNode = grandparent;
+
+            const ast = parse('ancestor::*[1]') as XPathLocationPath;
+            const context: XPathContext = { node: pear, position: 1, size: 1 };
+            const result = ast.evaluate(context) as any[];
+
+            expect(result).toEqual([fruit]);
+        });
+
+        it('ancestor::* is returned in document order', () => {
+            const grandparent = createNode('root');
+            const { fruit, pear } = buildFruitTree();
+            grandparent.childNodes = [fruit];
+            fruit.parentNode = grandparent;
+
+            const ast = parse('ancestor::*') as XPathLocationPath;
+            const context: XPathContext = { node: pear, position: 1, size: 1 };
+            const result = ast.evaluate(context) as any[];
+
+            expect(result).toEqual([grandparent, fruit]);
+        });
+    });
+
     describe('Step Expression - Node Tests', () => {
         it('should match name node test', () => {
             const root = createNode('root');

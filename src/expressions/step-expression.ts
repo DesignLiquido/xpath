@@ -180,12 +180,12 @@ export class XPathStep extends XPathExpression {
     }
 
     private getAncestors(node: any, includeSelf: boolean): any[] {
+        // Returned in document order (root first, closest ancestor last).
+        // Proximity numbering for the reverse axis is handled in applyPredicates().
         const result: any[] = [];
-        if (includeSelf) result.push(node);
-
-        let current = node.parentNode;
+        let current = includeSelf ? node : node.parentNode;
         while (current) {
-            result.push(current);
+            result.unshift(current);
             current = current.parentNode;
         }
         return result;
@@ -238,25 +238,29 @@ export class XPathStep extends XPathExpression {
     }
 
     private getPreceding(node: any): any[] {
+        // Returned in document order. Proximity numbering for the reverse
+        // axis is handled in applyPredicates().
         const result: any[] = [];
 
-        // Preceding siblings and their descendants (in reverse document order)
+        const unshiftSubtree = (n: any) => {
+            // n followed by its descendants is already document order;
+            // unshifting the whole block keeps farther subtrees ahead of closer ones.
+            result.unshift(n, ...this.getDescendants(n, false));
+        };
+
+        // Preceding siblings and their descendants
         let sibling = node.previousSibling;
         while (sibling) {
-            result.unshift(sibling);
-            const descendants = this.getDescendants(sibling, false);
-            result.unshift(...descendants);
+            unshiftSubtree(sibling);
             sibling = sibling.previousSibling;
         }
 
-        // Ancestors' preceding siblings
+        // Ancestors' preceding siblings and their descendants
         let ancestor = node.parentNode;
         while (ancestor) {
             sibling = ancestor.previousSibling;
             while (sibling) {
-                result.unshift(sibling);
-                const descendants = this.getDescendants(sibling, false);
-                result.unshift(...descendants);
+                unshiftSubtree(sibling);
                 sibling = sibling.previousSibling;
             }
             ancestor = ancestor.parentNode;
@@ -421,26 +425,39 @@ export class XPathStep extends XPathExpression {
         }
     }
 
+    /** Axes whose proximity position is counted in reverse document order (XPath 3.1 §2.5.1). */
+    private static readonly REVERSE_AXES = new Set<AxisType>([
+        'ancestor',
+        'ancestor-or-self',
+        'preceding',
+        'preceding-sibling',
+    ]);
+
     private applyPredicates(nodes: any[], context: any): any[] {
         let result = nodes;
+        // getNodesByAxis() always returns candidates in document order; for reverse
+        // axes the closest node to the context node is the *last* one in that order,
+        // so its proximity position (used by position()/numeric predicates) is 1.
+        const isReverseAxis = XPathStep.REVERSE_AXES.has(this.axis);
 
         for (const predicate of this.predicates) {
             const filtered: any[] = [];
             const size = result.length;
 
             for (let i = 0; i < result.length; i++) {
+                const position = isReverseAxis ? size - i : i + 1;
                 const predicateContext = {
                     ...context,
                     node: result[i],
-                    position: i + 1,
-                    size: size,
+                    position,
+                    size,
                 };
 
                 const predicateResult = predicate.evaluate(predicateContext);
 
                 // If predicate result is a number, it's a position test
                 if (typeof predicateResult === 'number') {
-                    if (predicateResult === i + 1) {
+                    if (predicateResult === position) {
                         filtered.push(result[i]);
                     }
                 } else if (this.toBoolean(predicateResult)) {
